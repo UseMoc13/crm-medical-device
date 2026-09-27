@@ -1,20 +1,24 @@
 <aside class="sidebar">
 
+    {{-- Mobile Close Button --}}
     <button
         type="button"
         class="sidebar-close"
         id="sidebarClose"
-        aria-label="Close sidebar"
-    >
+        aria-label="Close sidebar">
         ×
     </button>
+
+
+    {{-- =====================================================
+         BRAND
+    ====================================================== --}}
 
     <div class="brand">
 
         <img
             src="{{ asset('assets/logo.png') }}"
-            alt="CRM Medical Device"
-        >
+            alt="CRM Medical Device">
 
         <h3>CRM Medical Device</h3>
 
@@ -22,9 +26,18 @@
 
     </div>
 
+
+    {{-- =====================================================
+         NAVIGATION
+    ====================================================== --}}
+
     <nav class="nav">
 
-        {{-- Overview --}}
+
+        {{-- =================================================
+             OVERVIEW
+        ================================================== --}}
+
         <div class="nav-group">
             Overview
         </div>
@@ -32,219 +45,269 @@
         <a
             href="{{ route('dashboard') }}"
             class="{{ request()->routeIs('dashboard') ? 'active' : '' }}"
-        >
+            data-label="Dashboard">
+
             <span class="ico">⌂</span>
-            Dashboard
+
+            <span class="nav-text">
+                Dashboard
+            </span>
+
         </a>
 
 
-        {{-- General & Workspace --}}
+        {{-- =================================================
+             GENERAL & WORKSPACE
+        ================================================== --}}
+
         <div class="nav-group">
             General & Workspace
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Activities">
             <span class="ico">✓</span>
-            Activities
+            <span class="nav-text">Activities</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Calendar">
             <span class="ico">▣</span>
-            Calendar
+            <span class="nav-text">Calendar</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="To-Do">
             <span class="ico">☑</span>
-            To-Do
+            <span class="nav-text">To-Do</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Favorites">
             <span class="ico">★</span>
-            Favorites
+            <span class="nav-text">Favorites</span>
         </a>
 
 
-        {{-- Customer & Lead --}}
+        {{-- =================================================
+             CUSTOMER & LEAD
+        ================================================== --}}
+
         <div class="nav-group">
             Customer & Lead
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Customers">
             <span class="ico">♙</span>
-            Customers
+            <span class="nav-text">Customers</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Contacts">
             <span class="ico">♧</span>
-            Contacts
+            <span class="nav-text">Contacts</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Leads">
             <span class="ico">●</span>
-            Leads
+            <span class="nav-text">Leads</span>
         </a>
 
 
-        {{-- Sales CRM --}}
+        {{-- =================================================
+             SALES CRM
+        ================================================== --}}
+
         <div class="nav-group">
             Sales CRM
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Opportunities">
             <span class="ico">◈</span>
-            Opportunities
+            <span class="nav-text">Opportunities</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Quotations">
             <span class="ico">▤</span>
-            Quotations
+            <span class="nav-text">Quotations</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Sales Orders">
             <span class="ico">▥</span>
-            Sales Orders
+            <span class="nav-text">Sales Orders</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Contracts">
             <span class="ico">▱</span>
-            Contracts
+            <span class="nav-text">Contracts</span>
         </a>
 
 
-        {{-- Product & Inventory --}}
+        {{-- =================================================
+             PRODUCT & INVENTORY
+        ================================================== --}}
+
         <div class="nav-group">
             Product & Inventory
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Products">
             <span class="ico">▦</span>
-            Products
+            <span class="nav-text">Products</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Categories">
             <span class="ico">▤</span>
-            Categories
+            <span class="nav-text">Categories</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Brands">
             <span class="ico">◆</span>
-            Brands
+            <span class="nav-text">Brands</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Warehouses">
             <span class="ico">⌂</span>
-            Warehouses
+            <span class="nav-text">Warehouses</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Inventory">
             <span class="ico">▥</span>
-            Inventory
+            <span class="nav-text">Inventory</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Stock Movements">
             <span class="ico">↕</span>
-            Stock Movements
+            <span class="nav-text">Stock Movements</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Serial Numbers">
             <span class="ico">▣</span>
-            Serial Numbers
+            <span class="nav-text">Serial Numbers</span>
         </a>
 
 
-        {{-- Installation & Warranty --}}
+        {{-- =================================================
+             INSTALLATION & WARRANTY
+        ================================================== --}}
+
         <div class="nav-group">
             Installation & Warranty
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Deliveries">
             <span class="ico">➜</span>
-            Deliveries
+            <span class="nav-text">Deliveries</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Installations">
             <span class="ico">⚙</span>
-            Installations
+            <span class="nav-text">Installations</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Warranty">
             <span class="ico">✓</span>
-            Warranty
+            <span class="nav-text">Warranty</span>
         </a>
 
 
-        {{-- Service & Maintenance --}}
+        {{-- =================================================
+             SERVICE & MAINTENANCE
+        ================================================== --}}
+
         <div class="nav-group">
             Service & Maintenance
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Service Tickets">
             <span class="ico">⚑</span>
-            Service Tickets
+            <span class="nav-text">Service Tickets</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Maintenance">
             <span class="ico">⚙</span>
-            Maintenance
+            <span class="nav-text">Maintenance</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Service History">
             <span class="ico">◷</span>
-            Service History
+            <span class="nav-text">Service History</span>
         </a>
 
 
-        {{-- Billing & Reporting --}}
+        {{-- =================================================
+             BILLING & REPORTING
+        ================================================== --}}
+
         <div class="nav-group">
             Billing & Reporting
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Invoices">
             <span class="ico">▤</span>
-            Invoices
+            <span class="nav-text">Invoices</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Reports">
             <span class="ico">▥</span>
-            Reports
+            <span class="nav-text">Reports</span>
         </a>
 
 
-        {{-- Administration --}}
+        {{-- =================================================
+             ADMINISTRATION
+        ================================================== --}}
+
         <div class="nav-group">
             Administration
         </div>
 
-        <a href="#">
+        <a href="#" data-label="Users">
             <span class="ico">♙</span>
-            Users
+            <span class="nav-text">Users</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Roles & Permissions">
             <span class="ico">⚙</span>
-            Roles & Permissions
+            <span class="nav-text">Roles & Permissions</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Branches">
             <span class="ico">⌂</span>
-            Branches
+            <span class="nav-text">Branches</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Notifications">
             <span class="ico">🔔</span>
-            Notifications
+            <span class="nav-text">Notifications</span>
         </a>
 
-        <a href="#">
+        <a href="#" data-label="Audit Logs">
             <span class="ico">◉</span>
-            Audit Logs
+            <span class="nav-text">Audit Logs</span>
         </a>
 
     </nav>
 
+
+    {{-- =====================================================
+         SIDEBAR FOOTER
+    ====================================================== --}}
+
+    <div class="sidebar-footer">
+
+        <a href="#" data-label="Settings">
+            <span class="ico">⚙</span>
+            <span class="nav-text">Settings</span>
+        </a>
+
+        <a href="#" data-label="Logout">
+            <span class="ico">⇥</span>
+            <span class="nav-text">Logout</span>
+        </a>
+
+    </div>
+
 </aside>
 
+
+{{-- Mobile Overlay --}}
 <div
     class="sidebar-overlay"
-    id="sidebarOverlay"
-></div>
+    id="sidebarOverlay">
+</div>
