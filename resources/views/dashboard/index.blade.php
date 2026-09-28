@@ -16,11 +16,19 @@
 
     <div class="actions">
 
-        <button class="btn">
+        <button
+            class="btn"
+            type="button"
+            onclick="notify('Export feature is not available yet.')"
+        >
             Export
         </button>
 
-        <button class="btn primary">
+        <button
+            class="btn primary"
+            type="button"
+            onclick="notify('New Activity feature is not available yet.')"
+        >
             + New Activity
         </button>
 
@@ -29,7 +37,13 @@
 </div>
 
 
+{{-- =========================================================
+     KPI
+========================================================= --}}
+
 <div class="grid kpis">
+
+    {{-- Customers --}}
 
     <div class="card kpi">
 
@@ -38,7 +52,7 @@
         </div>
 
         <div class="value">
-            0
+            {{ $stats['customers'] }}
         </div>
 
         <div class="trend">
@@ -48,6 +62,8 @@
     </div>
 
 
+    {{-- Leads --}}
+
     <div class="card kpi">
 
         <div class="label">
@@ -55,7 +71,7 @@
         </div>
 
         <div class="value">
-            0
+            {{ $stats['leads'] }}
         </div>
 
         <div class="trend">
@@ -65,6 +81,8 @@
     </div>
 
 
+    {{-- Opportunities --}}
+
     <div class="card kpi">
 
         <div class="label">
@@ -72,7 +90,7 @@
         </div>
 
         <div class="value">
-            0
+            {{ $stats['opportunities'] }}
         </div>
 
         <div class="trend">
@@ -82,6 +100,8 @@
     </div>
 
 
+    {{-- Service Tickets --}}
+
     <div class="card kpi">
 
         <div class="label">
@@ -89,7 +109,7 @@
         </div>
 
         <div class="value">
-            0
+            {{ $stats['service_tickets'] }}
         </div>
 
         <div class="trend">
@@ -101,18 +121,36 @@
 </div>
 
 
-<div class="grid two" style="margin-top: 16px;">
+{{-- =========================================================
+     DASHBOARD CONTENT
+========================================================= --}}
+
+<div
+    class="grid two"
+    style="margin-top: 16px;"
+>
+
+
+    {{-- =====================================================
+         SALES OVERVIEW
+    ====================================================== --}}
 
     <div class="card">
 
         <div class="card-head">
-            <h3>Sales Overview</h3>
+
+            <h3>
+                Sales Overview
+            </h3>
+
         </div>
 
         <div class="card-body">
 
             <div class="empty">
+
                 Sales data will appear here.
+
             </div>
 
         </div>
@@ -120,17 +158,55 @@
     </div>
 
 
+    {{-- =====================================================
+         RECENT ACTIVITIES
+    ====================================================== --}}
+
     <div class="card">
 
         <div class="card-head">
-            <h3>Recent Activities</h3>
+
+            <h3>
+                Recent Activities
+            </h3>
+
         </div>
 
         <div class="card-body">
 
-            <div class="empty">
-                No recent activities.
-            </div>
+            @if($recentActivities->isEmpty())
+
+                <div class="empty">
+                    No recent activities.
+                </div>
+
+            @else
+
+                <div class="list">
+
+                    @foreach($recentActivities as $activity)
+
+                        <div class="list-item">
+
+                            <div>
+
+                                <strong>
+                                    {{ $activity->title ?? 'Activity' }}
+                                </strong>
+
+                                <small>
+                                    {{ $activity->description ?? '' }}
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    @endforeach
+
+                </div>
+
+            @endif
 
         </div>
 

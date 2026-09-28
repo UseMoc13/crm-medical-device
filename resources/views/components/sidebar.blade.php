@@ -93,17 +93,24 @@
             Customer & Lead
         </div>
 
-        <a href="#" data-label="Customers">
+        <a
+            href="{{ route('customers.index') }}"
+            class="{{ request()->routeIs('customers.*') ? 'active' : '' }}"
+            data-label="Customers">
             <span class="ico">♙</span>
             <span class="nav-text">Customers</span>
         </a>
 
-        <a href="#" data-label="Contacts">
+        <a
+            href="#"
+            data-label="Contacts">
             <span class="ico">♧</span>
             <span class="nav-text">Contacts</span>
         </a>
 
-        <a href="#" data-label="Leads">
+        <a
+            href="#"
+            data-label="Leads">
             <span class="ico">●</span>
             <span class="nav-text">Leads</span>
         </a>
