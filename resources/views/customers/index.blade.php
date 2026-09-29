@@ -27,9 +27,9 @@
 
 @if(session('success'))
 
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
+<div class="alert success">
+    {{ session('success') }}
+</div>
 
 @endif
 
@@ -54,8 +54,7 @@
         <form
             method="GET"
             action="{{ route('customers.index') }}"
-            class="filter-bar"
-        >
+            class="filter-bar">
 
             <div class="search-box">
 
@@ -63,8 +62,7 @@
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Search customer..."
-                >
+                    placeholder="Search customer...">
 
             </div>
 
@@ -77,36 +75,31 @@
 
                 <option
                     value="Hospital"
-                    {{ request('customer_type') === 'Hospital' ? 'selected' : '' }}
-                >
+                    {{ request('customer_type') === 'Hospital' ? 'selected' : '' }}>
                     Hospital
                 </option>
 
                 <option
                     value="Clinic"
-                    {{ request('customer_type') === 'Clinic' ? 'selected' : '' }}
-                >
+                    {{ request('customer_type') === 'Clinic' ? 'selected' : '' }}>
                     Clinic
                 </option>
 
                 <option
                     value="Laboratory"
-                    {{ request('customer_type') === 'Laboratory' ? 'selected' : '' }}
-                >
+                    {{ request('customer_type') === 'Laboratory' ? 'selected' : '' }}>
                     Laboratory
                 </option>
 
                 <option
                     value="Distributor"
-                    {{ request('customer_type') === 'Distributor' ? 'selected' : '' }}
-                >
+                    {{ request('customer_type') === 'Distributor' ? 'selected' : '' }}>
                     Distributor
                 </option>
 
                 <option
                     value="Other"
-                    {{ request('customer_type') === 'Other' ? 'selected' : '' }}
-                >
+                    {{ request('customer_type') === 'Other' ? 'selected' : '' }}>
                     Other
                 </option>
 
@@ -121,15 +114,13 @@
 
                 <option
                     value="active"
-                    {{ request('status') === 'active' ? 'selected' : '' }}
-                >
+                    {{ request('status') === 'active' ? 'selected' : '' }}>
                     Active
                 </option>
 
                 <option
                     value="inactive"
-                    {{ request('status') === 'inactive' ? 'selected' : '' }}
-                >
+                    {{ request('status') === 'inactive' ? 'selected' : '' }}>
                     Inactive
                 </option>
 
@@ -143,12 +134,11 @@
 
             @if(request()->hasAny(['search', 'status', 'customer_type']))
 
-                <a
-                    href="{{ route('customers.index') }}"
-                    class="btn"
-                >
-                    Reset
-                </a>
+            <a
+                href="{{ route('customers.index') }}"
+                class="btn">
+                Reset
+            </a>
 
             @endif
 
@@ -188,143 +178,147 @@
 
                     @forelse($customers as $customer)
 
-                        <tr>
+                    <tr>
 
-                            <td>
+                        <td>
 
+                            <strong>
+                                {{ $customer->customer_code }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <a
+                                href="{{ route('customers.show', $customer) }}">
                                 <strong>
-                                    {{ $customer->customer_code }}
+                                    {{ $customer->customer_name }}
                                 </strong>
+                            </a>
 
-                            </td>
+                            @if($customer->email)
+
+                            <div class="muted">
+                                {{ $customer->email }}
+                            </div>
+
+                            @endif
+
+                        </td>
 
 
-                            <td>
+                        <td>
+                            {{ $customer->customer_type ?? '-' }}
+                        </td>
+
+
+                        <td>
+                            {{ $customer->phone ?? '-' }}
+                        </td>
+
+
+                        <td>
+
+                            @if($customer->city || $customer->province)
+
+                            {{ $customer->city }}
+
+                            @if($customer->province)
+                            , {{ $customer->province }}
+                            @endif
+
+                            @else
+
+                            -
+
+                            @endif
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge">
+
+                                {{ ucfirst($customer->status) }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ $customer->created_at?->format('d M Y') }}
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="table-actions">
 
                                 <a
                                     href="{{ route('customers.show', $customer) }}"
-                                >
-                                    <strong>
-                                        {{ $customer->customer_name }}
-                                    </strong>
+                                    class="action-btn view"
+                                    title="View Customer"
+                                    aria-label="View Customer">
+                                    👁
                                 </a>
 
-                                @if($customer->email)
 
-                                    <div class="muted">
-                                        {{ $customer->email }}
-                                    </div>
-
-                                @endif
-
-                            </td>
-
-
-                            <td>
-                                {{ $customer->customer_type ?? '-' }}
-                            </td>
+                                <a
+                                    href="{{ route('customers.edit', $customer) }}"
+                                    class="action-btn edit"
+                                    title="Edit Customer"
+                                    aria-label="Edit Customer">
+                                    ✎
+                                </a>
 
 
-                            <td>
-                                {{ $customer->phone ?? '-' }}
-                            </td>
+                                <form
+                                    action="{{ route('customers.destroy', $customer) }}"
+                                    method="POST"
+                                    class="delete-form"
+                                    onsubmit="return confirmDeleteCustomer('{{ addslashes($customer->customer_name) }}')">
 
+                                    @csrf
 
-                            <td>
+                                    @method('DELETE')
 
-                                @if($customer->city || $customer->province)
+                                    <button
+                                        type="submit"
+                                        class="action-btn delete"
+                                        title="Delete Customer"
+                                        aria-label="Delete Customer">
+                                        🗑
+                                    </button>
 
-                                    {{ $customer->city }}
+                                </form>
 
-                                    @if($customer->province)
-                                        , {{ $customer->province }}
-                                    @endif
+                            </div>
 
-                                @else
+                        </td>
 
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="status-badge">
-
-                                    {{ ucfirst($customer->status) }}
-
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                {{ $customer->created_at?->format('d M Y') }}
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="table-actions">
-
-                                    <a
-                                        href="{{ route('customers.show', $customer) }}"
-                                        class="btn small"
-                                    >
-                                        View
-                                    </a>
-
-                                    <a
-                                        href="{{ route('customers.edit', $customer) }}"
-                                        class="btn small"
-                                    >
-                                        Edit
-                                    </a>
-
-                                    <form
-                                        method="POST"
-                                        action="{{ route('customers.destroy', $customer) }}"
-                                        onsubmit="return confirm('Delete this customer?')"
-                                    >
-
-                                        @csrf
-
-                                        @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="btn small danger"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
+                    </tr>
 
                     @empty
 
-                        <tr>
+                    <tr>
 
-                            <td colspan="8">
+                        <td colspan="8">
 
-                                <div class="empty">
+                            <div class="empty">
 
-                                    No customers found.
+                                No customers found.
 
-                                </div>
+                            </div>
 
-                            </td>
+                        </td>
 
-                        </tr>
+                    </tr>
 
                     @endforelse
 
@@ -337,11 +331,11 @@
 
         @if($customers->hasPages())
 
-            <div class="pagination">
+        <div class="pagination">
 
-                {{ $customers->links() }}
+            {{ $customers->links() }}
 
-            </div>
+        </div>
 
         @endif
 
@@ -350,3 +344,18 @@
 </div>
 
 @endsection
+
+<script>
+
+function confirmDeleteCustomer(customerName)
+{
+    return confirm(
+        'Delete Customer\n\n' +
+        'Are you sure you want to delete "' +
+        customerName +
+        '"?\n\n' +
+        'This action cannot be undone.'
+    );
+}
+
+</script>

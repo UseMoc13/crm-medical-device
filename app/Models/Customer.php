@@ -61,13 +61,4 @@ class Customer extends Model
             'customer_id'
         );
     }
-
-    public function activities()
-    {
-        return $this->hasMany(
-            Activity::class,
-            'customer_id',
-            'customer_id'
-        );
-    }
 }

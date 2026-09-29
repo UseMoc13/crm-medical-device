@@ -2121,3 +2121,167 @@ tr:hover td {
         flex-direction: column-reverse;
     }
 }
+
+/* =========================================================
+   CUSTOMER TABLE ACTIONS
+   ========================================================= */
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+
+.action-btn {
+    width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #475569;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    transition:
+        background-color .18s ease,
+        color .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+
+.action-btn.view:hover {
+    background: #eef4ff;
+    border-color: #cbdaf7;
+    color: #223a70;
+}
+
+
+.action-btn.edit:hover {
+    background: #ecfdf5;
+    border-color: #b7ead8;
+    color: #15966f;
+}
+
+
+.action-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+
+.delete-form {
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================================================
+   CUSTOMER DETAIL
+   ========================================================= */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+
+.breadcrumb a {
+    color: #223a70;
+    text-decoration: none;
+}
+
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+.detail-item.full {
+    grid-column: 1 / -1;
+}
+
+
+.detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+
+.detail-item strong,
+.detail-item > span:not(.detail-label) {
+    color: #17284f;
+    font-size: 14px;
+}
+
+
+.status-badge {
+    display: inline-flex;
+
+    width: fit-content;
+
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    background: #ecfdf5;
+    color: #15803d;
+
+    font-size: 12px !important;
+    font-weight: 600;
+}
+
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 28px;
+    padding-top: 20px;
+
+    border-top: 1px solid #eef1f5;
+}

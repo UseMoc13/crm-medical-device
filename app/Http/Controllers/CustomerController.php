@@ -13,38 +13,85 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::with('user');
+        $query = Customer::query();
 
-        // Search
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('search')) {
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
                 $q->where('customer_code', 'ILIKE', "%{$search}%")
                     ->orWhere('customer_name', 'ILIKE', "%{$search}%")
-                    ->orWhere('email', 'ILIKE', "%{$search}%")
                     ->orWhere('phone', 'ILIKE', "%{$search}%")
-                    ->orWhere('city', 'ILIKE', "%{$search}%");
+                    ->orWhere('email', 'ILIKE', "%{$search}%")
+                    ->orWhere('city', 'ILIKE', "%{$search}%")
+                    ->orWhere('province', 'ILIKE', "%{$search}%");
             });
         }
 
-        // Filter status
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Status
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter customer type
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Customer Type
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('customer_type')) {
             $query->where('customer_type', $request->customer_type);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+
         $customers = $query
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('created_at')
             ->paginate(10)
             ->withQueryString();
 
-        return view('customers.index', compact('customers'));
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Options
+        |--------------------------------------------------------------------------
+        */
+
+        $statuses = Customer::query()
+            ->whereNotNull('status')
+            ->where('status', '!=', '')
+            ->distinct()
+            ->orderBy('status')
+            ->pluck('status');
+
+        $customerTypes = Customer::query()
+            ->whereNotNull('customer_type')
+            ->where('customer_type', '!=', '')
+            ->distinct()
+            ->orderBy('customer_type')
+            ->pluck('customer_type');
+
+        return view('customers.index', compact(
+            'customers',
+            'statuses',
+            'customerTypes'
+        ));
     }
+
 
     /**
      * Form tambah customer.
@@ -53,6 +100,7 @@ class CustomerController extends Controller
     {
         return view('customers.create');
     }
+
 
     /**
      * Menyimpan customer baru.
@@ -70,14 +118,28 @@ class CustomerController extends Controller
             'status' => ['required', 'string', 'max:30'],
         ]);
 
-        $validated['customer_id'] = (string) Str::uuid();
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Customer Code
+        |--------------------------------------------------------------------------
+        */
 
-        $validated['user_id'] = auth()->check()
-            ? auth()->id()
-            : null;
+        $lastCustomer = Customer::query()
+            ->orderByDesc('created_at')
+            ->first();
 
-        // Generate customer code
-        $validated['customer_code'] = $this->generateCustomerCode();
+        $number = 1;
+
+        if ($lastCustomer && preg_match('/CUST-(\d+)/', $lastCustomer->customer_code, $matches)) {
+            $number = ((int) $matches[1]) + 1;
+        }
+
+        $validated['customer_code'] = 'CUST-' . str_pad(
+            $number,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
 
         Customer::create($validated);
 
@@ -86,19 +148,15 @@ class CustomerController extends Controller
             ->with('success', 'Customer berhasil ditambahkan.');
     }
 
+
     /**
      * Menampilkan detail customer.
      */
     public function show(Customer $customer)
     {
-        $customer->load([
-            'user',
-            'contacts',
-            'leads',
-        ]);
-
         return view('customers.show', compact('customer'));
     }
+
 
     /**
      * Form edit customer.
@@ -107,6 +165,7 @@ class CustomerController extends Controller
     {
         return view('customers.edit', compact('customer'));
     }
+
 
     /**
      * Update customer.
@@ -128,11 +187,12 @@ class CustomerController extends Controller
 
         return redirect()
             ->route('customers.show', $customer)
-            ->with('success', 'Customer berhasil diperbarui.');
+            ->with('success', 'Data customer berhasil diperbarui.');
     }
 
+
     /**
-     * Hapus customer.
+     * Delete customer.
      */
     public function destroy(Customer $customer)
     {
@@ -141,17 +201,5 @@ class CustomerController extends Controller
         return redirect()
             ->route('customers.index')
             ->with('success', 'Customer berhasil dihapus.');
-    }
-
-    /**
-     * Generate kode customer.
-     */
-    private function generateCustomerCode()
-    {
-        do {
-            $code = 'CUS-' . strtoupper(Str::random(6));
-        } while (Customer::where('customer_code', $code)->exists());
-
-        return $code;
     }
 }
