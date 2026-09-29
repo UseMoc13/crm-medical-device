@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -15,6 +14,7 @@ class CustomerController extends Controller
     {
         $query = Customer::query();
 
+
         /*
         |--------------------------------------------------------------------------
         | Search
@@ -22,17 +22,22 @@ class CustomerController extends Controller
         */
 
         if ($request->filled('search')) {
-            $search = $request->search;
+
+            $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
+
                 $q->where('customer_code', 'ILIKE', "%{$search}%")
                     ->orWhere('customer_name', 'ILIKE', "%{$search}%")
+                    ->orWhere('customer_type', 'ILIKE', "%{$search}%")
                     ->orWhere('phone', 'ILIKE', "%{$search}%")
                     ->orWhere('email', 'ILIKE', "%{$search}%")
                     ->orWhere('city', 'ILIKE', "%{$search}%")
                     ->orWhere('province', 'ILIKE', "%{$search}%");
+
             });
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -41,8 +46,14 @@ class CustomerController extends Controller
         */
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+
+            $query->where(
+                'status',
+                $request->status
+            );
+
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -51,8 +62,70 @@ class CustomerController extends Controller
         */
 
         if ($request->filled('customer_type')) {
-            $query->where('customer_type', $request->customer_type);
+
+            $query->where(
+                'customer_type',
+                $request->customer_type
+            );
+
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sorting
+        |--------------------------------------------------------------------------
+        */
+
+        $allowedSorts = [
+            'customer_code',
+            'customer_name',
+            'customer_type',
+            'phone',
+            'city',
+            'province',
+            'status',
+            'created_at',
+        ];
+
+        $sort = $request->get(
+            'sort',
+            'created_at'
+        );
+
+        $direction = strtolower(
+            $request->get(
+                'direction',
+                'desc'
+            )
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Sort Column
+        |--------------------------------------------------------------------------
+        */
+
+        if (!in_array($sort, $allowedSorts, true)) {
+
+            $sort = 'created_at';
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Sort Direction
+        |--------------------------------------------------------------------------
+        */
+
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+
+            $direction = 'desc';
+
+        }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -61,9 +134,10 @@ class CustomerController extends Controller
         */
 
         $customers = $query
-            ->orderByDesc('created_at')
+            ->orderBy($sort, $direction)
             ->paginate(10)
             ->withQueryString();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -78,6 +152,7 @@ class CustomerController extends Controller
             ->orderBy('status')
             ->pluck('status');
 
+
         $customerTypes = Customer::query()
             ->whereNotNull('customer_type')
             ->where('customer_type', '!=', '')
@@ -85,10 +160,19 @@ class CustomerController extends Controller
             ->orderBy('customer_type')
             ->pluck('customer_type');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+
         return view('customers.index', compact(
             'customers',
             'statuses',
-            'customerTypes'
+            'customerTypes',
+            'sort',
+            'direction'
         ));
     }
 
@@ -118,6 +202,7 @@ class CustomerController extends Controller
             'status' => ['required', 'string', 'max:30'],
         ]);
 
+
         /*
         |--------------------------------------------------------------------------
         | Generate Customer Code
@@ -130,22 +215,40 @@ class CustomerController extends Controller
 
         $number = 1;
 
-        if ($lastCustomer && preg_match('/CUST-(\d+)/', $lastCustomer->customer_code, $matches)) {
-            $number = ((int) $matches[1]) + 1;
+        if (
+            $lastCustomer &&
+            preg_match(
+                '/CUST-(\d+)/',
+                $lastCustomer->customer_code,
+                $matches
+            )
+        ) {
+
+            $number =
+                ((int) $matches[1]) + 1;
+
         }
 
-        $validated['customer_code'] = 'CUST-' . str_pad(
-            $number,
-            4,
-            '0',
-            STR_PAD_LEFT
-        );
+
+        $validated['customer_code'] =
+            'CUST-' .
+            str_pad(
+                $number,
+                4,
+                '0',
+                STR_PAD_LEFT
+            );
+
 
         Customer::create($validated);
 
+
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Customer berhasil ditambahkan.');
+            ->with(
+                'success',
+                'Customer berhasil ditambahkan.'
+            );
     }
 
 
@@ -154,7 +257,10 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        return view('customers.show', compact('customer'));
+        return view(
+            'customers.show',
+            compact('customer')
+        );
     }
 
 
@@ -163,15 +269,21 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        return view('customers.edit', compact('customer'));
+        return view(
+            'customers.edit',
+            compact('customer')
+        );
     }
 
 
     /**
      * Update customer.
      */
-    public function update(Request $request, Customer $customer)
-    {
+    public function update(
+        Request $request,
+        Customer $customer
+    ) {
+
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:150'],
             'customer_type' => ['nullable', 'string', 'max:50'],
@@ -183,11 +295,19 @@ class CustomerController extends Controller
             'status' => ['required', 'string', 'max:30'],
         ]);
 
+
         $customer->update($validated);
 
+
         return redirect()
-            ->route('customers.show', $customer)
-            ->with('success', 'Data customer berhasil diperbarui.');
+            ->route(
+                'customers.show',
+                $customer
+            )
+            ->with(
+                'success',
+                'Data customer berhasil diperbarui.'
+            );
     }
 
 
@@ -198,8 +318,12 @@ class CustomerController extends Controller
     {
         $customer->delete();
 
+
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Customer berhasil dihapus.');
+            ->with(
+                'success',
+                'Customer berhasil dihapus.'
+            );
     }
 }
