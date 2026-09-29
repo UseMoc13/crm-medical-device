@@ -97,22 +97,31 @@
             href="{{ route('customers.index') }}"
             class="{{ request()->routeIs('customers.*') ? 'active' : '' }}"
             data-label="Customers">
+
             <span class="ico">♙</span>
             <span class="nav-text">Customers</span>
+
         </a>
 
+
         <a
-            href="#"
+            href="{{ route('contacts.index') }}"
+            class="{{ request()->routeIs('contacts.*') ? 'active' : '' }}"
             data-label="Contacts">
+
             <span class="ico">♧</span>
             <span class="nav-text">Contacts</span>
+
         </a>
+
 
         <a
             href="#"
             data-label="Leads">
+
             <span class="ico">●</span>
             <span class="nav-text">Leads</span>
+
         </a>
 
 

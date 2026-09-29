@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ContactController;
 
 // Dashboard
 Route::get('/', [DashboardController::class, 'index'])
@@ -29,3 +30,12 @@ Route::put('/customers/{customer}', [CustomerController::class, 'update'])
 
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
     ->name('customers.destroy');
+
+Route::get('/contacts', [ContactController::class, 'index'])
+    ->name('contacts.index');
+
+
+Route::resource(
+    'contacts',
+    ContactController::class
+);
