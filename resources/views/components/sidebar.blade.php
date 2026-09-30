@@ -116,7 +116,8 @@
 
 
         <a
-            href="#"
+            href="{{ route('leads.index') }}"
+            class="{{ request()->routeIs('leads.*') ? 'active' : '' }}"
             data-label="Leads">
 
             <span class="ico">●</span>
