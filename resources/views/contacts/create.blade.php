@@ -5,15 +5,23 @@
 @section('content')
 
 <div class="page-head">
+
     <div>
         <h1>New Contact</h1>
-        <p>Add a new contact to a customer.</p>
+
+        <p>
+            Add a new contact to a customer.
+        </p>
     </div>
 
     <div class="actions">
-        <a href="{{ route('contacts.index') }}" class="btn">
+
+        <a
+            href="{{ route('contacts.index') }}"
+            class="btn">
             Back to Contacts
         </a>
+
     </div>
 
 </div>
@@ -22,13 +30,17 @@
 
 <div class="alert">
 
-    <strong>Please check the following errors:</strong>
+    <strong>
+        Please check the following errors:
+    </strong>
 
     <ul style="margin: 8px 0 0 18px;">
 
         @foreach ($errors->all() as $error)
 
-        <li>{{ $error }}</li>
+        <li>
+            {{ $error }}
+        </li>
 
         @endforeach
 
@@ -44,7 +56,9 @@
 
         <div>
 
-            <h3>Contact Information</h3>
+            <h3>
+                Contact Information
+            </h3>
 
             <p>
                 Enter the contact information and assign the contact to a customer.
@@ -68,7 +82,7 @@
 
 
                 {{-- =====================================================
-                CUSTOMER
+                 CUSTOMER
             ====================================================== --}}
 
                 <div class="form-group">
@@ -86,6 +100,7 @@
                             type="hidden"
                             name="customer_id"
                             value="{{ old('customer_id') }}">
+
 
                         <button
                             type="button"
@@ -110,6 +125,7 @@
                                 placeholder="Search customer..."
                                 autocomplete="off">
 
+
                             <div class="searchable-select-options"></div>
 
                         </div>
@@ -120,7 +136,7 @@
 
 
                 {{-- =====================================================
-                CONTACT NAME
+                 CONTACT NAME
             ====================================================== --}}
 
                 <div class="form-group">
@@ -141,7 +157,7 @@
 
 
                 {{-- =====================================================
-                POSITION
+                 POSITION
             ====================================================== --}}
 
                 <div class="form-group">
@@ -161,7 +177,7 @@
 
 
                 {{-- =====================================================
-                DEPARTMENT
+                 DEPARTMENT
             ====================================================== --}}
 
                 <div class="form-group">
@@ -181,7 +197,7 @@
 
 
                 {{-- =====================================================
-                PHONE
+                 PHONE
             ====================================================== --}}
 
                 <div class="form-group">
@@ -197,11 +213,15 @@
                         value="{{ old('phone') }}"
                         placeholder="Enter phone number">
 
+                    <div
+                        id="phone-source"
+                        class="field-hint"></div>
+
                 </div>
 
 
                 {{-- =====================================================
-                EMAIL
+                 EMAIL
             ====================================================== --}}
 
                 <div class="form-group">
@@ -217,11 +237,15 @@
                         value="{{ old('email') }}"
                         placeholder="Enter email address">
 
+                    <div
+                        id="email-source"
+                        class="field-hint"></div>
+
                 </div>
 
 
                 {{-- =====================================================
-                CONTACT TYPE
+                 CONTACT TYPE
             ====================================================== --}}
 
                 <div class="form-group">
@@ -280,7 +304,7 @@
 
 
                 {{-- =====================================================
-                PRIMARY CONTACT
+                 PRIMARY CONTACT
             ====================================================== --}}
 
                 <div class="form-group">
@@ -289,8 +313,7 @@
                         Primary Contact
                     </label>
 
-                    <label
-                        class="primary-contact-option">
+                    <label class="primary-contact-option">
 
                         <input
                             type="checkbox"
@@ -311,7 +334,7 @@
 
 
             {{-- =====================================================
-            FORM ACTIONS
+             FORM ACTIONS
         ====================================================== --}}
 
             <div class="form-actions">
@@ -321,6 +344,7 @@
                     class="btn">
                     Cancel
                 </a>
+
 
                 <button
                     type="submit"
@@ -346,7 +370,9 @@
         width: 100%;
     }
 
+
     .searchable-select-trigger {
+
         width: 100%;
         min-height: 42px;
 
@@ -372,32 +398,45 @@
         transition:
             border-color .2s ease,
             box-shadow .2s ease;
+
     }
+
 
     .searchable-select-trigger:hover {
+
         border-color: #aeb8c8;
+
     }
 
+
     .searchable-select-trigger:focus {
+
         outline: none;
 
         border-color: #2ba7a0;
 
         box-shadow:
             0 0 0 3px rgba(43, 167, 160, .10);
+
     }
 
+
     .searchable-select-arrow {
+
         font-size: 13px;
 
         color: #7d8797;
 
         transition:
             transform .2s ease;
+
     }
 
+
     .searchable-select.open .searchable-select-arrow {
+
         transform: rotate(180deg);
+
     }
 
 
@@ -406,6 +445,7 @@
 ========================================================= */
 
     .searchable-select-menu {
+
         display: none;
 
         position: absolute;
@@ -427,10 +467,14 @@
             0 10px 30px rgba(23, 40, 79, .12);
 
         padding: 8px;
+
     }
 
+
     .searchable-select.open .searchable-select-menu {
+
         display: block;
+
     }
 
 
@@ -439,6 +483,7 @@
 ========================================================= */
 
     .searchable-select-search {
+
         width: 100%;
 
         box-sizing: border-box;
@@ -452,15 +497,19 @@
         font-size: 13px;
 
         margin-bottom: 7px;
+
     }
 
+
     .searchable-select-search:focus {
+
         outline: none;
 
         border-color: #2ba7a0;
 
         box-shadow:
             0 0 0 3px rgba(43, 167, 160, .08);
+
     }
 
 
@@ -469,12 +518,16 @@
 ========================================================= */
 
     .searchable-select-options {
+
         max-height: 220px;
 
         overflow-y: auto;
+
     }
 
+
     .searchable-select-option {
+
         padding: 9px 10px;
 
         border-radius: 7px;
@@ -487,21 +540,30 @@
 
         transition:
             background .15s ease;
+
     }
+
 
     .searchable-select-option:hover {
+
         background: #f1f6f8;
+
     }
 
+
     .searchable-select-option.selected {
+
         background: #e8f5f3;
 
         color: #167d70;
 
         font-weight: 600;
+
     }
 
+
     .searchable-select-empty {
+
         padding: 12px 10px;
 
         color: #8a94a6;
@@ -509,6 +571,31 @@
         font-size: 13px;
 
         text-align: center;
+
+    }
+
+
+    /* =========================================================
+   FIELD HINT
+========================================================= */
+
+    .field-hint {
+
+        min-height: 17px;
+
+        margin-top: 5px;
+
+        color: #8a94a6;
+
+        font-size: 11px;
+
+    }
+
+
+    .field-hint.active {
+
+        color: #2ba7a0;
+
     }
 
 
@@ -517,6 +604,7 @@
 ========================================================= */
 
     .primary-contact-option {
+
         display: flex;
 
         align-items: center;
@@ -528,9 +616,12 @@
         cursor: pointer;
 
         font-weight: 400;
+
     }
 
+
     .primary-contact-option input[type="checkbox"] {
+
         width: 17px;
 
         height: 17px;
@@ -540,6 +631,7 @@
         accent-color: #2ba7a0;
 
         cursor: pointer;
+
     }
 </style>
 
@@ -548,28 +640,11 @@
    CUSTOMER DATA
 ========================================================= */
 
-    /*
-     * Data customer dikirim langsung dari Controller.
-     *
-     * Controller:
-     *
-     * $customers = Customer::query()
-     *     ->orderBy('customer_name')
-     *     ->get([
-     *         'customer_id',
-     *         'customer_name',
-     *         'customer_code'
-     *     ]);
-     *
-     * Tidak menggunakan map() di Blade sehingga
-     * lebih sederhana dan menghindari error syntax.
-     */
-
     const customers = @json($customers);
 
 
     /* =========================================================
-       SEARCHABLE CUSTOMER DROPDOWN
+       CUSTOMER DROPDOWN
     ========================================================= */
 
     function createCustomerDropdown(element, items) {
@@ -603,10 +678,6 @@
                 '.searchable-select-value'
             );
 
-
-        /* =====================================================
-           RENDER OPTIONS
-        ===================================================== */
 
         function renderOptions(filter = '') {
 
@@ -642,43 +713,30 @@
                 });
 
 
-            /* =================================================
-               NO RESULT
-            ================================================= */
-
             if (filtered.length === 0) {
 
                 const empty =
                     document.createElement('div');
 
-
                 empty.className =
                     'searchable-select-empty';
-
 
                 empty.textContent =
                     'No customers found';
 
-
                 optionsContainer.appendChild(
                     empty
                 );
-
 
                 return;
 
             }
 
 
-            /* =================================================
-               CUSTOMER OPTIONS
-            ================================================= */
-
             filtered.forEach(customer => {
 
                 const option =
                     document.createElement('div');
-
 
                 option.className =
                     'searchable-select-option';
@@ -689,9 +747,7 @@
                     font-weight: 600;
                     color: #26344f;
                 ">
-                    ${escapeHtml(
-                        customer.customer_name
-                    )}
+                    ${escapeHtml(customer.customer_name)}
                 </div>
 
                 <div style="
@@ -699,16 +755,10 @@
                     font-size: 11px;
                     color: #8a94a6;
                 ">
-                    ${escapeHtml(
-                        customer.customer_code
-                    )}
+                    ${escapeHtml(customer.customer_code)}
                 </div>
             `;
 
-
-                /* =============================================
-                   SELECTED STATE
-                ============================================= */
 
                 if (
                     hiddenInput.value ===
@@ -722,35 +772,13 @@
                 }
 
 
-                /* =============================================
-                   SELECT CUSTOMER
-                ============================================= */
-
                 option.addEventListener(
                     'click',
                     function() {
 
-                        hiddenInput.value =
-                            customer.customer_id;
-
-
-                        valueDisplay.textContent =
-                            customer.customer_name +
-                            ' (' +
-                            customer.customer_code +
-                            ')';
-
-
-                        element.classList.remove(
-                            'open'
+                        selectCustomer(
+                            customer
                         );
-
-
-                        searchInput.value =
-                            '';
-
-
-                        renderOptions();
 
                     }
                 );
@@ -765,15 +793,41 @@
         }
 
 
-        /* =====================================================
-           OPEN / CLOSE DROPDOWN
-        ===================================================== */
+        function selectCustomer(customer) {
+
+            hiddenInput.value =
+                customer.customer_id;
+
+
+            valueDisplay.textContent =
+                customer.customer_name +
+                ' (' +
+                customer.customer_code +
+                ')';
+
+
+            element.classList.remove(
+                'open'
+            );
+
+
+            searchInput.value =
+                '';
+
+
+            renderOptions();
+
+
+            populateCustomerData(
+                customer
+            );
+
+        }
+
 
         trigger.addEventListener(
             'click',
             function() {
-
-                /* Close other dropdowns */
 
                 document
                     .querySelectorAll(
@@ -794,14 +848,10 @@
                     });
 
 
-                /* Toggle current dropdown */
-
                 element.classList.toggle(
                     'open'
                 );
 
-
-                /* Prepare dropdown */
 
                 if (
                     element.classList.contains(
@@ -811,7 +861,6 @@
 
                     searchInput.value =
                         '';
-
 
                     renderOptions();
 
@@ -831,10 +880,6 @@
         );
 
 
-        /* =====================================================
-           SEARCH CUSTOMER
-        ===================================================== */
-
         searchInput.addEventListener(
             'input',
             function() {
@@ -846,10 +891,6 @@
             }
         );
 
-
-        /* =====================================================
-           RETURN API
-        ===================================================== */
 
         return {
 
@@ -864,8 +905,6 @@
                     );
 
 
-                /* Customer not found */
-
                 if (!customer) {
 
                     hiddenInput.value =
@@ -874,14 +913,10 @@
                     valueDisplay.textContent =
                         'Select Customer';
 
-                    renderOptions();
-
                     return;
 
                 }
 
-
-                /* Set selected customer */
 
                 hiddenInput.value =
                     customer.customer_id;
@@ -896,9 +931,108 @@
 
                 renderOptions();
 
+
+                populateCustomerData(
+                    customer,
+                    true
+                );
+
             }
 
         };
+
+    }
+
+
+    /* =========================================================
+       POPULATE CUSTOMER PHONE & EMAIL
+    ========================================================= */
+
+    function populateCustomerData(
+        customer,
+        restoringOldInput = false
+    ) {
+
+        const phoneInput =
+            document.getElementById('phone');
+
+
+        const emailInput =
+            document.getElementById('email');
+
+
+        const phoneSource =
+            document.getElementById('phone-source');
+
+
+        const emailSource =
+            document.getElementById('email-source');
+
+
+        /*
+         * Saat validation error terjadi,
+         * nilai old() harus dipertahankan.
+         */
+
+        if (!restoringOldInput) {
+
+            phoneInput.value =
+                customer.phone || '';
+
+            emailInput.value =
+                customer.email || '';
+
+        }
+
+
+        /* =====================================================
+           PHONE SOURCE
+        ===================================================== */
+
+        if (customer.phone) {
+
+            phoneSource.textContent =
+                'Customer phone • Editable';
+
+            phoneSource.classList.add(
+                'active'
+            );
+
+        } else {
+
+            phoneSource.textContent =
+                'Customer has no phone number';
+
+            phoneSource.classList.remove(
+                'active'
+            );
+
+        }
+
+
+        /* =====================================================
+           EMAIL SOURCE
+        ===================================================== */
+
+        if (customer.email) {
+
+            emailSource.textContent =
+                'Customer email • Editable';
+
+            emailSource.classList.add(
+                'active'
+            );
+
+        } else {
+
+            emailSource.textContent =
+                'Customer has no email address';
+
+            emailSource.classList.remove(
+                'active'
+            );
+
+        }
 
     }
 
@@ -957,7 +1091,7 @@
 
 
     /* =========================================================
-       RESTORE OLD CUSTOMER
+       RESTORE OLD CUSTOMER AFTER VALIDATION ERROR
     ========================================================= */
 
     const oldCustomerId =

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContactController extends Controller
 {
@@ -33,7 +34,6 @@ class ContactController extends Controller
                     ->orWhere('phone', 'ILIKE', "%{$search}%")
                     ->orWhere('email', 'ILIKE', "%{$search}%")
                     ->orWhere('contact_type', 'ILIKE', "%{$search}%");
-
             });
         }
 
@@ -50,7 +50,6 @@ class ContactController extends Controller
                 'customer_id',
                 $request->customer_id
             );
-
         }
 
 
@@ -66,7 +65,6 @@ class ContactController extends Controller
                 'contact_type',
                 $request->contact_type
             );
-
         }
 
 
@@ -82,7 +80,6 @@ class ContactController extends Controller
                 'is_primary',
                 $request->is_primary
             );
-
         }
 
 
@@ -107,13 +104,11 @@ class ContactController extends Controller
         if (!in_array($sort, $allowedSorts)) {
 
             $sort = 'created_at';
-
         }
 
         if (!in_array($direction, ['asc', 'desc'])) {
 
             $direction = 'desc';
-
         }
 
 
@@ -181,12 +176,11 @@ class ContactController extends Controller
                 'customer_id',
                 'customer_name',
                 'customer_code',
+                'phone',
+                'email',
             ]);
 
-        return view(
-            'contacts.create',
-            compact('customers')
-        );
+        return view('contacts.create', compact('customers'));
     }
 
 
@@ -251,7 +245,34 @@ class ContactController extends Controller
             $request->boolean('is_primary');
 
 
-        Contact::create($validated);
+        DB::transaction(function () use ($validated) {
+
+            /*
+        |--------------------------------------------------------------------------
+        | Jika contact baru menjadi primary,
+        | nonaktifkan primary contact sebelumnya
+        |--------------------------------------------------------------------------
+        */
+
+            if ($validated['is_primary']) {
+
+                Contact::where(
+                    'customer_id',
+                    $validated['customer_id']
+                )->update([
+                    'is_primary' => false,
+                ]);
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | Create Contact
+        |--------------------------------------------------------------------------
+        */
+
+            Contact::create($validated);
+        });
 
 
         return redirect()
@@ -288,6 +309,8 @@ class ContactController extends Controller
                 'customer_id',
                 'customer_name',
                 'customer_code',
+                'phone',
+                'email',
             ]);
 
         return view(
@@ -364,7 +387,42 @@ class ContactController extends Controller
             $request->boolean('is_primary');
 
 
-        $contact->update($validated);
+        DB::transaction(function () use (
+            $validated,
+            $contact
+        ) {
+
+            /*
+        |--------------------------------------------------------------------------
+        | Jika contact menjadi primary
+        |--------------------------------------------------------------------------
+        */
+
+            if ($validated['is_primary']) {
+
+                Contact::where(
+                    'customer_id',
+                    $validated['customer_id']
+                )
+                    ->where(
+                        'contact_id',
+                        '!=',
+                        $contact->contact_id
+                    )
+                    ->update([
+                        'is_primary' => false,
+                    ]);
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | Update Contact
+        |--------------------------------------------------------------------------
+        */
+
+            $contact->update($validated);
+        });
 
 
         return redirect()
