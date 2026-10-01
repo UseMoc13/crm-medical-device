@@ -5,6 +5,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+
+Route::resource('roles', RoleController::class);
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -38,4 +43,14 @@ Route::resource(
 Route::resource(
     'leads',
     LeadController::class
+);
+
+Route::resource(
+    'opportunities',
+    OpportunityController::class
+);
+
+Route::resource(
+    'users',
+    UserController::class
 );

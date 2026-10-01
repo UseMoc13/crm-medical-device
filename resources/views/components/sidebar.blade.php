@@ -134,7 +134,11 @@
             Sales CRM
         </div>
 
-        <a href="#" data-label="Opportunities">
+        <a
+            href="{{ route('opportunities.index') }}"
+            class="{{ request()->routeIs('opportunities.*') ? 'active' : '' }}"
+            data-label="opportunities">
+
             <span class="ico">◈</span>
             <span class="nav-text">Opportunities</span>
         </a>
@@ -274,14 +278,23 @@
             Administration
         </div>
 
-        <a href="#" data-label="Users">
+        <a
+            href="{{ route('users.index') }}"
+            class="{{ request()->routeIs('users.*') ? 'active' : '' }}"
+            data-label="Users">
+
             <span class="ico">♙</span>
             <span class="nav-text">Users</span>
         </a>
 
-        <a href="#" data-label="Roles & Permissions">
+        <a
+            href="{{ route('roles.index') }}"
+            class="{{ request()->routeIs('roles.*') ? 'active' : '' }}"
+            data-label="Roles">
+
             <span class="ico">⚙</span>
-            <span class="nav-text">Roles & Permissions</span>
+            <span class="nav-text">Roles</span>
+
         </a>
 
         <a href="#" data-label="Branches">

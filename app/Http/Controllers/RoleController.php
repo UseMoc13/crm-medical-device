@@ -12,7 +12,8 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Role::query();
+        $query = Role::query()
+            ->withCount('users');
 
         /*
         |--------------------------------------------------------------------------
@@ -32,11 +33,11 @@ class RoleController extends Controller
                     "%{$search}%"
                 )
 
-                ->orWhere(
-                    'description',
-                    'ILIKE',
-                    "%{$search}%"
-                );
+                    ->orWhere(
+                        'description',
+                        'ILIKE',
+                        "%{$search}%"
+                    );
             });
         }
 
@@ -186,8 +187,8 @@ class RoleController extends Controller
                 'string',
                 'max:50',
                 'unique:roles,role_name,' .
-                $role->role_id .
-                ',role_id',
+                    $role->role_id .
+                    ',role_id',
             ],
 
             'description' => [
