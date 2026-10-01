@@ -1,26 +1,29 @@
 @extends('layouts.app')
 
-@section('title', 'Contacts')
+@section('title', 'Leads')
 
 @section('content')
 
 <div class="page-head">
 
     <div>
-        <h1>Contacts</h1>
+
+        <h1>Leads</h1>
 
         <p>
-            Manage contact information and customer relationships.
+            Manage potential customers and sales opportunities.
         </p>
+
     </div>
+
 
     <div class="actions">
 
         <a
-            href="{{ route('contacts.create') }}"
+            href="{{ route('leads.create') }}"
             class="btn primary"
         >
-            + New Contact
+            + New Lead
         </a>
 
     </div>
@@ -31,7 +34,9 @@
 @if(session('success'))
 
 <div class="alert success">
+
     {{ session('success') }}
+
 </div>
 
 @endif
@@ -43,10 +48,10 @@
 
         <div>
 
-            <h3>Contact List</h3>
+            <h3>Lead List</h3>
 
             <p>
-                {{ $contacts->total() }} contacts found
+                {{ $leads->total() }} leads found
             </p>
 
         </div>
@@ -63,34 +68,40 @@
 
         <form
             method="GET"
-            action="{{ route('contacts.index') }}"
-            class="contact-filter-bar"
+            action="{{ route('leads.index') }}"
+            class="lead-filter-bar"
         >
+
 
             {{-- Search --}}
 
-            <div class="contact-search">
+            <div class="lead-search">
 
-                <span class="contact-search-icon">
+                <span class="lead-search-icon">
                     ⌕
                 </span>
+
 
                 <input
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Search contacts..."
+                    placeholder="Search leads..."
                     autocomplete="off"
                 >
+
 
                 @if(request('search'))
 
                     <a
                         href="{{ route(
-                            'contacts.index',
-                            request()->except('search', 'page')
+                            'leads.index',
+                            request()->except(
+                                'search',
+                                'page'
+                            )
                         ) }}"
-                        class="contact-search-clear"
+                        class="lead-search-clear"
                         title="Clear search"
                     >
                         ×
@@ -101,15 +112,46 @@
             </div>
 
 
+            {{-- User / Sales --}}
+
+            <div class="lead-filter-select">
+
+                <select name="user_id">
+
+                    <option value="">
+                        All Sales
+                    </option>
+
+
+                    @foreach($users as $user)
+
+                        <option
+                            value="{{ $user->user_id }}"
+                            @selected(
+                                request('user_id') ===
+                                $user->user_id
+                            )
+                        >
+                            {{ $user->name }}
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
             {{-- Customer --}}
 
-            <div class="contact-filter-select">
+            <div class="lead-filter-select">
 
                 <select name="customer_id">
 
                     <option value="">
                         All Customers
                     </option>
+
 
                     @foreach($customers as $customer)
 
@@ -130,25 +172,26 @@
             </div>
 
 
-            {{-- Contact Type --}}
+            {{-- Status --}}
 
-            <div class="contact-filter-select">
+            <div class="lead-filter-select">
 
-                <select name="contact_type">
+                <select name="status">
 
                     <option value="">
-                        All Types
+                        All Statuses
                     </option>
 
-                    @foreach($contactTypes as $type)
+
+                    @foreach($statuses as $status)
 
                         <option
-                            value="{{ $type }}"
+                            value="{{ $status }}"
                             @selected(
-                                request('contact_type') === $type
+                                request('status') === $status
                             )
                         >
-                            {{ $type }}
+                            {{ $status }}
                         </option>
 
                     @endforeach
@@ -158,29 +201,29 @@
             </div>
 
 
-            {{-- Primary --}}
+            {{-- Source --}}
 
-            <div class="contact-filter-select">
+            <div class="lead-filter-select">
 
-                <select name="is_primary">
+                <select name="source">
 
                     <option value="">
-                        All Contacts
+                        All Sources
                     </option>
 
-                    <option
-                        value="1"
-                        @selected(request('is_primary') === '1')
-                    >
-                        Primary
-                    </option>
 
-                    <option
-                        value="0"
-                        @selected(request('is_primary') === '0')
-                    >
-                        Non-primary
-                    </option>
+                    @foreach($sources as $source)
+
+                        <option
+                            value="{{ $source }}"
+                            @selected(
+                                request('source') === $source
+                            )
+                        >
+                            {{ $source }}
+                        </option>
+
+                    @endforeach
 
                 </select>
 
@@ -189,7 +232,7 @@
 
             {{-- Sort --}}
 
-            <div class="contact-filter-select">
+            <div class="lead-filter-select">
 
                 <select name="sort">
 
@@ -200,32 +243,44 @@
                         Created Date
                     </option>
 
-                    <option
-                        value="name"
-                        @selected($sort === 'name')
-                    >
-                        Contact Name
-                    </option>
 
                     <option
-                        value="position"
-                        @selected($sort === 'position')
+                        value="lead_code"
+                        @selected($sort === 'lead_code')
                     >
-                        Position
+                        Lead Code
                     </option>
 
-                    <option
-                        value="department"
-                        @selected($sort === 'department')
-                    >
-                        Department
-                    </option>
 
                     <option
-                        value="contact_type"
-                        @selected($sort === 'contact_type')
+                        value="company_name"
+                        @selected($sort === 'company_name')
                     >
-                        Contact Type
+                        Company
+                    </option>
+
+
+                    <option
+                        value="contact_name"
+                        @selected($sort === 'contact_name')
+                    >
+                        Contact
+                    </option>
+
+
+                    <option
+                        value="source"
+                        @selected($sort === 'source')
+                    >
+                        Source
+                    </option>
+
+
+                    <option
+                        value="status"
+                        @selected($sort === 'status')
+                    >
+                        Status
                     </option>
 
                 </select>
@@ -235,7 +290,7 @@
 
             {{-- Direction --}}
 
-            <div class="contact-filter-select sort-direction">
+            <div class="lead-filter-select sort-direction">
 
                 <select name="direction">
 
@@ -245,6 +300,7 @@
                     >
                         ↑ Ascending
                     </option>
+
 
                     <option
                         value="desc"
@@ -262,7 +318,7 @@
 
             <button
                 type="submit"
-                class="btn contact-filter-button"
+                class="btn lead-filter-button"
             >
                 Filter
             </button>
@@ -272,16 +328,17 @@
 
             @if(request()->hasAny([
                 'search',
+                'user_id',
                 'customer_id',
-                'contact_type',
-                'is_primary',
+                'status',
+                'source',
                 'sort',
                 'direction'
             ]))
 
                 <a
-                    href="{{ route('contacts.index') }}"
-                    class="btn contact-reset-button"
+                    href="{{ route('leads.index') }}"
+                    class="btn lead-reset-button"
                 >
                     Reset
                 </a>
@@ -297,12 +354,13 @@
 
         @if(
             request('search') ||
+            request('user_id') ||
             request('customer_id') ||
-            request('contact_type') ||
-            request('is_primary')
+            request('status') ||
+            request('source')
         )
 
-            <div class="contact-filter-summary">
+            <div class="lead-filter-summary">
 
                 <span>
                     Showing filtered results
@@ -312,8 +370,38 @@
                 @if(request('search'))
 
                     <span class="filter-chip">
-                        Search: "{{ request('search') }}"
+
+                        Search:
+                        "{{ request('search') }}"
+
                     </span>
+
+                @endif
+
+
+                @if(request('user_id'))
+
+                    @php
+
+                        $selectedUser =
+                            $users->firstWhere(
+                                'user_id',
+                                request('user_id')
+                            );
+
+                    @endphp
+
+
+                    @if($selectedUser)
+
+                        <span class="filter-chip">
+
+                            Sales:
+                            {{ $selectedUser->name }}
+
+                        </span>
+
+                    @endif
 
                 @endif
 
@@ -330,6 +418,7 @@
 
                     @endphp
 
+
                     @if($selectedCustomer)
 
                         <span class="filter-chip">
@@ -344,32 +433,24 @@
                 @endif
 
 
-                @if(request('contact_type'))
+                @if(request('status'))
 
                     <span class="filter-chip">
 
-                        Type:
-                        {{ request('contact_type') }}
+                        Status:
+                        {{ request('status') }}
 
                     </span>
 
                 @endif
 
 
-                @if(
-                    request('is_primary') !== null &&
-                    request('is_primary') !== ''
-                )
+                @if(request('source'))
 
                     <span class="filter-chip">
 
-                        Primary:
-
-                        {{
-                            request('is_primary') === '1'
-                                ? 'Primary'
-                                : 'Non-primary'
-                        }}
+                        Source:
+                        {{ request('source') }}
 
                     </span>
 
@@ -381,7 +462,7 @@
 
 
         {{-- =====================================================
-             CONTACT TABLE
+             LEAD TABLE
         ====================================================== --}}
 
         <div class="table-wrap">
@@ -393,19 +474,15 @@
                     <tr>
 
                         <th>
+                            Lead
+                        </th>
+
+                        <th>
+                            Company
+                        </th>
+
+                        <th>
                             Contact
-                        </th>
-
-                        <th>
-                            Customer
-                        </th>
-
-                        <th>
-                            Position
-                        </th>
-
-                        <th>
-                            Department
                         </th>
 
                         <th>
@@ -413,11 +490,15 @@
                         </th>
 
                         <th>
-                            Type
+                            Source
                         </th>
 
                         <th>
-                            Primary
+                            Status
+                        </th>
+
+                        <th>
+                            Assigned To
                         </th>
 
                         <th>
@@ -431,34 +512,58 @@
 
                 <tbody>
 
-                    @forelse($contacts as $contact)
+                    @forelse($leads as $lead)
 
                     <tr>
 
 
-                        {{-- Contact --}}
+                        {{-- Lead --}}
 
                         <td>
 
                             <a
                                 href="{{ route(
-                                    'contacts.show',
-                                    $contact
+                                    'leads.show',
+                                    $lead
                                 ) }}"
-                                class="contact-name-link"
+                                class="lead-code-link"
                             >
 
                                 <strong>
-                                    {{ $contact->name }}
+                                    {{ $lead->lead_code }}
                                 </strong>
 
                             </a>
 
 
-                            @if($contact->email)
+                            <div class="muted">
+
+                                {{ $lead->created_at
+                                    ? $lead->created_at->format('d M Y')
+                                    : '-'
+                                }}
+
+                            </div>
+
+                        </td>
+
+
+                        {{-- Company --}}
+
+                        <td>
+
+                            <strong>
+                                {{ $lead->company_name }}
+                            </strong>
+
+
+                            @if($lead->customer)
 
                                 <div class="muted">
-                                    {{ $contact->email }}
+
+                                    Customer:
+                                    {{ $lead->customer->customer_name }}
+
                                 </div>
 
                             @endif
@@ -466,32 +571,15 @@
                         </td>
 
 
-                        {{-- Customer --}}
+                        {{-- Contact --}}
 
                         <td>
 
-                            @if($contact->customer)
+                            @if($lead->contact_name)
 
-                                <a
-                                    href="{{ route(
-                                        'customers.show',
-                                        $contact->customer
-                                    ) }}"
-                                    class="customer-link"
-                                >
-
-                                    <strong>
-                                        {{ $contact->customer->customer_name }}
-                                    </strong>
-
-                                </a>
-
-
-                                <div class="muted">
-
-                                    {{ $contact->customer->customer_code }}
-
-                                </div>
+                                <strong>
+                                    {{ $lead->contact_name }}
+                                </strong>
 
                             @else
 
@@ -501,23 +589,16 @@
 
                             @endif
 
-                        </td>
 
+                            @if($lead->email)
 
-                        {{-- Position --}}
+                                <div class="muted">
 
-                        <td>
+                                    {{ $lead->email }}
 
-                            {{ $contact->position ?? '-' }}
+                                </div>
 
-                        </td>
-
-
-                        {{-- Department --}}
-
-                        <td>
-
-                            {{ $contact->department ?? '-' }}
+                            @endif
 
                         </td>
 
@@ -526,20 +607,20 @@
 
                         <td>
 
-                            {{ $contact->phone ?? '-' }}
+                            {{ $lead->phone ?? '-' }}
 
                         </td>
 
 
-                        {{-- Type --}}
+                        {{-- Source --}}
 
                         <td>
 
-                            @if($contact->contact_type)
+                            @if($lead->source)
 
-                                <span class="contact-type-badge">
+                                <span class="lead-source-badge">
 
-                                    {{ $contact->contact_type }}
+                                    {{ $lead->source }}
 
                                 </span>
 
@@ -554,20 +635,56 @@
                         </td>
 
 
-                        {{-- Primary --}}
+                        {{-- Status --}}
 
                         <td>
 
-                            @if($contact->is_primary)
+                            @if($lead->status)
 
-                                <span class="status-badge status-primary">
-                                    Primary
+                                <span
+                                    class="lead-status-badge
+                                    lead-status-{{ Str::slug($lead->status) }}"
+                                >
+
+                                    {{ $lead->status }}
+
                                 </span>
 
                             @else
 
                                 <span class="muted">
                                     -
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- Assigned User --}}
+
+                        <td>
+
+                            @if($lead->user)
+
+                                <strong>
+                                    {{ $lead->user->name }}
+                                </strong>
+
+                                @if($lead->user->email)
+
+                                    <div class="muted">
+
+                                        {{ $lead->user->email }}
+
+                                    </div>
+
+                                @endif
+
+                            @else
+
+                                <span class="unassigned-badge">
+                                    Unassigned
                                 </span>
 
                             @endif
@@ -581,51 +698,59 @@
 
                             <div class="table-actions">
 
+
+                                {{-- View --}}
+
                                 <a
                                     href="{{ route(
-                                        'contacts.show',
-                                        $contact
+                                        'leads.show',
+                                        $lead
                                     ) }}"
                                     class="action-btn view"
-                                    title="View Contact"
-                                    aria-label="View Contact"
+                                    title="View Lead"
+                                    aria-label="View Lead"
                                 >
                                     👁
                                 </a>
 
 
+                                {{-- Edit --}}
+
                                 <a
                                     href="{{ route(
-                                        'contacts.edit',
-                                        $contact
+                                        'leads.edit',
+                                        $lead
                                     ) }}"
                                     class="action-btn edit"
-                                    title="Edit Contact"
-                                    aria-label="Edit Contact"
+                                    title="Edit Lead"
+                                    aria-label="Edit Lead"
                                 >
                                     ✎
                                 </a>
 
 
+                                {{-- Delete --}}
+
                                 <form
                                     action="{{ route(
-                                        'contacts.destroy',
-                                        $contact
+                                        'leads.destroy',
+                                        $lead
                                     ) }}"
                                     method="POST"
                                     class="delete-form"
-                                    data-contact-name="{{ $contact->name }}"
+                                    data-lead-name="{{ $lead->company_name }}"
                                 >
 
                                     @csrf
 
                                     @method('DELETE')
 
+
                                     <button
                                         type="submit"
                                         class="action-btn delete"
-                                        title="Delete Contact"
-                                        aria-label="Delete Contact"
+                                        title="Delete Lead"
+                                        aria-label="Delete Lead"
                                     >
                                         🗑
                                     </button>
@@ -647,7 +772,7 @@
 
                             <div class="empty">
 
-                                No contacts found.
+                                No leads found.
 
                             </div>
 
@@ -668,11 +793,11 @@
              PAGINATION
         ====================================================== --}}
 
-        @if($contacts->hasPages())
+        @if($leads->hasPages())
 
             <div class="pagination">
 
-                {{ $contacts->links() }}
+                {{ $leads->links() }}
 
             </div>
 
@@ -689,7 +814,7 @@
 
 <div
     class="delete-modal"
-    id="deleteContactModal"
+    id="deleteLeadModal"
     aria-hidden="true"
 >
 
@@ -703,7 +828,7 @@
         class="delete-modal-dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="deleteContactModalTitle"
+        aria-labelledby="deleteLeadModalTitle"
     >
 
         <div class="delete-modal-icon">
@@ -713,15 +838,15 @@
 
         <div class="delete-modal-content">
 
-            <h3 id="deleteContactModalTitle">
-                Delete Contact?
+            <h3 id="deleteLeadModalTitle">
+                Delete Lead?
             </h3>
 
 
             <p>
 
                 Are you sure you want to delete
-                <strong id="deleteContactName"></strong>?
+                <strong id="deleteLeadName"></strong>?
 
             </p>
 
@@ -738,7 +863,7 @@
             <button
                 type="button"
                 class="btn"
-                id="cancelDeleteContact"
+                id="cancelDeleteLead"
             >
                 Cancel
             </button>
@@ -747,9 +872,9 @@
             <button
                 type="button"
                 class="btn delete-confirm-button"
-                id="confirmDeleteContact"
+                id="confirmDeleteLead"
             >
-                Delete Contact
+                Delete Lead
             </button>
 
         </div>
@@ -761,7 +886,11 @@
 
 <style>
 
-.contact-filter-bar {
+/* =========================================================
+   LEAD FILTER BAR
+========================================================= */
+
+.lead-filter-bar {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -769,13 +898,18 @@
     margin-bottom: 18px;
 }
 
-.contact-search {
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.lead-search {
     position: relative;
     flex: 1 1 260px;
     min-width: 220px;
 }
 
-.contact-search input {
+.lead-search input {
     width: 100%;
     height: 40px;
     box-sizing: border-box;
@@ -795,7 +929,7 @@
         box-shadow .18s ease;
 }
 
-.contact-search input:focus {
+.lead-search input:focus {
     outline: none;
 
     border-color: #2ba7a0;
@@ -804,7 +938,7 @@
         0 0 0 3px rgba(43, 167, 160, .08);
 }
 
-.contact-search-icon {
+.lead-search-icon {
     position: absolute;
 
     left: 13px;
@@ -819,7 +953,7 @@
     pointer-events: none;
 }
 
-.contact-search-clear {
+.lead-search-clear {
     position: absolute;
 
     right: 10px;
@@ -843,16 +977,21 @@
     font-size: 18px;
 }
 
-.contact-search-clear:hover {
+.lead-search-clear:hover {
     background: #edf1f5;
     color: #17284f;
 }
 
-.contact-filter-select {
+
+/* =========================================================
+   FILTER SELECT
+========================================================= */
+
+.lead-filter-select {
     position: relative;
 }
 
-.contact-filter-select select {
+.lead-filter-select select {
     min-width: 145px;
     height: 40px;
 
@@ -876,11 +1015,11 @@
         box-shadow .18s ease;
 }
 
-.contact-filter-select select:hover {
+.lead-filter-select select:hover {
     border-color: #b7c0cf;
 }
 
-.contact-filter-select select:focus {
+.lead-filter-select select:focus {
     outline: none;
 
     border-color: #2ba7a0;
@@ -893,12 +1032,17 @@
     min-width: 145px;
 }
 
-.contact-filter-button {
+
+/* =========================================================
+   FILTER BUTTONS
+========================================================= */
+
+.lead-filter-button {
     height: 40px;
     white-space: nowrap;
 }
 
-.contact-reset-button {
+.lead-reset-button {
     height: 40px;
 
     display: inline-flex;
@@ -907,7 +1051,12 @@
     white-space: nowrap;
 }
 
-.contact-filter-summary {
+
+/* =========================================================
+   FILTER SUMMARY
+========================================================= */
+
+.lead-filter-summary {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -931,25 +1080,26 @@
     font-size: 11px;
 }
 
-.contact-name-link {
+
+/* =========================================================
+   LEAD CODE
+========================================================= */
+
+.lead-code-link {
     color: inherit;
     text-decoration: none;
 }
 
-.contact-name-link:hover {
+.lead-code-link:hover {
     color: #223a70;
 }
 
-.customer-link {
-    color: inherit;
-    text-decoration: none;
-}
 
-.customer-link:hover {
-    color: #223a70;
-}
+/* =========================================================
+   SOURCE
+========================================================= */
 
-.contact-type-badge {
+.lead-source-badge {
     display: inline-flex;
 
     align-items: center;
@@ -967,10 +1117,93 @@
     font-weight: 600;
 }
 
-.status-badge.status-primary {
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.lead-status-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 4px 9px;
+
+    border-radius: 6px;
+
+    background: #eef2f6;
+
+    color: #4d5b70;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS VARIANTS
+========================================================= */
+
+.lead-status-new {
+    background: #edf3ff;
+    color: #315caa;
+}
+
+.lead-status-open {
+    background: #eaf7f3;
+    color: #167d70;
+}
+
+.lead-status-contacted {
+    background: #fff6e5;
+    color: #a66b12;
+}
+
+.lead-status-qualified {
     background: #e8f5f0;
     color: #16805f;
 }
+
+.lead-status-unqualified {
+    background: #f3f0f0;
+    color: #7a6262;
+}
+
+.lead-status-closed {
+    background: #f1f1f1;
+    color: #707070;
+}
+
+
+/* =========================================================
+   UNASSIGNED
+========================================================= */
+
+.unassigned-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 4px 8px;
+
+    border-radius: 6px;
+
+    background: #fff4e5;
+
+    color: #9a6a18;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DELETE MODAL
+========================================================= */
 
 .delete-modal {
     position: fixed;
@@ -1101,17 +1334,22 @@
     border-color: #b83f3f !important;
 }
 
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width: 1100px) {
 
-    .contact-search {
+    .lead-search {
         flex: 1 1 100%;
     }
 
-    .contact-filter-select {
+    .lead-filter-select {
         flex: 1 1 150px;
     }
 
-    .contact-filter-select select {
+    .lead-filter-select select {
         width: 100%;
     }
 
@@ -1120,20 +1358,20 @@
 
 @media (max-width: 600px) {
 
-    .contact-filter-bar {
+    .lead-filter-bar {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .contact-search,
-    .contact-filter-select,
-    .contact-filter-button,
-    .contact-reset-button {
+    .lead-search,
+    .lead-filter-select,
+    .lead-filter-button,
+    .lead-reset-button {
         width: 100%;
     }
 
-    .contact-filter-button,
-    .contact-reset-button {
+    .lead-filter-button,
+    .lead-reset-button {
         justify-content: center;
     }
 
@@ -1157,124 +1395,170 @@
 
 <script>
 
-document.addEventListener('DOMContentLoaded', function () {
+/* =========================================================
+   DELETE CONFIRMATION
+========================================================= */
 
-    const modal =
-        document.getElementById('deleteContactModal');
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-    const contactName =
-        document.getElementById('deleteContactName');
-
-    const confirmButton =
-        document.getElementById('confirmDeleteContact');
-
-    const cancelButton =
-        document.getElementById('cancelDeleteContact');
-
-    const closeOverlay =
-        document.querySelector('[data-close-delete-modal]');
-
-    let deleteForm = null;
+        const modal =
+            document.getElementById(
+                'deleteLeadModal'
+            );
 
 
-    function openDeleteModal(form) {
-
-        deleteForm = form;
-
-        const name =
-            form.dataset.contactName || 'this contact';
-
-        contactName.textContent = name;
-
-        modal.classList.add('open');
-
-        modal.setAttribute(
-            'aria-hidden',
-            'false'
-        );
-
-        document.body.style.overflow = 'hidden';
-
-    }
+        const leadName =
+            document.getElementById(
+                'deleteLeadName'
+            );
 
 
-    function closeDeleteModal() {
-
-        modal.classList.remove('open');
-
-        modal.setAttribute(
-            'aria-hidden',
-            'true'
-        );
-
-        document.body.style.overflow = '';
-
-        deleteForm = null;
-
-    }
+        const confirmButton =
+            document.getElementById(
+                'confirmDeleteLead'
+            );
 
 
-    document
-        .querySelectorAll('.delete-form')
-        .forEach(function (form) {
+        const cancelButton =
+            document.getElementById(
+                'cancelDeleteLead'
+            );
 
-            form.addEventListener(
-                'submit',
-                function (event) {
 
-                    event.preventDefault();
+        const closeOverlay =
+            document.querySelector(
+                '[data-close-delete-modal]'
+            );
 
-                    openDeleteModal(form);
+
+        let deleteForm = null;
+
+
+        function openDeleteModal(form) {
+
+            deleteForm = form;
+
+
+            const name =
+                form.dataset.leadName ||
+                'this lead';
+
+
+            leadName.textContent =
+                name;
+
+
+            modal.classList.add(
+                'open'
+            );
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+
+
+            document.body.style.overflow =
+                'hidden';
+
+        }
+
+
+        function closeDeleteModal() {
+
+            modal.classList.remove(
+                'open'
+            );
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+
+            document.body.style.overflow =
+                '';
+
+
+            deleteForm = null;
+
+        }
+
+
+        document
+            .querySelectorAll(
+                '.delete-form'
+            )
+            .forEach(
+                function (form) {
+
+                    form.addEventListener(
+                        'submit',
+                        function (event) {
+
+                            event.preventDefault();
+
+                            openDeleteModal(
+                                form
+                            );
+
+                        }
+                    );
 
                 }
             );
 
-        });
 
+        confirmButton.addEventListener(
+            'click',
+            function () {
 
-    confirmButton.addEventListener(
-        'click',
-        function () {
+                if (deleteForm) {
 
-            if (deleteForm) {
+                    deleteForm.submit();
 
-                deleteForm.submit();
-
-            }
-
-        }
-    );
-
-
-    cancelButton.addEventListener(
-        'click',
-        closeDeleteModal
-    );
-
-
-    closeOverlay.addEventListener(
-        'click',
-        closeDeleteModal
-    );
-
-
-    document.addEventListener(
-        'keydown',
-        function (event) {
-
-            if (
-                event.key === 'Escape' &&
-                modal.classList.contains('open')
-            ) {
-
-                closeDeleteModal();
+                }
 
             }
+        );
 
-        }
-    );
 
-});
+        cancelButton.addEventListener(
+            'click',
+            closeDeleteModal
+        );
+
+
+        closeOverlay.addEventListener(
+            'click',
+            closeDeleteModal
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Escape' &&
+                    modal.classList.contains(
+                        'open'
+                    )
+                ) {
+
+                    closeDeleteModal();
+
+                }
+
+            }
+        );
+
+    }
+);
 
 </script>
 
