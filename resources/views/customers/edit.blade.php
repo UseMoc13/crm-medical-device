@@ -1032,10 +1032,10 @@
     ========================================================= */
 
     const currentProvince =
-        @json(old('province', $customer - > province));
+        @json(old('province', $customer->province));
 
     const currentCity =
-        @json(old('city', $customer - > city));
+        @json(old('city', $customer->city));
 
 
     /* =========================================================

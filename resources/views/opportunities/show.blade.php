@@ -21,16 +21,14 @@
 
         <a
             href="{{ route('opportunities.index') }}"
-            class="btn"
-        >
+            class="btn">
             ← Back
         </a>
 
 
         <a
             href="{{ route('opportunities.edit', $opportunity) }}"
-            class="btn primary"
-        >
+            class="btn primary">
             Edit Opportunity
         </a>
 
@@ -38,18 +36,24 @@
 
 </div>
 
-
 @if(session('success'))
 
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
+<div class="alert success">
+    {{ session('success') }}
+</div>
 
 @endif
 
+@if(session('error'))
+
+<div class="alert error">
+    {{ session('error') }}
+</div>
+
+@endif
 
 {{-- =========================================================
-     OPPORTUNITY HEADER
+OPPORTUNITY HEADER
 ========================================================= --}}
 
 <div class="card opportunity-header-card">
@@ -84,18 +88,19 @@
 
         <div class="header-statuses">
 
-            <span
-                class="status-badge stage"
-            >
+            <span class="status-badge stage">
+
                 {{ $opportunity->stage }}
+
             </span>
 
 
             <span
                 class="status-badge
-                {{ strtolower($opportunity->status) }}"
-            >
+            {{ strtolower($opportunity->status) }}">
+
                 {{ $opportunity->status }}
+
             </span>
 
         </div>
@@ -104,17 +109,7 @@
 
 </div>
 
-
-{{-- =========================================================
-     MAIN INFORMATION
-========================================================= --}}
-
 <div class="detail-grid">
-
-
-    {{-- =====================================================
-         CUSTOMER
-    ====================================================== --}}
 
     <div class="card">
 
@@ -137,64 +132,64 @@
 
             @if($opportunity->customer)
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Customer
-                    </span>
+                <span class="detail-label">
+                    Customer
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->customer->customer_name }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->customer->customer_name }}
+                </span>
 
-                </div>
-
-
-                <div class="detail-row">
-
-                    <span class="detail-label">
-                        Customer Code
-                    </span>
-
-                    <span class="detail-value">
-                        {{ $opportunity->customer->customer_code ?? '-' }}
-                    </span>
-
-                </div>
+            </div>
 
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Phone
-                    </span>
+                <span class="detail-label">
+                    Customer Code
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->customer->phone ?? '-' }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->customer->customer_code ?? '-' }}
+                </span>
 
-                </div>
+            </div>
 
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Email
-                    </span>
+                <span class="detail-label">
+                    Phone
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->customer->email ?? '-' }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->customer->phone ?? '-' }}
+                </span>
 
-                </div>
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Email
+                </span>
+
+                <span class="detail-value">
+                    {{ $opportunity->customer->email ?? '-' }}
+                </span>
+
+            </div>
 
             @else
 
-                <div class="empty">
+            <div class="empty">
 
-                    Customer information is unavailable.
+                Customer information is unavailable.
 
-                </div>
+            </div>
 
             @endif
 
@@ -204,8 +199,8 @@
 
 
     {{-- =====================================================
-         LEAD
-    ====================================================== --}}
+     LEAD INFORMATION
+====================================================== --}}
 
     <div class="card">
 
@@ -228,51 +223,51 @@
 
             @if($opportunity->lead)
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Lead Code
-                    </span>
+                <span class="detail-label">
+                    Lead Code
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->lead->lead_code }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->lead->lead_code }}
+                </span>
 
-                </div>
-
-
-                <div class="detail-row">
-
-                    <span class="detail-label">
-                        Company
-                    </span>
-
-                    <span class="detail-value">
-                        {{ $opportunity->lead->company_name ?? '-' }}
-                    </span>
-
-                </div>
+            </div>
 
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Contact
-                    </span>
+                <span class="detail-label">
+                    Company
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->lead->contact_name ?? '-' }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->lead->company_name ?? '-' }}
+                </span>
 
-                </div>
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Contact
+                </span>
+
+                <span class="detail-value">
+                    {{ $opportunity->lead->contact_name ?? '-' }}
+                </span>
+
+            </div>
 
             @else
 
-                <div class="empty">
+            <div class="empty">
 
-                    This opportunity is not linked to a lead.
+                This opportunity is not linked to a lead.
 
-                </div>
+            </div>
 
             @endif
 
@@ -282,8 +277,8 @@
 
 
     {{-- =====================================================
-         SALES INFORMATION
-    ====================================================== --}}
+     SALES INFORMATION
+====================================================== --}}
 
     <div class="card">
 
@@ -306,38 +301,38 @@
 
             @if($opportunity->user)
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Sales
-                    </span>
+                <span class="detail-label">
+                    Sales
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->user->name }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->user->name }}
+                </span>
 
-                </div>
+            </div>
 
 
-                <div class="detail-row">
+            <div class="detail-row">
 
-                    <span class="detail-label">
-                        Email
-                    </span>
+                <span class="detail-label">
+                    Email
+                </span>
 
-                    <span class="detail-value">
-                        {{ $opportunity->user->email ?? '-' }}
-                    </span>
+                <span class="detail-value">
+                    {{ $opportunity->user->email ?? '-' }}
+                </span>
 
-                </div>
+            </div>
 
             @else
 
-                <div class="empty">
+            <div class="empty">
 
-                    Sales information is unavailable.
+                Sales information is unavailable.
 
-                </div>
+            </div>
 
             @endif
 
@@ -347,8 +342,8 @@
 
 
     {{-- =====================================================
-         OPPORTUNITY VALUE
-    ====================================================== --}}
+     OPPORTUNITY SUMMARY
+====================================================== --}}
 
     <div class="card">
 
@@ -379,17 +374,17 @@
 
                     @if($opportunity->estimated_value !== null)
 
-                        Rp
-                        {{ number_format(
-                            (float) $opportunity->estimated_value,
-                            0,
-                            ',',
-                            '.'
-                        ) }}
+                    Rp
+                    {{ number_format(
+                        (float) $opportunity->estimated_value,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
 
                     @else
 
-                        -
+                    -
 
                     @endif
 
@@ -408,11 +403,11 @@
 
                     @if($opportunity->expected_close_date)
 
-                        {{ $opportunity->expected_close_date->format('d M Y') }}
+                    {{ $opportunity->expected_close_date->format('d M Y') }}
 
                     @else
 
-                        -
+                    -
 
                     @endif
 
@@ -456,11 +451,6 @@
 
 </div>
 
-
-{{-- =========================================================
-     DESCRIPTION
-========================================================= --}}
-
 <div class="card">
 
     <div class="card-head">
@@ -482,30 +472,25 @@
 
         @if($opportunity->description)
 
-            <div class="description-content">
+        <div class="description-content">
 
-                {!! nl2br(e($opportunity->description)) !!}
+            {!! nl2br(e($opportunity->description)) !!}
 
-            </div>
+        </div>
 
         @else
 
-            <div class="empty">
+        <div class="empty">
 
-                No description has been provided.
+            No description has been provided.
 
-            </div>
+        </div>
 
         @endif
 
     </div>
 
 </div>
-
-
-{{-- =========================================================
-     OPPORTUNITY ITEMS
-========================================================= --}}
 
 <div class="card">
 
@@ -522,7 +507,7 @@
         </div>
 
 
-        <div>
+        <div class="items-actions">
 
             <span class="item-count">
 
@@ -531,6 +516,13 @@
                 {{ $opportunity->items->count() === 1 ? 'item' : 'items' }}
 
             </span>
+
+
+            <a
+                href="{{ route('opportunities.items.create', $opportunity) }}"
+                class="btn-add-item">
+                + Add Item
+            </a>
 
         </div>
 
@@ -541,100 +533,113 @@
 
         @if($opportunity->items->count())
 
-            <table>
+        <table>
 
-                <thead>
+            <thead>
 
-                    <tr>
+                <tr>
 
-                        <th>
-                            Product
-                        </th>
+                    <th>
+                        Product
+                    </th>
 
-                        <th>
-                            Quantity
-                        </th>
+                    <th>
+                        Quantity
+                    </th>
 
-                        <th>
-                            Estimated Price
-                        </th>
+                    <th>
+                        Estimated Price
+                    </th>
 
-                        <th>
-                            Subtotal
-                        </th>
+                    <th>
+                        Subtotal
+                    </th>
 
-                        <th>
-                            Notes
-                        </th>
+                    <th>
+                        Notes
+                    </th>
 
-                    </tr>
+                </tr>
 
-                </thead>
-
-
-                <tbody>
-
-                    @foreach($opportunity->items as $item)
-
-                        <tr>
-
-                            <td>
-
-                                @if($item->product)
-
-                                    <div class="product-name">
-
-                                        {{ $item->product->product_name }}
-
-                                    </div>
-
-                                @else
-
-                                    <span class="muted">
-                                        Product unavailable
-                                    </span>
-
-                                @endif
-
-                            </td>
+            </thead>
 
 
-                            <td>
+            <tbody>
 
-                                {{ number_format(
-                                    $item->quantity
+                @foreach($opportunity->items as $item)
+
+                <tr>
+
+                    <td>
+
+                        @if($item->product)
+
+                        <div class="product-name">
+
+                            {{ $item->product->product_name }}
+
+                        </div>
+
+
+                        @if($item->product->product_code)
+
+                        <div class="product-code">
+
+                            {{ $item->product->product_code }}
+
+                        </div>
+
+                        @endif
+
+                        @else
+
+                        <span class="muted">
+                            Product unavailable
+                        </span>
+
+                        @endif
+
+                    </td>
+
+
+                    <td>
+
+                        {{ number_format(
+                                (int) $item->quantity
+                            ) }}
+
+                    </td>
+
+
+                    <td>
+
+                        @if($item->estimated_price !== null)
+
+                        Rp
+                        {{ number_format(
+                                    (float) $item->estimated_price,
+                                    0,
+                                    ',',
+                                    '.'
                                 ) }}
 
-                            </td>
+                        @else
+
+                        -
+
+                        @endif
+
+                    </td>
 
 
-                            <td>
+                    <td>
 
-                                @if($item->estimated_price !== null)
+                        @if($item->estimated_price !== null)
 
-                                    Rp
-                                    {{ number_format(
-                                        (float) $item->estimated_price,
-                                        0,
-                                        ',',
-                                        '.'
-                                    ) }}
+                        <strong class="subtotal">
 
-                                @else
-
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-                            <td>
-
-                                @if($item->estimated_price !== null)
-
-                                    Rp
-                                    {{ number_format(
+                            Rp
+                            {{ number_format(
                                         (float) $item->estimated_price *
                                         (int) $item->quantity,
                                         0,
@@ -642,51 +647,51 @@
                                         '.'
                                     ) }}
 
-                                @else
+                        </strong>
 
-                                    -
+                        @else
 
-                                @endif
+                        -
 
-                            </td>
+                        @endif
+
+                    </td>
 
 
-                            <td>
+                    <td>
 
-                                {{ $item->notes ?: '-' }}
+                        {{ $item->notes ?: '-' }}
 
-                            </td>
+                    </td>
 
-                        </tr>
+                </tr>
 
-                    @endforeach
+                @endforeach
 
-                </tbody>
+            </tbody>
 
-            </table>
+        </table>
 
         @else
 
-            <div class="empty">
+        <div class="empty items-empty">
 
-                <strong>No opportunity items yet.</strong>
+            <strong>
+                No opportunity items yet.
+            </strong>
 
-                <span>
-                    Products can be added to this opportunity later.
-                </span>
+            <span>
+                Add products to this opportunity using the
+                <strong>+ Add Item</strong> button above.
+            </span>
 
-            </div>
+        </div>
 
         @endif
 
     </div>
 
 </div>
-
-
-{{-- =========================================================
-     TIMESTAMPS
-========================================================= --}}
 
 <div class="card metadata-card">
 
@@ -703,7 +708,7 @@
                 <span class="metadata-value">
 
                     {{ optional($opportunity->created_at)
-                        ->format('d M Y H:i:s') }}
+                    ->format('d M Y H:i:s') }}
 
                 </span>
 
@@ -719,7 +724,7 @@
                 <span class="metadata-value">
 
                     {{ optional($opportunity->updated_at)
-                        ->format('d M Y H:i:s') }}
+                    ->format('d M Y H:i:s') }}
 
                 </span>
 
@@ -731,329 +736,437 @@
 
 </div>
 
-
 <style>
-
-/* =========================================================
+    /* =========================================================
    OPPORTUNITY HEADER
 ========================================================= */
 
-.opportunity-header-card {
-    margin-bottom: 20px;
-}
-
-.opportunity-header {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 20px;
-
-    padding: 24px;
-}
-
-.opportunity-code {
-    margin-bottom: 6px;
-
-    color: #2ba7a0;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    letter-spacing: .04em;
-}
-
-.opportunity-header h2 {
-    margin: 0;
-
-    color: #17284f;
-
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.opportunity-meta {
-    margin-top: 7px;
-
-    color: #8a94a6;
-
-    font-size: 11px;
-}
-
-.header-statuses {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    flex-shrink: 0;
-}
-
-
-/* =========================================================
-   STATUS BADGES
-========================================================= */
-
-.status-badge {
-    display: inline-flex;
-
-    align-items: center;
-
-    min-height: 27px;
-
-    padding: 0 10px;
-
-    border-radius: 999px;
-
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.status-badge.stage {
-    background: #edf3fb;
-
-    color: #31527e;
-}
-
-.status-badge.open {
-    background: #edf7f3;
-
-    color: #16815f;
-}
-
-.status-badge.active {
-    background: #eaf7f7;
-
-    color: #238a88;
-}
-
-.status-badge.won {
-    background: #eaf7ef;
-
-    color: #16815f;
-}
-
-.status-badge.lost {
-    background: #fceeee;
-
-    color: #bd4d4d;
-}
-
-.status-badge.closed {
-    background: #eef0f4;
-
-    color: #687284;
-}
-
-
-/* =========================================================
-   DETAIL GRID
-========================================================= */
-
-.detail-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 20px;
-
-    margin-bottom: 20px;
-}
-
-
-/* =========================================================
-   DETAIL ROW
-========================================================= */
-
-.detail-row {
-    display: flex;
-
-    align-items: flex-start;
-    justify-content: space-between;
-
-    gap: 20px;
-
-    padding: 12px 0;
-
-    border-bottom: 1px solid #edf0f4;
-}
-
-.detail-row:first-child {
-    padding-top: 0;
-}
-
-.detail-row:last-child {
-    padding-bottom: 0;
-
-    border-bottom: none;
-}
-
-.detail-label {
-    color: #8a94a6;
-
-    font-size: 11px;
-
-    flex-shrink: 0;
-}
-
-.detail-value {
-    color: #17284f;
-
-    font-size: 12px;
-    font-weight: 600;
-
-    text-align: right;
-
-    word-break: break-word;
-}
-
-.value-highlight {
-    color: #15966f;
-
-    font-size: 14px;
-}
-
-
-/* =========================================================
-   DESCRIPTION
-========================================================= */
-
-.description-content {
-    color: #46536a;
-
-    font-size: 13px;
-
-    line-height: 1.7;
-
-    white-space: normal;
-}
-
-
-/* =========================================================
-   ITEMS
-========================================================= */
-
-.item-count {
-    display: inline-flex;
-
-    align-items: center;
-
-    min-height: 26px;
-
-    padding: 0 9px;
-
-    border-radius: 999px;
-
-    background: #f1f4f8;
-
-    color: #687284;
-
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.product-name {
-    color: #17284f;
-
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.table-wrap table {
-    width: 100%;
-}
-
-.table-wrap th {
-    white-space: nowrap;
-}
-
-.table-wrap td {
-    vertical-align: top;
-}
-
-
-/* =========================================================
-   METADATA
-========================================================= */
-
-.metadata-card {
-    margin-bottom: 10px;
-}
-
-.metadata-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 30px;
-}
-
-.metadata-grid > div {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 5px;
-}
-
-.metadata-label {
-    color: #8a94a6;
-
-    font-size: 10px;
-}
-
-.metadata-value {
-    color: #46536a;
-
-    font-size: 11px;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 800px) {
+    .opportunity-header-card {
+        margin-bottom: 20px;
+    }
 
     .opportunity-header {
-        align-items: flex-start;
+        display: flex;
 
-        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        padding: 24px;
+    }
+
+    .opportunity-code {
+        margin-bottom: 6px;
+
+        color: #2ba7a0;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        letter-spacing: .04em;
+    }
+
+    .opportunity-header h2 {
+        margin: 0;
+
+        color: #17284f;
+
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .opportunity-meta {
+        margin-top: 7px;
+
+        color: #8a94a6;
+
+        font-size: 11px;
     }
 
     .header-statuses {
-        width: 100%;
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        flex-shrink: 0;
     }
+
+
+    /* =========================================================
+   STATUS BADGES
+========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        min-height: 27px;
+
+        padding: 0 10px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-badge.stage {
+        background: #edf3fb;
+
+        color: #31527e;
+    }
+
+    .status-badge.open {
+        background: #edf7f3;
+
+        color: #16815f;
+    }
+
+    .status-badge.active {
+        background: #eaf7f7;
+
+        color: #238a88;
+    }
+
+    .status-badge.won {
+        background: #eaf7ef;
+
+        color: #16815f;
+    }
+
+    .status-badge.lost {
+        background: #fceeee;
+
+        color: #bd4d4d;
+    }
+
+    .status-badge.closed {
+        background: #eef0f4;
+
+        color: #687284;
+    }
+
+    .status-badge.pending {
+        background: #fff5e8;
+
+        color: #b87928;
+    }
+
+
+    /* =========================================================
+   DETAIL GRID
+========================================================= */
 
     .detail-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 20px;
+
+        margin-bottom: 20px;
     }
 
-}
 
-
-@media (max-width: 600px) {
-
-    .metadata-grid {
-        grid-template-columns: 1fr;
-    }
+    /* =========================================================
+   DETAIL ROW
+========================================================= */
 
     .detail-row {
+        display: flex;
+
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        padding: 12px 0;
+
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .detail-row:first-child {
+        padding-top: 0;
+    }
+
+    .detail-row:last-child {
+        padding-bottom: 0;
+
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #8a94a6;
+
+        font-size: 11px;
+
+        flex-shrink: 0;
+    }
+
+    .detail-value {
+        color: #17284f;
+
+        font-size: 12px;
+        font-weight: 600;
+
+        text-align: right;
+
+        word-break: break-word;
+    }
+
+    .value-highlight {
+        color: #15966f;
+
+        font-size: 14px;
+    }
+
+
+    /* =========================================================
+   DESCRIPTION
+========================================================= */
+
+    .description-content {
+        color: #46536a;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+
+        white-space: normal;
+    }
+
+
+    /* =========================================================
+   OPPORTUNITY ITEMS
+========================================================= */
+
+    .items-actions {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        flex-shrink: 0;
+    }
+
+    .item-count {
+        display: inline-flex;
+
+        align-items: center;
+
+        min-height: 27px;
+
+        padding: 0 9px;
+
+        border-radius: 999px;
+
+        background: #f1f4f8;
+
+        color: #687284;
+
+        font-size: 11px;
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+    .btn-add-item {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-height: 27px;
+
+        padding: 0 11px;
+
+        border-radius: 7px;
+
+        background: #15966f;
+
+        border: 1px solid #15966f;
+
+        color: #ffffff;
+
+        text-decoration: none;
+
+        font-size: 11px;
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        transition:
+            background .15s ease,
+            border-color .15s ease;
+    }
+
+    .btn-add-item:hover {
+        background: #127f5d;
+
+        border-color: #127f5d;
+
+        color: #ffffff;
+    }
+
+    .product-name {
+        color: #17284f;
+
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .product-code {
+        margin-top: 3px;
+
+        color: #8a94a6;
+
+        font-size: 10px;
+
+        font-weight: 500;
+    }
+
+    .subtotal {
+        color: #15966f;
+
+        font-weight: 700;
+    }
+
+    .items-empty {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        flex-direction: column;
+
+        gap: 5px;
+
+        min-height: 110px;
+
+        text-align: center;
+    }
+
+
+    /* =========================================================
+   TABLE
+========================================================= */
+
+    .table-wrap {
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+    .table-wrap table {
+        width: 100%;
+
+        border-collapse: collapse;
+    }
+
+    .table-wrap th {
+        white-space: nowrap;
+    }
+
+    .table-wrap td {
+        vertical-align: top;
+    }
+
+
+    /* =========================================================
+   METADATA
+========================================================= */
+
+    .metadata-card {
+        margin-bottom: 10px;
+    }
+
+    .metadata-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 30px;
+    }
+
+    .metadata-grid>div {
+        display: flex;
+
         flex-direction: column;
 
         gap: 5px;
     }
 
-    .detail-value {
-        text-align: left;
+    .metadata-label {
+        color: #8a94a6;
+
+        font-size: 10px;
     }
 
-}
+    .metadata-value {
+        color: #46536a;
 
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+    @media (max-width: 800px) {
+
+        .opportunity-header {
+            align-items: flex-start;
+
+            flex-direction: column;
+        }
+
+        .header-statuses {
+            width: 100%;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+
+    @media (max-width: 650px) {
+
+        .items-actions {
+            align-items: flex-end;
+
+            flex-direction: column;
+        }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+        .metadata-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-row {
+            flex-direction: column;
+
+            gap: 5px;
+        }
+
+        .detail-value {
+            text-align: left;
+        }
+
+    }
 </style>
 
 @endsection

@@ -12,8 +12,6 @@ class OpportunityItem extends Model
 
     public $incrementing = false;
 
-    public $timestamps = false;
-
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -29,6 +27,8 @@ class OpportunityItem extends Model
         return [
             'quantity' => 'integer',
             'estimated_price' => 'decimal:2',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
