@@ -9,6 +9,8 @@ use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OpportunityItemController;
+use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\ProductController;
 
 Route::resource('roles', RoleController::class);
 
@@ -52,6 +54,16 @@ Route::resource(
 );
 
 Route::resource(
+    'quotations',
+    QuotationController::class
+);
+
+Route::resource(
+    'products',
+    ProductController::class
+);
+
+Route::resource(
     'users',
     UserController::class
 );
@@ -65,3 +77,18 @@ Route::post(
     '/opportunities/{opportunity}/items',
     [OpportunityItemController::class, 'store']
 )->name('opportunities.items.store');
+
+Route::get(
+    '/opportunities/{opportunity}/items/{item}/edit',
+    [OpportunityItemController::class, 'edit']
+)->name('opportunities.items.edit');
+
+Route::put(
+    '/opportunities/{opportunity}/items/{item}',
+    [OpportunityItemController::class, 'update']
+)->name('opportunities.items.update');
+
+Route::delete(
+    '/opportunities/{opportunity}/items/{item}',
+    [OpportunityItemController::class, 'destroy']
+)->name('opportunities.items.destroy');

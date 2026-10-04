@@ -143,7 +143,11 @@
             <span class="nav-text">Opportunities</span>
         </a>
 
-        <a href="#" data-label="Quotations">
+        <a
+            href="{{ route('quotations.index') }}"
+            class="{{ request()->routeIs('quotations.*') ? 'active' : '' }}"
+            data-label="quotations">
+
             <span class="ico">▤</span>
             <span class="nav-text">Quotations</span>
         </a>
@@ -167,7 +171,11 @@
             Product & Inventory
         </div>
 
-        <a href="#" data-label="Products">
+        <a 
+            href="{{ route('products.index') }}"
+            class="{{ request()->routeIs('products.*') ? 'active' : '' }}"
+            data-label="products">
+
             <span class="ico">▦</span>
             <span class="nav-text">Products</span>
         </a>
