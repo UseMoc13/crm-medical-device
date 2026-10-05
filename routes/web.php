@@ -11,6 +11,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\OpportunityItemController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductCategoryController;
+
 
 Route::resource('roles', RoleController::class);
 
@@ -56,6 +58,11 @@ Route::resource(
 Route::resource(
     'quotations',
     QuotationController::class
+);
+
+Route::resource(
+    'product-categories',
+    ProductCategoryController::class
 );
 
 Route::resource(

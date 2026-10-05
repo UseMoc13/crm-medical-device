@@ -28,6 +28,11 @@ class ProductCategory extends Model
         ];
     }
 
+    public function getRouteKeyName()
+    {
+        return 'category_id';
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(

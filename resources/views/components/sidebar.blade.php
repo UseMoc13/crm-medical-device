@@ -180,7 +180,11 @@
             <span class="nav-text">Products</span>
         </a>
 
-        <a href="#" data-label="Categories">
+        <a 
+            href="{{ route('product-categories.index') }}"
+            class="{{ request()->routeIs('product-categories.*') ? 'active' : '' }}"
+            data-label="categories">
+
             <span class="ico">▤</span>
             <span class="nav-text">Categories</span>
         </a>

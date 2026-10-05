@@ -1,29 +1,38 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductCategoryController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    /**
+     * Display a listing of product categories.
+     */
+    public function index(Request $request)
     {
         $query = ProductCategory::query();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('search')) {
+
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
+
                 $q->where(
                     'category_name',
                     'ILIKE',
                     "%{$search}%"
                 )
+
                 ->orWhere(
                     'description',
                     'ILIKE',
@@ -32,29 +41,95 @@ class ProductCategoryController extends Controller
             });
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sorting
+        |--------------------------------------------------------------------------
+        */
+
+        $allowedSorts = [
+            'category_name',
+            'created_at',
+            'updated_at',
+        ];
+
+        $sort = $request->get(
+            'sort',
+            'created_at'
+        );
+
+        $direction = $request->get(
+            'direction',
+            'desc'
+        );
+
+
+        if (!in_array(
+            $sort,
+            $allowedSorts
+        )) {
+
+            $sort = 'created_at';
+        }
+
+
+        if (!in_array(
+            $direction,
+            ['asc', 'desc']
+        )) {
+
+            $direction = 'desc';
+        }
+
+
+        $query->orderBy(
+            $sort,
+            $direction
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+
         $categories = $query
-            ->orderBy('category_name')
-            ->paginate(
-                min(
-                    max(
-                        (int) $request->get('per_page', 10),
-                        1
-                    ),
-                    100
-                )
-            )
+            ->withCount('products')
+            ->paginate(10)
             ->withQueryString();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product categories retrieved successfully.',
-            'data' => $categories,
-        ]);
+
+        return view(
+            'product-categories.index',
+            compact(
+                'categories',
+                'sort',
+                'direction'
+            )
+        );
     }
 
-    public function store(Request $request): JsonResponse
+
+    /**
+     * Show create category form.
+     */
+    public function create()
+    {
+        return view(
+            'product-categories.create'
+        );
+    }
+
+
+    /**
+     * Store a newly created category.
+     */
+    public function store(Request $request)
     {
         $validated = $request->validate([
+
             'category_name' => [
                 'required',
                 'string',
@@ -66,40 +141,83 @@ class ProductCategoryController extends Controller
                 'nullable',
                 'string',
             ],
+
         ]);
 
-        $validated['category_id'] = (string) Str::uuid();
 
-        $category = ProductCategory::create($validated);
+        ProductCategory::create(
+            $validated
+        );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product category created successfully.',
-            'data' => $category,
-        ], 201);
+
+        return redirect()
+            ->route('product-categories.index')
+            ->with(
+                'success',
+                'Product category berhasil ditambahkan.'
+            );
     }
 
+
+    /**
+     * Display the specified category.
+     */
     public function show(
         ProductCategory $productCategory
-    ): JsonResponse {
-        $productCategory->load('products');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Product category retrieved successfully.',
-            'data' => $productCategory,
+    )
+    {
+        $productCategory->load([
+            'products' => function ($query) {
+                $query
+                    ->with('brand')
+                    ->orderBy('product_name');
+            }
         ]);
+
+
+        return view(
+            'product-categories.show',
+            compact(
+                'productCategory'
+            )
+        );
     }
 
+
+    /**
+     * Show edit category form.
+     */
+    public function edit(
+        ProductCategory $productCategory
+    )
+    {
+        return view(
+            'product-categories.edit',
+            compact(
+                'productCategory'
+            )
+        );
+    }
+
+
+    /**
+     * Update the specified category.
+     */
     public function update(
         Request $request,
         ProductCategory $productCategory
-    ): JsonResponse {
+    )
+    {
         $validated = $request->validate([
+
             'category_name' => [
+
                 'required',
+
                 'string',
+
                 'max:100',
+
                 Rule::unique(
                     'product_categories',
                     'category_name'
@@ -107,31 +225,74 @@ class ProductCategoryController extends Controller
                     $productCategory->category_id,
                     'category_id'
                 ),
+
             ],
 
             'description' => [
                 'nullable',
                 'string',
             ],
+
         ]);
 
-        $productCategory->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product category updated successfully.',
-            'data' => $productCategory,
-        ]);
+        $productCategory->update(
+            $validated
+        );
+
+
+        return redirect()
+            ->route(
+                'product-categories.show',
+                $productCategory
+            )
+            ->with(
+                'success',
+                'Product category berhasil diperbarui.'
+            );
     }
 
+
+    /**
+     * Remove the specified category.
+     */
     public function destroy(
         ProductCategory $productCategory
-    ): JsonResponse {
+    )
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent deletion when category still has products
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $productCategory
+                ->products()
+                ->exists()
+        ) {
+
+            return redirect()
+                ->route(
+                    'product-categories.index'
+                )
+                ->with(
+                    'error',
+                    'Category tidak dapat dihapus karena masih digunakan oleh product.'
+                );
+        }
+
+
         $productCategory->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product category deleted successfully.',
-        ]);
+
+        return redirect()
+            ->route(
+                'product-categories.index'
+            )
+            ->with(
+                'success',
+                'Product category berhasil dihapus.'
+            );
     }
 }
