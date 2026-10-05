@@ -12,9 +12,12 @@ use App\Http\Controllers\OpportunityItemController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\BrandController;
 
 
 Route::resource('roles', RoleController::class);
+
+Route::resource('brands', BrandController::class);
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -69,6 +72,11 @@ Route::resource(
     'products',
     ProductController::class
 );
+
+Route::get(
+    '/brands',
+    [BrandController::class, 'index']
+)->name('brands.index');
 
 Route::resource(
     'users',

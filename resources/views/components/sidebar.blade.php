@@ -189,7 +189,11 @@
             <span class="nav-text">Categories</span>
         </a>
 
-        <a href="#" data-label="Brands">
+        <a 
+            href="{{ route('brands.index') }}"
+            class="{{ request()->routeIs('brands.*') ? 'active' : '' }}"
+            data-label="brands">
+
             <span class="ico">◆</span>
             <span class="nav-text">Brands</span>
         </a>
