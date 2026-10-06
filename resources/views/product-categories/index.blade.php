@@ -1,3 +1,4 @@
+```blade
 @extends('layouts.app')
 
 @section('title', 'Product Categories')
@@ -37,39 +38,22 @@
 
 @if(session('success'))
 
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
+<div class="alert success">
+
+    {{ session('success') }}
+
+</div>
 
 @endif
 
 
 @if(session('error'))
 
-    <div class="alert error">
-        {{ session('error') }}
-    </div>
+<div class="alert error">
 
-@endif
+    {{ session('error') }}
 
-
-@if($errors->any())
-
-    <div class="alert error">
-
-        <strong>Please fix the following errors:</strong>
-
-        <ul>
-
-            @foreach($errors->all() as $error)
-
-                <li>{{ $error }}</li>
-
-            @endforeach
-
-        </ul>
-
-    </div>
+</div>
 
 @endif
 
@@ -88,8 +72,13 @@
 
             <p>
                 {{ $categories->total() }}
-                categor{{ $categories->total() != 1 ? 'ies' : 'y' }}
-                available.
+
+                {{ $categories->total() == 1
+                    ? 'category'
+                    : 'categories'
+                }}
+
+                found
             </p>
 
         </div>
@@ -101,20 +90,24 @@
 
 
         {{-- =====================================================
-             SEARCH
+             FILTER BAR
         ====================================================== --}}
 
         <form
             method="GET"
             action="{{ route('product-categories.index') }}"
-            class="filter-bar"
+            class="category-filter-bar"
         >
 
-            <div class="search-box">
 
-                <span class="product-search-icon">
+            {{-- Search --}}
+
+            <div class="category-search">
+
+                <span class="category-search-icon">
                     ⌕
                 </span>
+
 
                 <input
                     type="text"
@@ -130,9 +123,12 @@
                     <a
                         href="{{ route(
                             'product-categories.index',
-                            request()->except('search')
+                            request()->except(
+                                'search',
+                                'page'
+                            )
                         ) }}"
-                        class="search-clear"
+                        class="category-search-clear"
                         title="Clear search"
                     >
                         ×
@@ -143,19 +139,23 @@
             </div>
 
 
+            {{-- Search Button --}}
+
             <button
                 type="submit"
-                class="btn"
+                class="btn category-filter-button"
             >
                 Search
             </button>
 
 
+            {{-- Reset --}}
+
             @if(request('search'))
 
                 <a
                     href="{{ route('product-categories.index') }}"
-                    class="btn"
+                    class="btn category-reset-button"
                 >
                     Reset
                 </a>
@@ -166,21 +166,23 @@
 
 
         {{-- =====================================================
-             ACTIVE FILTER
+             ACTIVE FILTER INFORMATION
         ====================================================== --}}
 
         @if(request('search'))
 
-            <div class="filter-summary">
+            <div class="category-filter-summary">
 
                 <span>
-                    Active filter:
+                    Showing filtered results
                 </span>
 
 
                 <span class="filter-chip">
+
                     Search:
-                    {{ request('search') }}
+                    "{{ request('search') }}"
+
                 </span>
 
             </div>
@@ -189,7 +191,7 @@
 
 
         {{-- =====================================================
-             TABLE
+             CATEGORY TABLE
         ====================================================== --}}
 
         <div class="table-wrap">
@@ -212,7 +214,7 @@
                             Created
                         </th>
 
-                        <th class="actions-column">
+                        <th>
                             Actions
                         </th>
 
@@ -225,157 +227,198 @@
 
                     @forelse($categories as $category)
 
-                        <tr>
+                    <tr>
 
-                            {{-- Category --}}
 
-                            <td>
+                        {{-- =================================================
+                             CATEGORY
+                        ================================================== --}}
+
+                        <td>
+
+                            <a
+                                href="{{ route(
+                                    'product-categories.show',
+                                    $category
+                                ) }}"
+                                class="category-name-link"
+                            >
+
+                                <strong>
+                                    {{ $category->category_name }}
+                                </strong>
+
+                            </a>
+
+
+                            <div class="category-id">
+
+                                ID:
+                                {{ $category->category_id }}
+
+                            </div>
+
+                        </td>
+
+
+                        {{-- =================================================
+                             PRODUCTS
+                        ================================================== --}}
+
+                        <td>
+
+                            @if(method_exists($category, 'products'))
+
+                                @php
+                                    $productCount =
+                                        $category->products()->count();
+                                @endphp
+
+
+                                @if($productCount > 0)
+
+                                    <span class="category-product-badge">
+
+                                        {{ $productCount }}
+
+                                        {{ $productCount == 1
+                                            ? 'Product'
+                                            : 'Products'
+                                        }}
+
+                                    </span>
+
+                                @else
+
+                                    <span class="category-product-badge empty">
+
+                                        No Products
+
+                                    </span>
+
+                                @endif
+
+                            @else
+
+                                <span class="muted">
+                                    -
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- =================================================
+                             CREATED
+                        ================================================== --}}
+
+                        <td>
+
+                            @if($category->created_at)
+
+                                {{ $category->created_at->format('d M Y') }}
+
+                            @else
+
+                                <span class="muted">
+                                    -
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- =================================================
+                             ACTIONS
+                        ================================================== --}}
+
+                        <td>
+
+                            <div class="table-actions">
+
+
+                                {{-- View --}}
 
                                 <a
                                     href="{{ route(
                                         'product-categories.show',
                                         $category
                                     ) }}"
-                                    class="primary-link"
+                                    class="action-btn view"
+                                    title="View Category"
+                                    aria-label="View Category"
                                 >
-                                    {{ $category->category_name }}
+                                    👁
                                 </a>
 
-                                <div class="secondary-text">
 
-                                    ID:
-                                    {{ $category->category_id }}
+                                {{-- Edit --}}
 
-                                </div>
-
-                            </td>
-
-
-                            {{-- Product Count --}}
-
-                            <td>
-
-                                @if(method_exists($category, 'products'))
-
-                                    <span class="count-badge">
-                                        {{ $category->products()->count() }}
-                                        product(s)
-                                    </span>
-
-                                @else
-
-                                    <span class="muted">
-                                        —
-                                    </span>
-
-                                @endif
-
-                            </td>
+                                <a
+                                    href="{{ route(
+                                        'product-categories.edit',
+                                        $category
+                                    ) }}"
+                                    class="action-btn edit"
+                                    title="Edit Category"
+                                    aria-label="Edit Category"
+                                >
+                                    ✎
+                                </a>
 
 
-                            {{-- Created --}}
-
-                            <td>
-
-                                @if($category->created_at)
-
-                                    <div>
-                                        {{ $category->created_at->format('d M Y') }}
-                                    </div>
-
-                                    <div class="secondary-text">
-                                        {{ $category->created_at->format('H:i') }}
-                                    </div>
-
-                                @else
-
-                                    <span class="muted">
-                                        —
-                                    </span>
-
-                                @endif
-
-                            </td>
-
-
-                            {{-- Actions --}}
-
-                            <td>
-
-                                <div class="table-actions">
-
-                                    <a
-                                        href="{{ route(
-                                            'product-categories.show',
-                                            $category
-                                        ) }}"
-                                        class="icon-btn"
-                                        title="View Category"
-                                    >
-                                        👁
-                                    </a>
-
-
-                                    <a
-                                        href="{{ route(
-                                            'product-categories.edit',
-                                            $category
-                                        ) }}"
-                                        class="icon-btn"
-                                        title="Edit Category"
-                                    >
-                                        ✎
-                                    </a>
-
-
-                                    <button
-                                        type="button"
-                                        class="icon-btn danger delete-category-button"
-                                        title="Delete Category"
-                                        data-category-id="{{ $category->category_id }}"
-                                        data-category-name="{{ $category->category_name }}"
-                                    >
-                                        🗑
-                                    </button>
-
-                                </div>
-
-
-                                {{-- Hidden Delete Form --}}
+                                {{-- Delete --}}
 
                                 <form
-                                    id="delete-form-{{ $category->category_id }}"
                                     action="{{ route(
                                         'product-categories.destroy',
                                         $category
                                     ) }}"
                                     method="POST"
-                                    style="display: none;"
+                                    class="delete-form"
+                                    data-category-name="{{ $category->category_name }}"
                                 >
 
                                     @csrf
 
                                     @method('DELETE')
 
+
+                                    <button
+                                        type="submit"
+                                        class="action-btn delete"
+                                        title="Delete Category"
+                                        aria-label="Delete Category"
+                                    >
+                                        🗑
+                                    </button>
+
                                 </form>
 
-                            </td>
+                            </div>
 
-                        </tr>
+                        </td>
+
+                    </tr>
+
 
                     @empty
 
-                        <tr>
+                    <tr>
 
-                            <td colspan="4">
+                        <td colspan="4">
 
-                                <div class="empty">
-                                    No product categories found.
-                                </div>
+                            <div class="empty">
 
-                            </td>
+                                No product categories found.
 
-                        </tr>
+                            </div>
+
+                        </td>
+
+                    </tr>
 
                     @endforelse
 
@@ -392,7 +435,7 @@
 
         @if($categories->hasPages())
 
-            <div class="pagination-wrap">
+            <div class="pagination">
 
                 {{ $categories->links() }}
 
@@ -406,7 +449,7 @@
 
 
 {{-- =========================================================
-     DELETE MODAL
+     DELETE CONFIRMATION MODAL
 ========================================================= --}}
 
 <div
@@ -450,7 +493,8 @@
 
 
             <span>
-                This action cannot be undone.
+                A category that is currently associated with products
+                may not be able to be deleted.
             </span>
 
         </div>
@@ -485,55 +529,84 @@
 <style>
 
 /* =========================================================
-   FILTER
+   CATEGORY FILTER BAR
 ========================================================= */
 
-.filter-bar {
+.category-filter-bar {
+
     display: flex;
+
     align-items: center;
-    flex-wrap: wrap;
+
     gap: 10px;
-    margin-bottom: 14px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 18px;
+
 }
 
-.search-box {
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.category-search {
+
     position: relative;
-    flex: 1;
-    min-width: 260px;
+
+    flex: 1 1 300px;
+
+    min-width: 240px;
+
 }
 
-.search-box input {
+
+.category-search input {
+
     width: 100%;
+
     height: 40px;
 
     box-sizing: border-box;
 
-    padding: 0 36px;
+    padding: 0 38px;
 
     border: 1px solid #d9dee8;
+
     border-radius: 8px;
 
     background: #fff;
 
     color: #17284f;
 
-    font-family: inherit;
     font-size: 13px;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+
 }
 
-.search-box input:focus {
+
+.category-search input:focus {
+
     outline: none;
 
     border-color: #2ba7a0;
 
     box-shadow:
         0 0 0 3px rgba(43, 167, 160, .08);
+
 }
 
-.product-search-icon {
+
+.category-search-icon {
+
     position: absolute;
 
     left: 13px;
+
     top: 50%;
 
     transform: translateY(-50%);
@@ -543,25 +616,70 @@
     font-size: 19px;
 
     pointer-events: none;
+
 }
 
-.search-clear {
+
+.category-search-clear {
+
     position: absolute;
 
-    right: 11px;
+    right: 10px;
+
     top: 50%;
 
     transform: translateY(-50%);
 
-    color: #8a94a6;
+    width: 22px;
+
+    height: 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color: #7d8797;
+
+    text-decoration: none;
 
     font-size: 18px;
 
-    text-decoration: none;
 }
 
-.search-clear:hover {
+
+.category-search-clear:hover {
+
+    background: #edf1f5;
+
     color: #17284f;
+
+}
+
+
+/* =========================================================
+   FILTER BUTTONS
+========================================================= */
+
+.category-filter-button,
+.category-reset-button {
+
+    height: 40px;
+
+    white-space: nowrap;
+
+}
+
+
+.category-reset-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
 }
 
 
@@ -569,121 +687,26 @@
    FILTER SUMMARY
 ========================================================= */
 
-.filter-summary {
+.category-filter-summary {
+
     display: flex;
+
     align-items: center;
-    flex-wrap: wrap;
 
     gap: 7px;
 
-    margin-bottom: 16px;
+    flex-wrap: wrap;
 
-    color: #718096;
+    margin-bottom: 15px;
 
     font-size: 12px;
+
+    color: #7d8797;
+
 }
+
 
 .filter-chip {
-    padding: 4px 8px;
-
-    border-radius: 6px;
-
-    background: #f1f5f7;
-
-    color: #34415c;
-
-    font-size: 11px;
-}
-
-
-/* =========================================================
-   TABLE
-========================================================= */
-
-.table-wrap {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.table-wrap table {
-    width: 100%;
-
-    min-width: 850px;
-
-    border-collapse: collapse;
-}
-
-.table-wrap th {
-    padding: 13px 14px;
-
-    border-bottom: 1px solid #e7ebf1;
-
-    color: #718096;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    text-align: left;
-
-    white-space: nowrap;
-}
-
-.table-wrap td {
-    padding: 15px 14px;
-
-    border-bottom: 1px solid #edf0f4;
-
-    color: #34415c;
-
-    font-size: 13px;
-
-    vertical-align: middle;
-}
-
-.table-wrap tbody tr:hover {
-    background: #fafbfd;
-}
-
-
-/* =========================================================
-   CATEGORY
-========================================================= */
-
-.primary-link {
-    display: inline-block;
-
-    color: #17284f;
-
-    font-size: 13px;
-    font-weight: 700;
-
-    text-decoration: none;
-}
-
-.primary-link:hover {
-    color: #2ba7a0;
-}
-
-.secondary-text {
-    margin-top: 4px;
-
-    color: #8a94a6;
-
-    font-size: 11px;
-}
-
-.muted {
-    color: #9aa3b1;
-}
-
-
-/* =========================================================
-   COUNT
-========================================================= */
-
-.count-badge {
-    display: inline-flex;
-    align-items: center;
 
     padding: 5px 9px;
 
@@ -694,7 +717,150 @@
     color: #34415c;
 
     font-size: 11px;
+
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrap {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.table-wrap table {
+
+    width: 100%;
+
+    min-width: 760px;
+
+    border-collapse: collapse;
+
+}
+
+
+.table-wrap th {
+
+    padding: 11px 14px;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .5px;
+
+    text-align: left;
+
+    color: var(--muted);
+
+    background: #fafbfd;
+
+}
+
+
+.table-wrap td {
+
+    padding: 15px 14px;
+
+    border-bottom: 1px solid #edf0f4;
+
+    color: #34415c;
+
+    font-size: 13px;
+
+    vertical-align: middle;
+
+}
+
+
+.table-wrap tbody tr:hover {
+
+    background: #fafbfd;
+
+}
+
+
+/* =========================================================
+   CATEGORY NAME
+========================================================= */
+
+.category-name-link {
+
+    color: inherit;
+
+    text-decoration: none;
+
+}
+
+
+.category-name-link:hover {
+
+    color: #223a70;
+
+}
+
+
+.category-id {
+
+    margin-top: 4px;
+
+    color: #8a94a6;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   PRODUCT BADGE
+========================================================= */
+
+.category-product-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 4px 9px;
+
+    border-radius: 6px;
+
+    background: #eaf7f3;
+
+    color: #167d70;
+
+    font-size: 11px;
+
     font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+.category-product-badge.empty {
+
+    background: #f1f3f6;
+
+    color: #7d8797;
+
+}
+
+
+/* =========================================================
+   MUTED
+========================================================= */
+
+.muted {
+
+    color: #7d8797;
+
 }
 
 
@@ -702,31 +868,33 @@
    ACTIONS
 ========================================================= */
 
-.actions-column {
-    text-align: center !important;
-}
-
 .table-actions {
+
     display: flex;
 
     align-items: center;
-    justify-content: center;
 
     gap: 6px;
+
 }
 
-.icon-btn {
+
+.action-btn {
+
     width: 32px;
+
     height: 32px;
 
     display: inline-flex;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 0;
 
     border: 1px solid #dfe4eb;
+
     border-radius: 7px;
 
     background: #fff;
@@ -743,22 +911,64 @@
         background .18s ease,
         border-color .18s ease,
         color .18s ease;
+
 }
 
-.icon-btn:hover {
+
+.action-btn:hover {
+
     background: #f4f7f9;
 
     border-color: #cbd3df;
 
     color: #17284f;
+
 }
 
-.icon-btn.danger:hover {
+
+.action-btn.view:hover {
+
+    background: #eef7f7;
+
+    border-color: #b8deda;
+
+    color: #167d70;
+
+}
+
+
+.action-btn.edit:hover {
+
+    background: #f2f5fa;
+
+    border-color: #cbd5e4;
+
+    color: #223a70;
+
+}
+
+
+.action-btn.delete:hover {
+
     background: #fff2f2;
 
     border-color: #e6b7b7;
 
     color: #c94a4a;
+
+}
+
+
+/* =========================================================
+   DELETE FORM
+========================================================= */
+
+.delete-form {
+
+    display: inline-flex;
+
+    margin: 0;
+
 }
 
 
@@ -767,6 +977,7 @@
 ========================================================= */
 
 .empty {
+
     padding: 42px 20px;
 
     text-align: center;
@@ -774,6 +985,7 @@
     color: #718096;
 
     font-size: 13px;
+
 }
 
 
@@ -782,6 +994,7 @@
 ========================================================= */
 
 .delete-modal {
+
     position: fixed;
 
     inset: 0;
@@ -791,16 +1004,21 @@
     display: none;
 
     align-items: center;
+
     justify-content: center;
 
-    padding: 20px;
 }
+
 
 .delete-modal.open {
+
     display: flex;
+
 }
 
+
 .delete-modal-overlay {
+
     position: absolute;
 
     inset: 0;
@@ -808,49 +1026,69 @@
     background: rgba(15, 24, 42, .45);
 
     backdrop-filter: blur(2px);
+
 }
 
+
 .delete-modal-dialog {
+
     position: relative;
 
     width: min(420px, calc(100% - 32px));
 
-    padding: 26px;
+    background: #fff;
 
     border-radius: 14px;
 
-    background: #fff;
+    padding: 26px;
 
     box-shadow:
-        0 20px 55px rgba(23, 40, 79, .22);
+        0 20px 60px rgba(23, 40, 79, .20);
 
     animation: deleteModalIn .18s ease;
+
 }
+
 
 @keyframes deleteModalIn {
 
     from {
+
         opacity: 0;
-        transform: translateY(8px) scale(.98);
+
+        transform:
+            translateY(8px)
+            scale(.98);
+
     }
 
+
     to {
+
         opacity: 1;
-        transform: translateY(0) scale(1);
+
+        transform:
+            translateY(0)
+            scale(1);
+
     }
 
 }
 
+
 .delete-modal-icon {
+
     width: 44px;
+
     height: 44px;
 
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 
     border-radius: 50%;
 
@@ -858,65 +1096,83 @@
 
     color: #c94a4a;
 
-    font-size: 20px;
+    font-size: 21px;
+
     font-weight: 700;
+
 }
 
+
 .delete-modal-content h3 {
+
     margin: 0 0 8px;
 
     color: #17284f;
 
     font-size: 18px;
+
 }
 
-.delete-modal-content p {
-    margin: 0;
 
-    color: #718096;
+.delete-modal-content p {
+
+    margin: 0 0 6px;
+
+    color: #34415c;
 
     font-size: 13px;
 
     line-height: 1.6;
+
 }
+
 
 .delete-modal-content p strong {
-    color: #34415c;
+
+    color: #17284f;
+
 }
 
-.delete-modal-content span {
-    display: block;
 
-    margin-top: 4px;
+.delete-modal-content > span {
 
     color: #8a94a6;
 
     font-size: 12px;
+
 }
 
+
 .delete-modal-actions {
+
     display: flex;
 
-    align-items: center;
     justify-content: flex-end;
 
     gap: 8px;
 
     margin-top: 24px;
+
 }
 
+
 .delete-confirm-button {
-    border-color: #c94a4a !important;
 
     background: #c94a4a !important;
 
     color: #fff !important;
+
+    border-color: #c94a4a !important;
+
 }
 
-.delete-confirm-button:hover {
-    border-color: #b64040 !important;
 
-    background: #b64040 !important;
+.delete-confirm-button:hover {
+
+    background: #b83f3f !important;
+
+    border-color: #b83f3f !important;
+
 }
 
 
@@ -926,26 +1182,52 @@
 
 @media (max-width: 700px) {
 
-    .search-box {
+    .category-filter-bar {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    .category-search,
+    .category-filter-button,
+    .category-reset-button {
+
         width: 100%;
 
-        min-width: 100%;
-
-        flex-basis: 100%;
     }
+
+
+    .category-filter-button,
+    .category-reset-button {
+
+        justify-content: center;
+
+    }
+
 
     .delete-modal-dialog {
+
         padding: 22px;
+
     }
+
 
     .delete-modal-actions {
+
         flex-direction: column-reverse;
+
     }
 
+
     .delete-modal-actions .btn {
+
         width: 100%;
 
         justify-content: center;
+
     }
 
 }
@@ -955,64 +1237,13 @@
 
 <script>
 
-document.addEventListener('DOMContentLoaded', function () {
+/* =========================================================
+   DELETE CONFIRMATION
+========================================================= */
 
-    let deleteForm = null;
-
-
-    /* =====================================================
-       OPEN DELETE MODAL
-    ====================================================== */
-
-    document.querySelectorAll(
-        '.delete-category-button'
-    ).forEach(function (button) {
-
-        button.addEventListener(
-            'click',
-            function () {
-
-                const categoryId =
-                    this.dataset.categoryId;
-
-                const categoryName =
-                    this.dataset.categoryName;
-
-                deleteForm =
-                    document.getElementById(
-                        'delete-form-' + categoryId
-                    );
-
-
-                document.getElementById(
-                    'deleteCategoryName'
-                ).textContent = categoryName;
-
-
-                const modal =
-                    document.getElementById(
-                        'deleteCategoryModal'
-                    );
-
-
-                modal.classList.add('open');
-
-                modal.setAttribute(
-                    'aria-hidden',
-                    'false'
-                );
-
-            }
-        );
-
-    });
-
-
-    /* =====================================================
-       CLOSE DELETE MODAL
-    ====================================================== */
-
-    function closeDeleteModal() {
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
         const modal =
             document.getElementById(
@@ -1020,84 +1251,186 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
 
-        modal.classList.remove('open');
+        const categoryName =
+            document.getElementById(
+                'deleteCategoryName'
+            );
 
-        modal.setAttribute(
-            'aria-hidden',
-            'true'
+
+        const confirmButton =
+            document.getElementById(
+                'confirmDeleteCategory'
+            );
+
+
+        const cancelButton =
+            document.getElementById(
+                'cancelDeleteCategory'
+            );
+
+
+        const closeOverlay =
+            document.querySelector(
+                '[data-close-delete-modal]'
+            );
+
+
+        let deleteForm = null;
+
+
+        /* =====================================================
+           OPEN MODAL
+        ====================================================== */
+
+        function openDeleteModal(form) {
+
+            deleteForm = form;
+
+
+            const name =
+                form.dataset.categoryName ||
+                'this category';
+
+
+            categoryName.textContent =
+                name;
+
+
+            modal.classList.add(
+                'open'
+            );
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+
+
+            document.body.style.overflow =
+                'hidden';
+
+        }
+
+
+        /* =====================================================
+           CLOSE MODAL
+        ====================================================== */
+
+        function closeDeleteModal() {
+
+            modal.classList.remove(
+                'open'
+            );
+
+
+            modal.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+
+            document.body.style.overflow =
+                '';
+
+
+            deleteForm = null;
+
+        }
+
+
+        /* =====================================================
+           DELETE FORMS
+        ====================================================== */
+
+        document
+            .querySelectorAll(
+                '.delete-form'
+            )
+            .forEach(
+                function (form) {
+
+                    form.addEventListener(
+                        'submit',
+                        function (event) {
+
+                            event.preventDefault();
+
+                            openDeleteModal(
+                                form
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /* =====================================================
+           CONFIRM DELETE
+        ====================================================== */
+
+        confirmButton.addEventListener(
+            'click',
+            function () {
+
+                if (deleteForm) {
+
+                    deleteForm.submit();
+
+                }
+
+            }
         );
 
 
-        deleteForm = null;
+        /* =====================================================
+           CANCEL
+        ====================================================== */
+
+        cancelButton.addEventListener(
+            'click',
+            closeDeleteModal
+        );
+
+
+        /* =====================================================
+           OVERLAY
+        ====================================================== */
+
+        closeOverlay.addEventListener(
+            'click',
+            closeDeleteModal
+        );
+
+
+        /* =====================================================
+           ESCAPE
+        ====================================================== */
+
+        document.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Escape' &&
+                    modal.classList.contains(
+                        'open'
+                    )
+                ) {
+
+                    closeDeleteModal();
+
+                }
+
+            }
+        );
 
     }
-
-
-    /* =====================================================
-       CANCEL
-    ====================================================== */
-
-    document.getElementById(
-        'cancelDeleteCategory'
-    ).addEventListener(
-        'click',
-        closeDeleteModal
-    );
-
-
-    /* =====================================================
-       OVERLAY
-    ====================================================== */
-
-    document.querySelector(
-        '[data-close-delete-modal]'
-    ).addEventListener(
-        'click',
-        closeDeleteModal
-    );
-
-
-    /* =====================================================
-       CONFIRM DELETE
-    ====================================================== */
-
-    document.getElementById(
-        'confirmDeleteCategory'
-    ).addEventListener(
-        'click',
-        function () {
-
-            if (deleteForm) {
-
-                deleteForm.submit();
-
-            }
-
-        }
-    );
-
-
-    /* =====================================================
-       ESCAPE
-    ====================================================== */
-
-    document.addEventListener(
-        'keydown',
-        function (event) {
-
-            if (
-                event.key === 'Escape'
-            ) {
-
-                closeDeleteModal();
-
-            }
-
-        }
-    );
-
-});
+);
 
 </script>
 
 @endsection
+```

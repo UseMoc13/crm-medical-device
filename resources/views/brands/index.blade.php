@@ -29,9 +29,8 @@
 
 </div>
 
-
 {{-- =========================================================
-     ALERT
+ALERT
 ========================================================= --}}
 
 @if(session('success'))
@@ -44,7 +43,6 @@
 
 @endif
 
-
 @if(session('error'))
 
 <div class="alert error">
@@ -54,7 +52,6 @@
 </div>
 
 @endif
-
 
 @if($errors->any())
 
@@ -78,9 +75,8 @@
 
 @endif
 
-
 {{-- =========================================================
-     BRAND LIST
+BRAND LIST
 ========================================================= --}}
 
 <div class="card">
@@ -104,17 +100,19 @@
 
 
         {{-- =====================================================
-             SEARCH
-        ====================================================== --}}
+         FILTER BAR
+    ====================================================== --}}
 
         <form
             method="GET"
             action="{{ route('brands.index') }}"
             class="brand-filter-bar">
 
+            {{-- Search --}}
+
             <div class="brand-search">
 
-                <span class="product-search-icon">
+                <span class="brand-search-icon">
                     ⌕
                 </span>
 
@@ -131,13 +129,13 @@
 
                 <a
                     href="{{ route(
-                            'brands.index',
-                            request()->except(
-                                'search',
-                                'page'
-                            )
-                        ) }}"
-                    class="product-search-clear"
+                        'brands.index',
+                        request()->except(
+                            'search',
+                            'page'
+                        )
+                    ) }}"
+                    class="brand-search-clear"
                     title="Clear search">
                     ×
                 </a>
@@ -147,12 +145,16 @@
             </div>
 
 
+            {{-- Search Button --}}
+
             <button
                 type="submit"
                 class="btn brand-filter-button">
                 Search
             </button>
 
+
+            {{-- Reset --}}
 
             @if(request('search'))
 
@@ -168,8 +170,8 @@
 
 
         {{-- =====================================================
-             ACTIVE FILTER
-        ====================================================== --}}
+         ACTIVE FILTER INFORMATION
+    ====================================================== --}}
 
         @if(request('search'))
 
@@ -193,8 +195,8 @@
 
 
         {{-- =====================================================
-             BRAND TABLE
-        ====================================================== --}}
+         BRAND TABLE
+    ====================================================== --}}
 
         <div class="table-wrap">
 
@@ -221,6 +223,10 @@
                         </th>
 
                         <th>
+                            Updated
+                        </th>
+
+                        <th>
                             Actions
                         </th>
 
@@ -241,7 +247,10 @@
                         <td>
 
                             <a
-                                href="#"
+                                href="{{ route(
+                                'brands.show',
+                                $brand
+                            ) }}"
                                 class="brand-name-link">
 
                                 <strong>
@@ -251,7 +260,7 @@
                             </a>
 
 
-                            <div class="muted">
+                            <div class="secondary-text">
 
                                 ID:
                                 {{ $brand->brand_id }}
@@ -267,11 +276,65 @@
 
                             @if($brand->description)
 
-                            <div class="brand-description">
+                            <span class="brand-description">
 
                                 {{ $brand->description }}
 
-                            </div>
+                            </span>
+
+                            @else
+
+                            <span class="muted">
+                                No description
+                            </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- Products --}}
+
+                        <td>
+
+                            @php
+                            $productCount = $brand->products()->count();
+                            @endphp
+
+
+                            @if($productCount > 0)
+
+                            <span class="brand-product-badge">
+
+                                {{ $productCount }}
+
+                                {{ $productCount == 1
+                                    ? 'Product'
+                                    : 'Products'
+                                }}
+
+                            </span>
+
+                            @else
+
+                            <span class="brand-product-badge empty">
+
+                                No Products
+
+                            </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- Created --}}
+
+                        <td>
+
+                            @if($brand->created_at)
+
+                            {{ $brand->created_at->format('d M Y') }}
 
                             @else
 
@@ -284,39 +347,13 @@
                         </td>
 
 
-                        {{-- Products --}}
+                        {{-- Updated --}}
 
                         <td>
 
-                            <span class="brand-product-badge">
+                            @if($brand->updated_at)
 
-                                {{ $brand->products()->count() }}
-
-                                product{{ $brand->products()->count() != 1 ? 's' : '' }}
-
-                            </span>
-
-                        </td>
-
-
-                        {{-- Created --}}
-
-                        <td>
-
-                            @if($brand->created_at)
-
-                            <div>
-
-                                {{ $brand->created_at->format('d M Y') }}
-
-                            </div>
-
-
-                            <div class="muted">
-
-                                {{ $brand->created_at->format('H:i') }}
-
-                            </div>
+                            {{ $brand->updated_at->format('d M Y') }}
 
                             @else
 
@@ -335,33 +372,57 @@
 
                             <div class="table-actions">
 
-                                <a
-                                    href="{{ route('brands.show', $brand) }}"
-                                    class="table-action"
-                                    title="View Brand">
-                                    View
-                                </a>
+
+                                {{-- View --}}
 
                                 <a
-                                    href="{{ route('brands.edit', $brand) }}"
-                                    class="table-action"
-                                    title="Edit Brand">
-                                    Edit
+                                    href="{{ route(
+                                    'brands.show',
+                                    $brand
+                                ) }}"
+                                    class="action-btn view"
+                                    title="View Brand"
+                                    aria-label="View Brand">
+                                    👁
                                 </a>
+
+
+                                {{-- Edit --}}
+
+                                <a
+                                    href="{{ route(
+                                    'brands.edit',
+                                    $brand
+                                ) }}"
+                                    class="action-btn edit"
+                                    title="Edit Brand"
+                                    aria-label="Edit Brand">
+                                    ✎
+                                </a>
+
+
+                                {{-- Delete --}}
 
                                 <form
+                                    action="{{ route(
+                                    'brands.destroy',
+                                    $brand
+                                ) }}"
                                     method="POST"
-                                    action="{{ route('brands.destroy', $brand) }}"
-                                    class="delete-form">
+                                    class="delete-form"
+                                    data-brand-name="{{ $brand->brand_name }}">
 
                                     @csrf
+
                                     @method('DELETE')
+
 
                                     <button
                                         type="submit"
-                                        class="table-action danger"
-                                        title="Delete Brand">
-                                        Delete
+                                        class="action-btn delete"
+                                        title="Delete Brand"
+                                        aria-label="Delete Brand">
+                                        🗑
                                     </button>
 
                                 </form>
@@ -377,7 +438,7 @@
 
                     <tr>
 
-                        <td colspan="5">
+                        <td colspan="6">
 
                             <div class="empty">
 
@@ -399,8 +460,8 @@
 
 
         {{-- =====================================================
-             PAGINATION
-        ====================================================== --}}
+         PAGINATION
+    ====================================================== --}}
 
         @if($brands->hasPages())
 
@@ -416,6 +477,75 @@
 
 </div>
 
+{{-- =========================================================
+DELETE CONFIRMATION MODAL
+========================================================= --}}
+
+<div
+    class="delete-modal"
+    id="deleteBrandModal"
+    aria-hidden="true">
+
+    <div
+        class="delete-modal-overlay"
+        data-close-delete-modal></div>
+
+
+    <div
+        class="delete-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteBrandModalTitle">
+
+        <div class="delete-modal-icon">
+            !
+        </div>
+
+
+        <div class="delete-modal-content">
+
+            <h3 id="deleteBrandModalTitle">
+                Delete Brand?
+            </h3>
+
+
+            <p>
+
+                Are you sure you want to delete
+                <strong id="deleteBrandName"></strong>?
+
+            </p>
+
+
+            <span>
+                A brand that is currently associated with products may not be deleted.
+            </span>
+
+        </div>
+
+
+        <div class="delete-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                id="cancelDeleteBrand">
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="btn delete-confirm-button"
+                id="confirmDeleteBrand">
+                Delete Brand
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <style>
     /* =========================================================
@@ -445,9 +575,9 @@
 
         position: relative;
 
-        flex: 1 1 260px;
+        flex: 1 1 300px;
 
-        min-width: 220px;
+        min-width: 240px;
 
     }
 
@@ -459,7 +589,7 @@
 
         box-sizing: border-box;
 
-        padding: 0 38px 0 38px;
+        padding: 0 38px;
 
         border: 1px solid #d9dee8;
 
@@ -488,7 +618,7 @@
 
     }
 
-    .product-search-icon {
+    .brand-search-icon {
 
         position: absolute;
 
@@ -506,7 +636,7 @@
 
     }
 
-    .product-search-clear {
+    .brand-search-clear {
 
         position: absolute;
 
@@ -536,7 +666,7 @@
 
     }
 
-    .product-search-clear:hover {
+    .brand-search-clear:hover {
 
         background: #edf1f5;
 
@@ -549,7 +679,8 @@
    FILTER BUTTONS
 ========================================================= */
 
-    .brand-filter-button {
+    .brand-filter-button,
+    .brand-reset-button {
 
         height: 40px;
 
@@ -559,13 +690,9 @@
 
     .brand-reset-button {
 
-        height: 40px;
-
         display: inline-flex;
 
         align-items: center;
-
-        white-space: nowrap;
 
     }
 
@@ -637,7 +764,7 @@
 
         color: #718096;
 
-        font-size: 11px;
+        font-size: 10px;
 
         font-weight: 700;
 
@@ -696,18 +823,37 @@
 
 
     /* =========================================================
+   SECONDARY TEXT
+========================================================= */
+
+    .secondary-text {
+
+        margin-top: 4px;
+
+        color: #8a94a6;
+
+        font-size: 11px;
+
+    }
+
+
+    /* =========================================================
    DESCRIPTION
 ========================================================= */
 
     .brand-description {
 
-        max-width: 330px;
+        display: block;
 
-        color: #4d5b70;
+        max-width: 340px;
 
-        font-size: 13px;
+        overflow: hidden;
 
-        line-height: 1.5;
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+        color: #34415c;
 
     }
 
@@ -726,7 +872,7 @@
 
 
     /* =========================================================
-   PRODUCT COUNT
+   PRODUCT BADGE
 ========================================================= */
 
     .brand-product-badge {
@@ -739,15 +885,23 @@
 
         border-radius: 6px;
 
-        background: #f1f5f7;
+        background: #eaf7f3;
 
-        color: #34415c;
+        color: #167d70;
 
         font-size: 11px;
 
         font-weight: 600;
 
         white-space: nowrap;
+
+    }
+
+    .brand-product-badge.empty {
+
+        background: #f1f3f6;
+
+        color: #7d8797;
 
     }
 
@@ -825,6 +979,178 @@
 
 
     /* =========================================================
+   DELETE MODAL
+========================================================= */
+
+    .delete-modal {
+
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 9999;
+
+        display: none;
+
+        align-items: center;
+
+        justify-content: center;
+
+    }
+
+    .delete-modal.open {
+
+        display: flex;
+
+    }
+
+    .delete-modal-overlay {
+
+        position: absolute;
+
+        inset: 0;
+
+        background: rgba(15, 24, 42, .45);
+
+        backdrop-filter: blur(2px);
+
+    }
+
+    .delete-modal-dialog {
+
+        position: relative;
+
+        width: min(420px, calc(100% - 32px));
+
+        background: #fff;
+
+        border-radius: 14px;
+
+        padding: 26px;
+
+        box-shadow:
+            0 20px 60px rgba(23, 40, 79, .20);
+
+        animation: deleteModalIn .18s ease;
+
+    }
+
+    @keyframes deleteModalIn {
+
+        from {
+
+            opacity: 0;
+
+            transform:
+                translateY(8px) scale(.98);
+
+        }
+
+        to {
+
+            opacity: 1;
+
+            transform:
+                translateY(0) scale(1);
+
+        }
+
+    }
+
+    .delete-modal-icon {
+
+        width: 44px;
+
+        height: 44px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        margin-bottom: 16px;
+
+        border-radius: 50%;
+
+        background: #fff0f0;
+
+        color: #c94a4a;
+
+        font-size: 21px;
+
+        font-weight: 700;
+
+    }
+
+    .delete-modal-content h3 {
+
+        margin: 0 0 8px;
+
+        color: #17284f;
+
+        font-size: 18px;
+
+    }
+
+    .delete-modal-content p {
+
+        margin: 0 0 6px;
+
+        color: #34415c;
+
+        font-size: 13px;
+
+        line-height: 1.6;
+
+    }
+
+    .delete-modal-content p strong {
+
+        color: #17284f;
+
+    }
+
+    .delete-modal-content>span {
+
+        color: #8a94a6;
+
+        font-size: 12px;
+
+    }
+
+    .delete-modal-actions {
+
+        display: flex;
+
+        justify-content: flex-end;
+
+        gap: 8px;
+
+        margin-top: 24px;
+
+    }
+
+    .delete-confirm-button {
+
+        background: #c94a4a !important;
+
+        color: #fff !important;
+
+        border-color: #c94a4a !important;
+
+    }
+
+    .delete-confirm-button:hover {
+
+        background: #b83f3f !important;
+
+        border-color: #b83f3f !important;
+
+    }
+
+
+    /* =========================================================
    EMPTY
 ========================================================= */
 
@@ -844,6 +1170,16 @@
     /* =========================================================
    RESPONSIVE
 ========================================================= */
+
+    @media (max-width: 1100px) {
+
+        .brand-search {
+
+            flex: 1 1 100%;
+
+        }
+
+    }
 
     @media (max-width: 700px) {
 
@@ -870,7 +1206,200 @@
 
         }
 
+        .brand-description {
+
+            max-width: 220px;
+
+        }
+
+        .delete-modal-dialog {
+
+            padding: 22px;
+
+        }
+
+        .delete-modal-actions {
+
+            flex-direction: column-reverse;
+
+        }
+
+        .delete-modal-actions .btn {
+
+            width: 100%;
+
+            justify-content: center;
+
+        }
+
     }
 </style>
+
+<script>
+    /* =========================================================
+   DELETE CONFIRMATION
+========================================================= */
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        function() {
+
+            const modal =
+                document.getElementById(
+                    'deleteBrandModal'
+                );
+
+
+            const brandName =
+                document.getElementById(
+                    'deleteBrandName'
+                );
+
+
+            const confirmButton =
+                document.getElementById(
+                    'confirmDeleteBrand'
+                );
+
+
+            const cancelButton =
+                document.getElementById(
+                    'cancelDeleteBrand'
+                );
+
+
+            const closeOverlay =
+                document.querySelector(
+                    '[data-close-delete-modal]'
+                );
+
+
+            let deleteForm = null;
+
+
+            function openDeleteModal(form) {
+
+                deleteForm = form;
+
+
+                const name =
+                    form.dataset.brandName ||
+                    'this brand';
+
+
+                brandName.textContent =
+                    name;
+
+
+                modal.classList.add(
+                    'open'
+                );
+
+
+                modal.setAttribute(
+                    'aria-hidden',
+                    'false'
+                );
+
+
+                document.body.style.overflow =
+                    'hidden';
+
+            }
+
+
+            function closeDeleteModal() {
+
+                modal.classList.remove(
+                    'open'
+                );
+
+
+                modal.setAttribute(
+                    'aria-hidden',
+                    'true'
+                );
+
+
+                document.body.style.overflow =
+                    '';
+
+
+                deleteForm = null;
+
+            }
+
+
+            document
+                .querySelectorAll(
+                    '.delete-form'
+                )
+                .forEach(
+                    function(form) {
+
+                        form.addEventListener(
+                            'submit',
+                            function(event) {
+
+                                event.preventDefault();
+
+                                openDeleteModal(
+                                    form
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
+
+            confirmButton.addEventListener(
+                'click',
+                function() {
+
+                    if (deleteForm) {
+
+                        deleteForm.submit();
+
+                    }
+
+                }
+            );
+
+
+            cancelButton.addEventListener(
+                'click',
+                closeDeleteModal
+            );
+
+
+            closeOverlay.addEventListener(
+                'click',
+                closeDeleteModal
+            );
+
+
+            document.addEventListener(
+                'keydown',
+                function(event) {
+
+                    if (
+                        event.key === 'Escape' &&
+                        modal.classList.contains(
+                            'open'
+                        )
+                    ) {
+
+                        closeDeleteModal();
+
+                    }
+
+                }
+            );
+
+        }
+    );
+</script>
 
 @endsection

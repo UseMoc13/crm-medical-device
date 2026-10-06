@@ -487,46 +487,6 @@
 </div>
 
 
-{{-- =====================================================
-     DELETE ACTION
-====================================================== --}}
-
-<div class="danger-zone">
-
-    <div>
-
-        <strong>
-            Delete Product
-        </strong>
-
-        <p>
-            Deleting this product cannot be undone. Products that are still used by opportunity items cannot be deleted.
-        </p>
-
-    </div>
-
-
-    <form
-        method="POST"
-        action="{{ route('products.destroy', $product) }}"
-        onsubmit="return confirm('Are you sure you want to delete this product?');"
-    >
-
-        @csrf
-        @method('DELETE')
-
-        <button
-            type="submit"
-            class="btn danger"
-        >
-            Delete Product
-        </button>
-
-    </form>
-
-</div>
-
-
 <style>
 
 /* =========================================================
