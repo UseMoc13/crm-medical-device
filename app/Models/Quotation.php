@@ -15,6 +15,7 @@ class Quotation extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'quotation_id',
         'opportunity_id',
         'quotation_number',
         'quotation_date',

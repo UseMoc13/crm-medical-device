@@ -15,6 +15,7 @@ class QuotationItem extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'quotation_item_id',
         'quotation_id',
         'product_id',
         'quantity',
@@ -27,15 +28,10 @@ class QuotationItem extends Model
     {
         return [
             'quantity' => 'integer',
-
             'unit_price' => 'decimal:2',
-
             'discount' => 'decimal:2',
-
             'subtotal' => 'decimal:2',
-
             'created_at' => 'datetime',
-
             'updated_at' => 'datetime',
         ];
     }

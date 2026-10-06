@@ -14,11 +14,37 @@
 
     $subtotal = (float) ($quotation->subtotal ?? 0);
 
-    $discountValue = (float) ($quotation->discount ?? 0);
-    $discountType = $quotation->discount_type ?? 'amount';
+    $discountValue =
+        (float) ($quotation->discount ?? 0);
 
-    $taxValue = (float) ($quotation->tax ?? 0);
-    $taxType = $quotation->tax_type ?? 'amount';
+    $discountType =
+        $quotation->discount_type ?? 'amount';
+
+    $taxValue =
+        (float) ($quotation->tax ?? 0);
+
+    $taxType =
+        $quotation->tax_type ?? 'amount';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Percentage Detection
+    |--------------------------------------------------------------------------
+    */
+
+    $isDiscountPercentage = in_array(
+        $discountType,
+        ['percentage', 'percent'],
+        true
+    );
+
+
+    $isTaxPercentage = in_array(
+        $taxType,
+        ['percentage', 'percent'],
+        true
+    );
 
 
     /*
@@ -27,7 +53,7 @@
     |--------------------------------------------------------------------------
     */
 
-    if ($discountType === 'percent') {
+    if ($isDiscountPercentage) {
 
         $discountAmount =
             $subtotal * ($discountValue / 100);
@@ -40,14 +66,23 @@
     }
 
 
+    $discountAmount = min(
+        max(0, $discountAmount),
+        $subtotal
+    );
+
+
     /*
     |--------------------------------------------------------------------------
-    | Amount After Discount
+    | After Discount
     |--------------------------------------------------------------------------
     */
 
     $afterDiscount =
-        max(0, $subtotal - $discountAmount);
+        max(
+            0,
+            $subtotal - $discountAmount
+        );
 
 
     /*
@@ -56,7 +91,7 @@
     |--------------------------------------------------------------------------
     */
 
-    if ($taxType === 'percent') {
+    if ($isTaxPercentage) {
 
         $taxAmount =
             $afterDiscount * ($taxValue / 100);
@@ -67,6 +102,10 @@
             $taxValue;
 
     }
+
+
+    $taxAmount =
+        max(0, $taxAmount);
 
 
     /*
@@ -81,7 +120,7 @@
 
     /*
     |--------------------------------------------------------------------------
-    | Helper Formatting
+    | Format Helpers
     |--------------------------------------------------------------------------
     */
 
@@ -114,12 +153,61 @@
 
     };
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Opportunity
+    |--------------------------------------------------------------------------
+    */
+
+    $opportunity =
+        $quotation->opportunity;
+
+
+    $customerName = '-';
+
+    if ($opportunity?->customer) {
+
+        $customerName =
+            $opportunity->customer->customer_name
+            ?? $opportunity->customer->company_name
+            ?? $opportunity->customer->name
+            ?? '-';
+
+    }
+
+
+    $salesName =
+        $opportunity?->user?->name
+        ?? '-';
+
+
+    $opportunityStage =
+        $opportunity?->stage
+        ?? '-';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination
+    |--------------------------------------------------------------------------
+    */
+
+    $itemsTotal =
+        $quotationItems->total();
+
+    $itemsFrom =
+        $quotationItems->firstItem();
+
+    $itemsTo =
+        $quotationItems->lastItem();
+
 @endphp
 
 
-{{-- =====================================================
+{{-- =========================================================
      PAGE HEADER
-====================================================== --}}
+========================================================= --}}
 
 <div class="page-head">
 
@@ -157,7 +245,6 @@
             ✎ Edit Quotation
         </a>
 
-
         <a
             href="{{ route('quotations.index') }}"
             class="btn"
@@ -170,33 +257,25 @@
 </div>
 
 
-{{-- =====================================================
-     ALERT
-====================================================== --}}
-
 @if(session('success'))
 
     <div class="alert success">
-
         {{ session('success') }}
-
     </div>
 
 @endif
 
 
-{{-- =====================================================
-     QUOTATION + OPPORTUNITY
-====================================================== --}}
+{{-- =========================================================
+     INFORMATION
+========================================================= --}}
 
-<div class="top-detail-grid">
+<div class="information-layout">
 
 
-    {{-- =================================================
-         QUOTATION INFORMATION
-    ================================================== --}}
+    {{-- QUOTATION INFORMATION --}}
 
-    <div class="card">
+    <div class="card information-card quotation-information-card">
 
         <div class="card-head">
 
@@ -216,8 +295,7 @@
             @if($quotation->status)
 
                 <span
-                    class="quotation-status-badge
-                    quotation-status-{{ Str::slug($quotation->status) }}"
+                    class="quotation-status-badge quotation-status-{{ Str::slug($quotation->status) }}"
                 >
                     {{ $quotation->status }}
                 </span>
@@ -229,35 +307,33 @@
 
         <div class="card-body">
 
-            <div class="detail-grid">
+            <div class="quotation-information-grid">
 
+                <div class="information-field">
 
-                <div class="detail-item">
-
-                    <span>
+                    <span class="information-label">
                         Quotation Number
                     </span>
 
-                    <strong class="quotation-number">
-
+                    <strong class="information-value quotation-number">
                         {{ $quotation->quotation_number }}
-
                     </strong>
 
                 </div>
 
 
-                <div class="detail-item">
+                <div class="information-field">
 
-                    <span>
+                    <span class="information-label">
                         Quotation Date
                     </span>
 
-                    <strong>
+                    <strong class="information-value">
 
-                        {{ $quotation->quotation_date
-                            ? $quotation->quotation_date->format('d M Y')
-                            : '-'
+                        {{
+                            $quotation->quotation_date
+                                ? $quotation->quotation_date->format('d M Y')
+                                : '-'
                         }}
 
                     </strong>
@@ -265,17 +341,18 @@
                 </div>
 
 
-                <div class="detail-item">
+                <div class="information-field">
 
-                    <span>
+                    <span class="information-label">
                         Valid Until
                     </span>
 
-                    <strong>
+                    <strong class="information-value">
 
-                        {{ $quotation->valid_until
-                            ? $quotation->valid_until->format('d M Y')
-                            : '-'
+                        {{
+                            $quotation->valid_until
+                                ? $quotation->valid_until->format('d M Y')
+                                : '-'
                         }}
 
                     </strong>
@@ -283,24 +360,23 @@
                 </div>
 
 
-                <div class="detail-item">
+                <div class="information-field">
 
-                    <span>
+                    <span class="information-label">
                         Status
                     </span>
 
                     @if($quotation->status)
 
                         <span
-                            class="quotation-status-badge
-                            quotation-status-{{ Str::slug($quotation->status) }}"
+                            class="quotation-status-badge quotation-status-{{ Str::slug($quotation->status) }}"
                         >
                             {{ $quotation->status }}
                         </span>
 
                     @else
 
-                        <span class="muted">
+                        <span class="information-empty">
                             -
                         </span>
 
@@ -315,11 +391,10 @@
     </div>
 
 
-    {{-- =================================================
-         OPPORTUNITY
-    ================================================== --}}
 
-    <div class="card">
+    {{-- OPPORTUNITY --}}
+
+    <div class="card information-card opportunity-information-card">
 
         <div class="card-head">
 
@@ -340,40 +415,42 @@
 
         <div class="card-body">
 
-            @if($quotation->opportunity)
+            @if($opportunity)
 
-                <a
-                    href="{{ route(
-                        'opportunities.show',
-                        $quotation->opportunity
-                    ) }}"
-                    class="opportunity-link"
-                >
+                <div class="opportunity-content">
 
-                    <span class="opportunity-code">
+                    <a
+                        href="{{ route('opportunities.show', $opportunity) }}"
+                        class="opportunity-link"
+                    >
 
-                        {{ $quotation->opportunity->opportunity_code }}
+                        <div class="opportunity-link-content">
 
-                    </span>
+                            <span class="opportunity-link-label">
+                                Opportunity
+                            </span>
 
-                    <span class="opportunity-arrow">
-                        →
-                    </span>
+                            <strong class="opportunity-code">
+                                {{ $opportunity->opportunity_code }}
+                            </strong>
 
-                </a>
+                        </div>
 
+                        <span class="opportunity-arrow">
+                            →
+                        </span>
 
-                <div class="opportunity-name">
-
-                    {{ $quotation->opportunity->name }}
-
-                </div>
+                    </a>
 
 
-                <div class="opportunity-meta">
+                    <div class="opportunity-name">
+
+                        {{ $opportunity->name }}
+
+                    </div>
 
 
-                    @if($quotation->opportunity->customer)
+                    <div class="opportunity-meta">
 
                         <div class="opportunity-meta-item">
 
@@ -381,16 +458,12 @@
                                 Customer
                             </span>
 
-                            <strong>
-                                {{ $quotation->opportunity->customer->customer_name }}
+                            <strong title="{{ $customerName }}">
+                                {{ $customerName }}
                             </strong>
 
                         </div>
 
-                    @endif
-
-
-                    @if($quotation->opportunity->user)
 
                         <div class="opportunity-meta-item">
 
@@ -398,16 +471,12 @@
                                 Sales
                             </span>
 
-                            <strong>
-                                {{ $quotation->opportunity->user->name }}
+                            <strong title="{{ $salesName }}">
+                                {{ $salesName }}
                             </strong>
 
                         </div>
 
-                    @endif
-
-
-                    @if($quotation->opportunity->stage)
 
                         <div class="opportunity-meta-item">
 
@@ -415,22 +484,20 @@
                                 Stage
                             </span>
 
-                            <strong>
-                                {{ $quotation->opportunity->stage }}
+                            <strong title="{{ $opportunityStage }}">
+                                {{ $opportunityStage }}
                             </strong>
 
                         </div>
 
-                    @endif
+                    </div>
 
                 </div>
 
             @else
 
                 <div class="empty-small">
-
                     No opportunity assigned.
-
                 </div>
 
             @endif
@@ -439,22 +506,23 @@
 
     </div>
 
-
 </div>
 
 
-{{-- =====================================================
-     ITEMS + FINANCIAL
-====================================================== --}}
+
+{{-- =========================================================
+     MAIN DETAIL
+========================================================= --}}
 
 <div class="main-detail-grid">
 
 
-    {{-- =================================================
+    {{-- =====================================================
          QUOTATION ITEMS
-    ================================================== --}}
+    ====================================================== --}}
 
     <div class="card items-card">
+
 
         <div class="card-head">
 
@@ -471,29 +539,47 @@
             </div>
 
 
-            <span class="items-count">
+            <div class="items-header-actions">
 
-                {{ $quotation->items->count() }}
-                {{ $quotation->items->count() == 1 ? 'Item' : 'Items' }}
+                <span class="items-count">
 
-            </span>
+                    {{ $itemsTotal }}
+
+                    {{
+                        $itemsTotal == 1
+                            ? 'Item'
+                            : 'Items'
+                    }}
+
+                </span>
+
+
+                @if($itemsTotal > 0)
+
+                    <button
+                        type="button"
+                        class="btn-show-all"
+                        onclick="openQuotationItemsModal()"
+                    >
+                        Show All
+                    </button>
+
+                @endif
+
+            </div>
 
         </div>
 
 
         <div class="card-body no-padding">
 
-
-            @if($quotation->items->count())
+            @if($quotationItems->count())
 
                 <div class="items-list">
 
-                    @foreach($quotation->items as $item)
+                    @foreach($quotationItems as $item)
 
                         <div class="quotation-item">
-
-
-                            {{-- Product --}}
 
                             <div class="item-product">
 
@@ -501,11 +587,13 @@
                                     P
                                 </div>
 
-                                <div>
+                                <div class="item-product-info">
 
                                     @if($item->product)
 
-                                        <strong>
+                                        <strong
+                                            title="{{ $item->product->product_name }}"
+                                        >
                                             {{ $item->product->product_name }}
                                         </strong>
 
@@ -530,8 +618,6 @@
                             </div>
 
 
-                            {{-- Quantity --}}
-
                             <div class="item-detail">
 
                                 <span>
@@ -545,8 +631,6 @@
                             </div>
 
 
-                            {{-- Unit Price --}}
-
                             <div class="item-detail">
 
                                 <span>
@@ -554,18 +638,11 @@
                                 </span>
 
                                 <strong>
-
-                                    Rp
-                                    {{ $formatNumber(
-                                        $item->unit_price
-                                    ) }}
-
+                                    Rp {{ $formatNumber($item->unit_price) }}
                                 </strong>
 
                             </div>
 
-
-                            {{-- Discount --}}
 
                             <div class="item-detail">
 
@@ -573,16 +650,10 @@
                                     Discount
                                 </span>
 
-
                                 @if((float) ($item->discount ?? 0) > 0)
 
                                     <strong class="item-discount">
-
-                                        − Rp
-                                        {{ $formatNumber(
-                                            $item->discount
-                                        ) }}
-
+                                        − Rp {{ $formatNumber($item->discount) }}
                                     </strong>
 
                                 @else
@@ -596,8 +667,6 @@
                             </div>
 
 
-                            {{-- Subtotal --}}
-
                             <div class="item-subtotal">
 
                                 <span>
@@ -605,20 +674,56 @@
                                 </span>
 
                                 <strong>
-
-                                    Rp
-                                    {{ $formatNumber(
-                                        $item->subtotal
-                                    ) }}
-
+                                    Rp {{ $formatNumber($item->subtotal) }}
                                 </strong>
 
                             </div>
 
-
                         </div>
 
                     @endforeach
+
+                </div>
+
+
+                {{-- PAGINATION --}}
+
+                <div class="items-footer">
+
+                    <div class="items-pagination-info">
+
+                        Showing
+
+                        <strong>
+                            {{ $itemsFrom }}
+                        </strong>
+
+                        –
+
+                        <strong>
+                            {{ $itemsTo }}
+                        </strong>
+
+                        of
+
+                        <strong>
+                            {{ $itemsTotal }}
+                        </strong>
+
+                        items
+
+                    </div>
+
+
+                    @if($quotationItems->hasPages())
+
+                        <div class="quotation-pagination">
+
+                            {{ $quotationItems->onEachSide(1)->links() }}
+
+                        </div>
+
+                    @endif
 
                 </div>
 
@@ -647,9 +752,10 @@
     </div>
 
 
-    {{-- =================================================
+
+    {{-- =====================================================
          FINANCIAL SUMMARY
-    ================================================== --}}
+    ====================================================== --}}
 
     <div class="card financial-card">
 
@@ -672,11 +778,8 @@
 
         <div class="card-body">
 
-
             <div class="financial-list">
 
-
-                {{-- Subtotal --}}
 
                 <div class="financial-row">
 
@@ -692,18 +795,12 @@
 
                     </div>
 
-
                     <strong>
-
-                        Rp
-                        {{ $formatNumber($subtotal) }}
-
+                        Rp {{ $formatNumber($subtotal) }}
                     </strong>
 
                 </div>
 
-
-                {{-- Discount --}}
 
                 <div class="financial-row discount-row">
 
@@ -713,12 +810,10 @@
                             Discount
                         </span>
 
-
-                        @if($discountType === 'percent')
+                        @if($isDiscountPercentage)
 
                             <small>
-                                {{ $formatPercentage($discountValue) }}%
-                                discount
+                                {{ $formatPercentage($discountValue) }}% discount
                             </small>
 
                         @else
@@ -734,33 +829,22 @@
 
                     <div class="financial-amount discount-amount">
 
-
-                        @if($discountType === 'percent')
+                        @if($isDiscountPercentage)
 
                             <span class="type-badge discount-badge">
-
                                 {{ $formatPercentage($discountValue) }}%
-
                             </span>
 
                         @endif
 
-
                         <strong>
-
-                            − Rp
-                            {{ $formatNumber(
-                                $discountAmount
-                            ) }}
-
+                            − Rp {{ $formatNumber($discountAmount) }}
                         </strong>
 
                     </div>
 
                 </div>
 
-
-                {{-- After Discount --}}
 
                 <div class="financial-row after-discount-row">
 
@@ -772,20 +856,12 @@
 
                     </div>
 
-
                     <strong>
-
-                        Rp
-                        {{ $formatNumber(
-                            $afterDiscount
-                        ) }}
-
+                        Rp {{ $formatNumber($afterDiscount) }}
                     </strong>
 
                 </div>
 
-
-                {{-- Tax --}}
 
                 <div class="financial-row tax-row">
 
@@ -795,12 +871,10 @@
                             Tax
                         </span>
 
-
-                        @if($taxType === 'percent')
+                        @if($isTaxPercentage)
 
                             <small>
-                                {{ $formatPercentage($taxValue) }}%
-                                tax
+                                {{ $formatPercentage($taxValue) }}% tax
                             </small>
 
                         @else
@@ -816,36 +890,24 @@
 
                     <div class="financial-amount tax-amount">
 
-
-                        @if($taxType === 'percent')
+                        @if($isTaxPercentage)
 
                             <span class="type-badge tax-badge">
-
                                 {{ $formatPercentage($taxValue) }}%
-
                             </span>
 
                         @endif
 
-
                         <strong>
-
-                            + Rp
-                            {{ $formatNumber(
-                                $taxAmount
-                            ) }}
-
+                            + Rp {{ $formatNumber($taxAmount) }}
                         </strong>
 
                     </div>
 
                 </div>
 
-
             </div>
 
-
-            {{-- Total --}}
 
             <div class="grand-total">
 
@@ -861,20 +923,12 @@
 
                 </div>
 
-
                 <strong>
-
-                    Rp
-                    {{ $formatNumber(
-                        $calculatedTotal
-                    ) }}
-
+                    Rp {{ $formatNumber($calculatedTotal) }}
                 </strong>
 
             </div>
 
-
-            {{-- Status Indicator --}}
 
             <div class="financial-status">
 
@@ -890,13 +944,13 @@
 
     </div>
 
-
 </div>
 
 
-{{-- =====================================================
+
+{{-- =========================================================
      NOTES
-====================================================== --}}
+========================================================= --}}
 
 <div class="card notes-card">
 
@@ -930,9 +984,7 @@
         @else
 
             <div class="notes-empty">
-
                 No notes added to this quotation.
-
             </div>
 
         @endif
@@ -942,9 +994,10 @@
 </div>
 
 
-{{-- =====================================================
+
+{{-- =========================================================
      METADATA
-====================================================== --}}
+========================================================= --}}
 
 <div class="quotation-metadata">
 
@@ -952,9 +1005,10 @@
 
         Created:
 
-        {{ $quotation->created_at
-            ? $quotation->created_at->format('d M Y H:i')
-            : '-'
+        {{
+            $quotation->created_at
+                ? $quotation->created_at->format('d M Y H:i')
+                : '-'
         }}
 
     </span>
@@ -964,9 +1018,10 @@
 
         Updated:
 
-        {{ $quotation->updated_at
-            ? $quotation->updated_at->format('d M Y H:i')
-            : '-'
+        {{
+            $quotation->updated_at
+                ? $quotation->updated_at->format('d M Y H:i')
+                : '-'
         }}
 
     </span>
@@ -974,143 +1029,354 @@
 </div>
 
 
+
+{{-- =========================================================
+     SHOW ALL ITEMS MODAL
+========================================================= --}}
+
+<div
+    id="quotationItemsModal"
+    class="quotation-items-modal"
+    aria-hidden="true"
+>
+
+    <div
+        class="quotation-items-modal-overlay"
+        onclick="closeQuotationItemsModal()"
+    ></div>
+
+
+    <div
+        class="quotation-items-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quotationItemsModalTitle"
+    >
+
+
+        {{-- Modal Header --}}
+
+        <div class="quotation-items-modal-header">
+
+            <div>
+
+                <h3 id="quotationItemsModalTitle">
+                    All Quotation Items
+                </h3>
+
+                <p>
+                    {{ $quotation->quotation_number }}
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close-button"
+                onclick="closeQuotationItemsModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        {{-- Modal Toolbar --}}
+
+        <div class="quotation-items-toolbar">
+
+
+            <div class="quotation-items-search">
+
+                <span class="quotation-items-search-icon">
+                    ⌕
+                </span>
+
+                <input
+                    type="text"
+                    id="quotationItemsSearch"
+                    placeholder="Search product or product code..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <select
+                id="quotationItemsSort"
+                class="quotation-items-sort"
+            >
+
+                <option value="created_at|asc">
+                    Newest Position
+                </option>
+
+                <option value="quantity|desc">
+                    Quantity: High to Low
+                </option>
+
+                <option value="quantity|asc">
+                    Quantity: Low to High
+                </option>
+
+                <option value="unit_price|desc">
+                    Price: High to Low
+                </option>
+
+                <option value="unit_price|asc">
+                    Price: Low to High
+                </option>
+
+                <option value="subtotal|desc">
+                    Subtotal: High to Low
+                </option>
+
+                <option value="subtotal|asc">
+                    Subtotal: Low to High
+                </option>
+
+            </select>
+
+        </div>
+
+
+        {{-- Modal Body --}}
+
+        <div class="quotation-items-modal-body">
+
+            <div
+                id="quotationItemsLoading"
+                class="quotation-items-loading"
+            >
+                Loading quotation items...
+            </div>
+
+
+            <div
+                id="quotationItemsEmpty"
+                class="quotation-items-modal-empty"
+                style="display:none;"
+            >
+                No quotation items found.
+            </div>
+
+
+            <div
+                id="quotationItemsTable"
+                class="quotation-items-table-wrapper"
+                style="display:none;"
+            >
+
+                <table class="quotation-items-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Quantity
+                            </th>
+
+                            <th>
+                                Unit Price
+                            </th>
+
+                            <th>
+                                Discount
+                            </th>
+
+                            <th>
+                                Subtotal
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody
+                        id="quotationItemsTableBody"
+                    >
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        {{-- Modal Footer --}}
+
+        <div class="quotation-items-modal-footer">
+
+            <div
+                id="quotationItemsModalInfo"
+                class="quotation-items-modal-info"
+            >
+            </div>
+
+
+            <div
+                id="quotationItemsModalPagination"
+                class="quotation-items-modal-pagination"
+            >
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
 <style>
 
-/* =====================================================
-   TOP DETAIL
-===================================================== */
+/* =========================================================
+   INFORMATION
+========================================================= */
 
-.top-detail-grid {
+.information-layout {
 
     display: grid;
 
     grid-template-columns:
-        minmax(0, 1.35fr)
-        minmax(320px, 1fr);
+        minmax(0, 1.2fr)
+        minmax(0, 1fr);
 
     gap: 18px;
 
     margin-bottom: 18px;
 
-}
-
-
-/* =====================================================
-   MAIN DETAIL
-===================================================== */
-
-.main-detail-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1.65fr)
-        minmax(330px, 0.85fr);
-
-    gap: 18px;
-
-    align-items: start;
-
-    margin-bottom: 18px;
+    align-items: stretch;
 
 }
 
 
-/* =====================================================
-   PAGE HEADING
-===================================================== */
-
-.quotation-heading {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-}
-
-
-.quotation-document-icon {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 38px;
-
-    height: 38px;
-
-    border-radius: 9px;
-
-    background: #e9f7f3;
-
-    color: #15966f;
-
-    font-size: 15px;
-
-    font-weight: 700;
-
-}
-
-
-/* =====================================================
-   DETAIL GRID
-===================================================== */
-
-.detail-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
-    gap: 22px;
-
-}
-
-
-.detail-item {
+.information-card {
 
     display: flex;
 
     flex-direction: column;
 
-    gap: 7px;
+    min-width: 0;
+
+    overflow: hidden;
 
 }
 
 
-.detail-item > span:first-child {
+.information-card .card-head {
 
-    color: #7d8797;
+    min-height: 68px;
 
-    font-size: 11px;
+    box-sizing: border-box;
 
 }
 
 
-.detail-item strong {
+.information-card .card-body {
 
-    color: #17284f;
+    flex: 1;
 
-    font-size: 13px;
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   QUOTATION INFORMATION
+========================================================= */
+
+.quotation-information-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    column-gap: 34px;
+
+    row-gap: 22px;
+
+}
+
+
+.information-field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    justify-content: center;
+
+    min-width: 0;
+
+    min-height: 46px;
+
+}
+
+
+.information-label {
+
+    margin-bottom: 6px;
+
+    color: #8a94a6;
+
+    font-size: 9px;
+
+    font-weight: 500;
+
+    text-transform: uppercase;
+
+    letter-spacing: .03em;
+
+}
+
+
+.information-value {
+
+    display: block;
+
+    max-width: 100%;
+
+    overflow: hidden;
+
+    color: #34415c;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
 
 .quotation-number {
 
-    font-size: 14px !important;
+    color: #15966f !important;
+
+    font-size: 13px !important;
+
+    font-weight: 700 !important;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    STATUS
-===================================================== */
+========================================================= */
 
 .quotation-status-badge {
 
@@ -1118,9 +1384,15 @@
 
     align-items: center;
 
+    justify-content: center;
+
     width: fit-content;
 
+    min-height: 23px;
+
     padding: 4px 9px;
+
+    box-sizing: border-box;
 
     border-radius: 6px;
 
@@ -1128,9 +1400,13 @@
 
     color: #4d5b70;
 
-    font-size: 10px !important;
+    font-size: 10px;
 
     font-weight: 600;
+
+    line-height: 1;
+
+    white-space: nowrap;
 
 }
 
@@ -1189,9 +1465,18 @@
 }
 
 
-/* =====================================================
+/* =========================================================
    OPPORTUNITY
-===================================================== */
+========================================================= */
+
+.opportunity-content {
+
+    width: 100%;
+
+    min-width: 0;
+
+}
+
 
 .opportunity-link {
 
@@ -1201,51 +1486,106 @@
 
     justify-content: space-between;
 
-    gap: 10px;
+    width: 100%;
 
-    color: #17284f;
+    min-width: 0;
+
+    gap: 12px;
+
+    padding: 10px 12px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e7edf3;
+
+    border-radius: 8px;
+
+    background: #fafbfd;
 
     text-decoration: none;
 
 }
 
 
+.opportunity-link-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    gap: 3px;
+
+}
+
+
+.opportunity-link-label {
+
+    color: #8a94a6;
+
+    font-size: 8px;
+
+    text-transform: uppercase;
+
+}
+
+
 .opportunity-code {
 
-    font-size: 14px;
+    overflow: hidden;
+
+    color: #17284f;
+
+    font-size: 12px;
 
     font-weight: 700;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
 
 .opportunity-arrow {
 
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 25px;
+
+    height: 25px;
+
+    border-radius: 6px;
+
+    background: #e9f7f3;
+
     color: #15966f;
-
-    font-size: 15px;
-
-    transition: transform .15s ease;
-
-}
-
-
-.opportunity-link:hover .opportunity-arrow {
-
-    transform: translateX(3px);
 
 }
 
 
 .opportunity-name {
 
-    margin-top: 6px;
+    margin-top: 11px;
 
-    color: #4d5b70;
+    overflow: hidden;
+
+    color: #34415c;
 
     font-size: 12px;
 
-    line-height: 1.5;
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
@@ -1255,13 +1595,11 @@
     display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
-
-    gap: 12px;
+        repeat(3, minmax(0, 1fr));
 
     margin-top: 17px;
 
-    padding-top: 14px;
+    padding-top: 15px;
 
     border-top: 1px solid #edf0f5;
 
@@ -1274,7 +1612,32 @@
 
     flex-direction: column;
 
-    gap: 4px;
+    min-width: 0;
+
+    gap: 5px;
+
+    padding: 0 14px;
+
+}
+
+
+.opportunity-meta-item:first-child {
+
+    padding-left: 0;
+
+}
+
+
+.opportunity-meta-item:last-child {
+
+    padding-right: 0;
+
+}
+
+
+.opportunity-meta-item:not(:last-child) {
+
+    border-right: 1px solid #edf0f5;
 
 }
 
@@ -1283,36 +1646,108 @@
 
     color: #8a94a6;
 
-    font-size: 9px;
+    font-size: 8px;
+
+    text-transform: uppercase;
 
 }
 
 
 .opportunity-meta-item strong {
 
+    overflow: hidden;
+
     color: #34415c;
 
-    font-size: 11px;
+    font-size: 10px;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 
 }
 
 
-.empty-small {
+/* =========================================================
+   MAIN GRID
+========================================================= */
 
-    color: #8a94a6;
+.main-detail-grid {
 
-    font-size: 11px;
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.65fr)
+        minmax(300px, .85fr);
+
+    gap: 18px;
+
+    align-items: stretch;
+
+    margin-bottom: 18px;
 
 }
 
 
-/* =====================================================
-   ITEMS
-===================================================== */
+.items-card,
+.financial-card {
 
-.no-padding {
+    min-width: 0;
 
-    padding: 0 !important;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Important
+|--------------------------------------------------------------------------
+|
+| Kedua card dibuat stretch.
+| Jadi ketika Quotation Items hanya memiliki 1 item,
+| card tetap mengikuti tinggi Financial Summary.
+|
+*/
+
+.items-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.items-card .card-body {
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.financial-card {
+
+    position: static;
+
+}
+
+
+/* =========================================================
+   ITEMS HEADER
+========================================================= */
+
+.items-header-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex: 0 0 auto;
 
 }
 
@@ -1323,6 +1758,10 @@
 
     align-items: center;
 
+    justify-content: center;
+
+    min-width: 52px;
+
     padding: 5px 9px;
 
     border-radius: 6px;
@@ -1331,12 +1770,62 @@
 
     color: #64748b;
 
-    font-size: 10px;
+    font-size: 9px;
 
     font-weight: 600;
 
+    white-space: nowrap;
+
 }
 
+
+.btn-show-all {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 28px;
+
+    padding: 5px 10px;
+
+    border: 1px solid #d8e8e2;
+
+    border-radius: 6px;
+
+    background: #f5fbf8;
+
+    color: #15966f;
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        border-color .15s ease;
+
+}
+
+
+.btn-show-all:hover {
+
+    border-color: #b9d9cd;
+
+    background: #e9f7f3;
+
+}
+
+
+/* =========================================================
+   ITEM LIST
+========================================================= */
 
 .items-list {
 
@@ -1350,19 +1839,21 @@
     display: grid;
 
     grid-template-columns:
-        minmax(190px, 1.7fr)
-        70px
-        130px
-        110px
-        140px;
+        minmax(190px, 1.5fr)
+        minmax(65px, .55fr)
+        minmax(125px, 1fr)
+        minmax(105px, .8fr)
+        minmax(130px, 1fr);
+
+    gap: 16px;
 
     align-items: center;
 
-    gap: 12px;
-
-    padding: 15px 18px;
+    padding: 17px 20px;
 
     border-bottom: 1px solid #edf0f5;
+
+    box-sizing: border-box;
 
 }
 
@@ -1380,9 +1871,9 @@
 
     align-items: center;
 
-    gap: 10px;
-
     min-width: 0;
+
+    gap: 11px;
 
 }
 
@@ -1397,13 +1888,13 @@
 
     flex: 0 0 auto;
 
-    width: 32px;
+    width: 34px;
 
-    height: 32px;
+    height: 34px;
 
-    border-radius: 7px;
+    border-radius: 8px;
 
-    background: #eef3fb;
+    background: #edf3ff;
 
     color: #315caa;
 
@@ -1414,24 +1905,24 @@
 }
 
 
-.item-product > div:last-child {
+.item-product-info {
 
     display: flex;
 
     flex-direction: column;
 
-    gap: 3px;
-
     min-width: 0;
+
+    gap: 3px;
 
 }
 
 
-.item-product strong {
+.item-product-info strong {
 
     overflow: hidden;
 
-    color: #17284f;
+    color: #34415c;
 
     font-size: 11px;
 
@@ -1444,20 +1935,29 @@
 }
 
 
-.item-product span {
+.item-product-info span {
+
+    overflow: hidden;
 
     color: #8a94a6;
 
     font-size: 9px;
 
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
 }
 
 
-.item-detail {
+.item-detail,
+.item-subtotal {
 
     display: flex;
 
     flex-direction: column;
+
+    min-width: 0;
 
     gap: 4px;
 
@@ -1469,25 +1969,48 @@
 
     color: #8a94a6;
 
-    font-size: 9px;
+    font-size: 8px;
+
+    text-transform: uppercase;
 
 }
 
 
-.item-detail strong {
+.item-detail strong,
+.item-subtotal strong {
+
+    overflow: hidden;
 
     color: #34415c;
 
-    font-size: 11px;
+    font-size: 10px;
+
+    text-overflow: ellipsis;
 
     white-space: nowrap;
 
 }
 
 
+.item-subtotal {
+
+    text-align: right;
+
+}
+
+
+.item-subtotal strong {
+
+    color: #17284f;
+
+    font-size: 11px;
+
+}
+
+
 .item-discount {
 
-    color: #b7791f !important;
+    color: #b45353 !important;
 
 }
 
@@ -1499,33 +2022,148 @@
 }
 
 
-.item-subtotal {
+/* =========================================================
+   ITEMS FOOTER
+========================================================= */
+
+.items-footer {
 
     display: flex;
 
-    flex-direction: column;
+    align-items: center;
 
-    align-items: flex-end;
+    justify-content: space-between;
 
-    gap: 4px;
+    gap: 15px;
+
+    margin-top: auto;
+
+    padding: 13px 20px;
+
+    border-top: 1px solid #edf0f5;
+
+    background: #fafbfd;
+
+}
+
+
+.items-pagination-info {
+
+    color: #8a94a6;
+
+    font-size: 9px;
 
 }
 
 
-.item-subtotal strong {
+.items-pagination-info strong {
 
-    color: #17284f;
-
-    font-size: 12px;
-
-    white-space: nowrap;
+    color: #5d6879;
 
 }
 
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.quotation-pagination {
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.quotation-pagination nav {
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.quotation-pagination nav > div:first-child {
+
+    display: none;
+
+}
+
+
+.quotation-pagination nav > div:last-child {
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.quotation-pagination nav a,
+.quotation-pagination nav span {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 27px;
+
+    height: 27px;
+
+    margin-left: 4px;
+
+    padding: 0 7px;
+
+    border: 1px solid #e4e9ef;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #64748b;
+
+    font-size: 9px;
+
+    text-decoration: none;
+
+}
+
+
+.quotation-pagination nav a:hover {
+
+    border-color: #cfe4dc;
+
+    background: #f5fbf8;
+
+    color: #15966f;
+
+}
+
+
+.quotation-pagination nav span[aria-current="page"] {
+
+    border-color: #15966f;
+
+    background: #15966f;
+
+    color: #fff;
+
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
 
 .items-empty {
 
     display: flex;
+
+    flex: 1;
 
     flex-direction: column;
 
@@ -1533,9 +2171,7 @@
 
     justify-content: center;
 
-    gap: 7px;
-
-    min-height: 190px;
+    min-height: 180px;
 
     padding: 30px;
 
@@ -1556,22 +2192,22 @@
 
     height: 36px;
 
-    margin-bottom: 3px;
+    margin-bottom: 10px;
 
-    border-radius: 50%;
+    border-radius: 8px;
 
     background: #f1f5f9;
 
-    color: #8a94a6;
+    color: #94a3b8;
 
-    font-size: 17px;
+    font-size: 18px;
 
 }
 
 
 .items-empty strong {
 
-    color: #4d5b70;
+    color: #34415c;
 
     font-size: 12px;
 
@@ -1580,37 +2216,22 @@
 
 .items-empty span {
 
-    max-width: 280px;
+    margin-top: 5px;
 
     color: #8a94a6;
 
     font-size: 10px;
 
-    line-height: 1.5;
-
 }
 
 
-/* =====================================================
+/* =========================================================
    FINANCIAL
-===================================================== */
-
-.financial-card {
-
-    position: sticky;
-
-    top: 20px;
-
-}
-
+========================================================= */
 
 .financial-list {
 
-    border: 1px solid #e4e9f1;
-
-    border-radius: 8px;
-
-    overflow: hidden;
+    width: 100%;
 
 }
 
@@ -1625,13 +2246,9 @@
 
     gap: 15px;
 
-    min-height: 61px;
-
-    padding: 12px 14px;
+    padding: 12px 0;
 
     border-bottom: 1px solid #edf0f5;
-
-    background: #fff;
 
 }
 
@@ -1642,7 +2259,9 @@
 
     flex-direction: column;
 
-    gap: 4px;
+    min-width: 0;
+
+    gap: 3px;
 
 }
 
@@ -1651,7 +2270,7 @@
 
     color: #34415c;
 
-    font-size: 11px;
+    font-size: 10px;
 
     font-weight: 600;
 
@@ -1662,31 +2281,25 @@
 
     color: #8a94a6;
 
-    font-size: 9px;
+    font-size: 8px;
 
 }
 
 
 .financial-row > strong {
 
-    color: #17284f;
+    flex: 0 0 auto;
 
-    font-size: 12px;
+    color: #34415c;
+
+    font-size: 10px;
 
     white-space: nowrap;
 
 }
 
 
-.discount-row {
-
-    background: #fffdf9;
-
-}
-
-
-.discount-amount,
-.tax-amount {
+.financial-amount {
 
     display: flex;
 
@@ -1694,28 +2307,56 @@
 
     justify-content: flex-end;
 
-    gap: 8px;
+    flex-wrap: wrap;
+
+    gap: 7px;
 
 }
 
 
 .discount-amount strong {
 
-    color: #b7791f;
-
-}
-
-
-.tax-row {
-
-    background: #fafdff;
+    color: #b45353;
 
 }
 
 
 .tax-amount strong {
 
-    color: #315caa;
+    color: #16805f;
+
+}
+
+
+.type-badge {
+
+    display: inline-flex;
+
+    padding: 3px 6px;
+
+    border-radius: 5px;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+}
+
+
+.discount-badge {
+
+    background: #fff0f0;
+
+    color: #b45353;
+
+}
+
+
+.tax-badge {
+
+    background: #e8f5f0;
+
+    color: #16805f;
 
 }
 
@@ -1727,45 +2368,6 @@
 }
 
 
-.type-badge {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    padding: 3px 6px;
-
-    border-radius: 4px;
-
-    font-size: 9px;
-
-    font-weight: 700;
-
-}
-
-
-.discount-badge {
-
-    background: #fff0d1;
-
-    color: #9a6a18;
-
-}
-
-
-.tax-badge {
-
-    background: #edf3ff;
-
-    color: #315caa;
-
-}
-
-
-/* =====================================================
-   GRAND TOTAL
-===================================================== */
-
 .grand-total {
 
     display: flex;
@@ -1776,13 +2378,13 @@
 
     gap: 15px;
 
-    margin-top: 12px;
+    margin-top: 17px;
 
-    padding: 17px 15px;
+    padding: 15px;
 
-    border-radius: 8px;
+    border-radius: 9px;
 
-    background: #f1faf7;
+    background: #f4f8f7;
 
 }
 
@@ -1800,20 +2402,20 @@
 
 .grand-total span {
 
-    color: #15966f;
+    color: #34415c;
 
-    font-size: 12px;
+    font-size: 10px;
 
-    font-weight: 700;
+    font-weight: 600;
 
 }
 
 
 .grand-total small {
 
-    color: #6c9a8c;
+    color: #8a94a6;
 
-    font-size: 9px;
+    font-size: 8px;
 
 }
 
@@ -1822,16 +2424,12 @@
 
     color: #15966f;
 
-    font-size: 18px;
+    font-size: 16px;
 
     white-space: nowrap;
 
 }
 
-
-/* =====================================================
-   FINANCIAL STATUS
-===================================================== */
 
 .financial-status {
 
@@ -1839,13 +2437,13 @@
 
     align-items: center;
 
-    gap: 6px;
+    gap: 7px;
 
-    margin-top: 10px;
+    margin-top: 13px;
 
     color: #8a94a6;
 
-    font-size: 9px;
+    font-size: 8px;
 
 }
 
@@ -1856,31 +2454,43 @@
 
     height: 6px;
 
+    flex: 0 0 auto;
+
     border-radius: 50%;
 
-    background: #2ba7a0;
+    background: #1db887;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    NOTES
-===================================================== */
+========================================================= */
 
 .notes-card {
 
-    margin-bottom: 0;
+    margin-bottom: 12px;
 
 }
 
 
 .notes-content {
 
-    color: #34415c;
+    padding: 12px 14px;
 
-    font-size: 12px;
+    border: 1px solid #edf0f5;
+
+    border-radius: 8px;
+
+    background: #fafbfd;
+
+    color: #4a5568;
+
+    font-size: 11px;
 
     line-height: 1.7;
+
+    word-break: break-word;
 
 }
 
@@ -1889,24 +2499,141 @@
 
     color: #8a94a6;
 
-    font-size: 11px;
+    font-size: 10px;
 
 }
 
 
-/* =====================================================
+/* =========================================================
    METADATA
-===================================================== */
+========================================================= */
 
 .quotation-metadata {
 
     display: flex;
 
-    justify-content: flex-end;
+    align-items: center;
+
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+
+    gap: 8px 20px;
+
+    padding: 2px 2px 20px;
+
+    color: #9aa3b1;
+
+    font-size: 8px;
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.quotation-items-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 25px;
+
+    box-sizing: border-box;
+
+}
+
+
+.quotation-items-modal.is-open {
+
+    display: flex;
+
+}
+
+
+.quotation-items-modal-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background: rgba(23, 40, 79, .42);
+
+    backdrop-filter: blur(2px);
+
+}
+
+
+.quotation-items-dialog {
+
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: min(1100px, 100%);
+
+    max-height: min(760px, 90vh);
+
+    overflow: hidden;
+
+    border: 1px solid #e5eaf0;
+
+    border-radius: 12px;
+
+    background: #fff;
+
+    box-shadow: 0 20px 60px rgba(23, 40, 79, .18);
+
+}
+
+
+.quotation-items-modal-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
 
     gap: 20px;
 
-    margin-top: 14px;
+    padding: 18px 22px;
+
+    border-bottom: 1px solid #edf0f5;
+
+}
+
+
+.quotation-items-modal-header h3 {
+
+    margin: 0;
+
+    color: #17284f;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+}
+
+
+.quotation-items-modal-header p {
+
+    margin: 4px 0 0;
 
     color: #8a94a6;
 
@@ -1915,22 +2642,520 @@
 }
 
 
-/* =====================================================
+.modal-close-button {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 30px;
+
+    height: 30px;
+
+    flex: 0 0 auto;
+
+    border: 0;
+
+    border-radius: 7px;
+
+    background: #f4f6f8;
+
+    color: #64748b;
+
+    font-size: 20px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+}
+
+
+.modal-close-button:hover {
+
+    background: #edf0f5;
+
+    color: #17284f;
+
+}
+
+
+/* =========================================================
+   MODAL TOOLBAR
+========================================================= */
+
+.quotation-items-toolbar {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 13px 22px;
+
+    border-bottom: 1px solid #edf0f5;
+
+    background: #fafbfd;
+
+}
+
+
+.quotation-items-search {
+
+    position: relative;
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.quotation-items-search-icon {
+
+    position: absolute;
+
+    top: 50%;
+
+    left: 11px;
+
+    transform: translateY(-50%);
+
+    color: #7d8898;
+
+    font-size: 18px;
+
+    line-height: 1;
+
+    pointer-events: none;
+
+}
+
+
+.quotation-items-search input {
+
+    width: 100%;
+
+    height: 34px;
+
+    padding: 0 12px 0 34px;
+
+    border: 1px solid #dfe5ec;
+
+    border-radius: 7px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: #34415c;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    box-sizing: border-box;
+
+}
+
+
+.quotation-items-search input:focus {
+
+    border-color: #9fcdbf;
+
+    box-shadow: 0 0 0 3px rgba(21, 150, 111, .08);
+
+}
+
+
+.quotation-items-sort {
+
+    width: 180px;
+
+    height: 34px;
+
+    padding: 0 10px;
+
+    border: 1px solid #dfe5ec;
+
+    border-radius: 7px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: #34415c;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+}
+
+
+/* =========================================================
+   MODAL BODY
+========================================================= */
+
+.quotation-items-modal-body {
+
+    position: relative;
+
+    min-height: 300px;
+
+    overflow: auto;
+
+}
+
+
+.quotation-items-table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.quotation-items-table {
+
+    width: 100%;
+
+    min-width: 760px;
+
+    border-collapse: collapse;
+
+}
+
+
+.quotation-items-table th {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 2;
+
+    padding: 11px 16px;
+
+    border-bottom: 1px solid #e7ebf0;
+
+    background: #f8fafc;
+
+    color: #7d8898;
+
+    font-size: 8px;
+
+    font-weight: 600;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: .03em;
+
+}
+
+
+.quotation-items-table td {
+
+    padding: 12px 16px;
+
+    border-bottom: 1px solid #edf0f5;
+
+    color: #34415c;
+
+    font-size: 10px;
+
+    vertical-align: middle;
+
+}
+
+
+.quotation-items-table tbody tr:hover {
+
+    background: #fafcfb;
+
+}
+
+
+.modal-product {
+
+    display: flex;
+
+    align-items: center;
+
+    min-width: 0;
+
+    gap: 10px;
+
+}
+
+
+.modal-product-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 30px;
+
+    height: 30px;
+
+    flex: 0 0 auto;
+
+    border-radius: 7px;
+
+    background: #edf3ff;
+
+    color: #315caa;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+}
+
+
+.modal-product-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    gap: 3px;
+
+}
+
+
+.modal-product-info strong {
+
+    overflow: hidden;
+
+    color: #34415c;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.modal-product-info span {
+
+    color: #8a94a6;
+
+    font-size: 8px;
+
+}
+
+
+.modal-number {
+
+    white-space: nowrap;
+
+}
+
+
+.modal-discount {
+
+    color: #b45353 !important;
+
+}
+
+
+.modal-subtotal {
+
+    color: #17284f !important;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   MODAL LOADING / EMPTY
+========================================================= */
+
+.quotation-items-loading,
+.quotation-items-modal-empty {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 300px;
+
+    color: #8a94a6;
+
+    font-size: 10px;
+
+}
+
+
+.quotation-items-loading {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.quotation-items-modal-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    min-height: 54px;
+
+    padding: 10px 22px;
+
+    border-top: 1px solid #edf0f5;
+
+    background: #fafbfd;
+
+    box-sizing: border-box;
+
+}
+
+
+.quotation-items-modal-info {
+
+    color: #8a94a6;
+
+    font-size: 9px;
+
+}
+
+
+.quotation-items-modal-info strong {
+
+    color: #5d6879;
+
+}
+
+
+.quotation-items-modal-pagination {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+}
+
+
+.modal-page-button {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 27px;
+
+    height: 27px;
+
+    padding: 0 7px;
+
+    border: 1px solid #e4e9ef;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #64748b;
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    cursor: pointer;
+
+}
+
+
+.modal-page-button:hover {
+
+    border-color: #cfe4dc;
+
+    background: #f5fbf8;
+
+    color: #15966f;
+
+}
+
+
+.modal-page-button.active {
+
+    border-color: #15966f;
+
+    background: #15966f;
+
+    color: #fff;
+
+}
+
+
+.modal-page-button:disabled {
+
+    opacity: .45;
+
+    cursor: default;
+
+}
+
+
+/* =========================================================
    RESPONSIVE
-===================================================== */
+========================================================= */
 
 @media (max-width: 1150px) {
+
+    .main-detail-grid {
+
+        grid-template-columns:
+            minmax(0, 1.45fr)
+            minmax(280px, .85fr);
+
+    }
+
 
     .quotation-item {
 
         grid-template-columns:
-            minmax(180px, 1.5fr)
-            60px
-            115px
-            100px
-            125px;
+            minmax(170px, 1.4fr)
+            minmax(60px, .5fr)
+            minmax(110px, .9fr)
+            minmax(95px, .75fr)
+            minmax(115px, .9fr);
 
-        gap: 8px;
+        gap: 12px;
 
     }
 
@@ -1939,7 +3164,7 @@
 
 @media (max-width: 950px) {
 
-    .top-detail-grid {
+    .information-layout {
 
         grid-template-columns: 1fr;
 
@@ -1952,23 +3177,119 @@
 
     }
 
+}
 
-    .financial-card {
 
-        position: static;
+@media (max-width: 750px) {
+
+    .quotation-information-grid {
+
+        grid-template-columns: 1fr 1fr;
+
+        column-gap: 24px;
+
+    }
+
+
+    .quotation-item {
+
+        grid-template-columns:
+            minmax(0, 1.5fr)
+            minmax(70px, .6fr)
+            minmax(100px, .9fr);
+
+    }
+
+
+    .item-subtotal {
+
+        grid-column: 3;
+
+        text-align: left;
+
+    }
+
+
+    .items-footer {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .quotation-pagination {
+
+        width: 100%;
+
+    }
+
+
+    .quotation-items-toolbar {
+
+        align-items: stretch;
+
+        flex-direction: column;
+
+    }
+
+
+    .quotation-items-sort {
+
+        width: 100%;
+
+    }
+
+
+    .quotation-items-modal {
+
+        padding: 10px;
+
+    }
+
+
+    .quotation-items-dialog {
+
+        max-height: 95vh;
 
     }
 
 }
 
 
-@media (max-width: 700px) {
+@media (max-width: 600px) {
 
-    .detail-grid {
+    .quotation-information-grid {
 
         grid-template-columns: 1fr;
 
-        gap: 17px;
+    }
+
+
+    .opportunity-meta {
+
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+
+    }
+
+
+    .opportunity-meta-item {
+
+        padding: 0 !important;
+
+    }
+
+
+    .opportunity-meta-item:not(:last-child) {
+
+        padding-bottom: 12px;
+
+        border-right: 0;
+
+        border-bottom: 1px solid #edf0f5;
 
     }
 
@@ -1977,9 +3298,9 @@
 
         grid-template-columns: 1fr 1fr;
 
-        gap: 14px;
+        gap: 15px;
 
-        padding: 15px;
+        padding: 16px;
 
     }
 
@@ -1993,89 +3314,799 @@
 
     .item-subtotal {
 
-        align-items: flex-start;
+        grid-column: auto;
 
     }
 
 
-    .opportunity-meta {
+    .items-header-actions {
 
-        grid-template-columns: 1fr;
+        flex-wrap: wrap;
 
     }
 
 
-    .grand-total {
+    .quotation-items-modal-footer {
 
         align-items: flex-start;
 
         flex-direction: column;
-
-    }
-
-
-    .grand-total strong {
-
-        font-size: 17px;
-
-    }
-
-
-    .quotation-metadata {
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 5px;
 
     }
 
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
 
-    .page-head {
+    .quotation-items-modal-header {
 
-        align-items: flex-start;
-
-        flex-direction: column;
-
-        gap: 14px;
+        padding: 15px;
 
     }
 
 
-    .quotation-heading {
+    .quotation-items-toolbar {
 
-        align-items: flex-start;
-
-    }
-
-
-    .actions {
-
-        width: 100%;
+        padding: 11px 15px;
 
     }
 
 
-    .actions .btn {
+    .quotation-items-modal-footer {
 
-        flex: 1;
-
-    }
-
-
-    .financial-row {
-
-        padding: 12px;
+        padding: 10px 15px;
 
     }
 
 }
 
 </style>
+
+
+
+<script>
+
+const quotationItemsUrl =
+    @json(route('quotations.items', $quotation));
+
+
+let quotationItemsCurrentPage = 1;
+
+let quotationItemsSearchTimer = null;
+
+
+/* =========================================================
+   OPEN MODAL
+========================================================= */
+
+function openQuotationItemsModal() {
+
+    const modal =
+        document.getElementById(
+            'quotationItemsModal'
+        );
+
+
+    modal.classList.add('is-open');
+
+    modal.setAttribute(
+        'aria-hidden',
+        'false'
+    );
+
+
+    document.body.style.overflow = 'hidden';
+
+
+    quotationItemsCurrentPage = 1;
+
+
+    loadQuotationItems(
+        quotationItemsCurrentPage
+    );
+
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closeQuotationItemsModal() {
+
+    const modal =
+        document.getElementById(
+            'quotationItemsModal'
+        );
+
+
+    modal.classList.remove('is-open');
+
+    modal.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+
+    document.body.style.overflow = '';
+
+}
+
+
+/* =========================================================
+   ESC KEY
+========================================================= */
+
+document.addEventListener(
+    'keydown',
+    function (event) {
+
+        if (
+            event.key === 'Escape'
+        ) {
+
+            closeQuotationItemsModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   LOAD ITEMS
+========================================================= */
+
+async function loadQuotationItems(
+    page = 1
+) {
+
+    const loading =
+        document.getElementById(
+            'quotationItemsLoading'
+        );
+
+
+    const empty =
+        document.getElementById(
+            'quotationItemsEmpty'
+        );
+
+
+    const table =
+        document.getElementById(
+            'quotationItemsTable'
+        );
+
+
+    const body =
+        document.getElementById(
+            'quotationItemsTableBody'
+        );
+
+
+    const info =
+        document.getElementById(
+            'quotationItemsModalInfo'
+        );
+
+
+    const pagination =
+        document.getElementById(
+            'quotationItemsModalPagination'
+        );
+
+
+    const search =
+        document.getElementById(
+            'quotationItemsSearch'
+        ).value.trim();
+
+
+    const sortValue =
+        document.getElementById(
+            'quotationItemsSort'
+        ).value;
+
+
+    const [
+        sort,
+        direction
+    ] = sortValue.split('|');
+
+
+    loading.style.display = 'flex';
+
+    empty.style.display = 'none';
+
+    table.style.display = 'none';
+
+    body.innerHTML = '';
+
+    pagination.innerHTML = '';
+
+    info.innerHTML = '';
+
+
+    try {
+
+        const params =
+            new URLSearchParams({
+
+                page: page,
+
+                search: search,
+
+                sort: sort,
+
+                direction: direction,
+
+            });
+
+
+        const response =
+            await fetch(
+                `${quotationItemsUrl}?${params.toString()}`,
+                {
+                    headers: {
+                        'Accept':
+                            'application/json',
+                        'X-Requested-With':
+                            'XMLHttpRequest'
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                'Failed to load quotation items.'
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        quotationItemsCurrentPage =
+            result.current_page;
+
+
+        loading.style.display = 'none';
+
+
+        if (!result.data.length) {
+
+            empty.style.display = 'flex';
+
+            info.innerHTML =
+                'No items found.';
+
+            return;
+
+        }
+
+
+        table.style.display = 'block';
+
+
+        result.data.forEach(
+            function (item) {
+
+                const row =
+                    document.createElement('tr');
+
+
+                const discount =
+                    Number(
+                        item.discount || 0
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+
+                        <div class="modal-product">
+
+                            <div class="modal-product-icon">
+                                P
+                            </div>
+
+                            <div class="modal-product-info">
+
+                                <strong
+                                    title="${escapeHtml(item.product_name)}"
+                                >
+                                    ${escapeHtml(item.product_name)}
+                                </strong>
+
+                                <span>
+                                    ${escapeHtml(item.product_code)}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td class="modal-number">
+                        ${formatNumber(item.quantity)}
+                    </td>
+
+
+                    <td class="modal-number">
+                        Rp ${formatNumber(item.unit_price)}
+                    </td>
+
+
+                    <td class="modal-number">
+
+                        ${
+                            discount > 0
+                                ? `<span class="modal-discount">
+                                    − Rp ${formatNumber(discount)}
+                                   </span>`
+                                : '-'
+                        }
+
+                    </td>
+
+
+                    <td class="modal-subtotal">
+                        Rp ${formatNumber(item.subtotal)}
+                    </td>
+
+                `;
+
+
+                body.appendChild(row);
+
+            }
+        );
+
+
+        info.innerHTML = `
+
+            Showing
+            <strong>
+                ${result.from}
+            </strong>
+            –
+            <strong>
+                ${result.to}
+            </strong>
+            of
+            <strong>
+                ${result.total}
+            </strong>
+            items
+
+        `;
+
+
+        renderQuotationItemsPagination(
+            result.current_page,
+            result.last_page
+        );
+
+
+    } catch (error) {
+
+        loading.style.display = 'none';
+
+        empty.style.display = 'flex';
+
+        empty.textContent =
+            'Failed to load quotation items.';
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+function renderQuotationItemsPagination(
+    currentPage,
+    lastPage
+) {
+
+    const container =
+        document.getElementById(
+            'quotationItemsModalPagination'
+        );
+
+
+    container.innerHTML = '';
+
+
+    if (lastPage <= 1) {
+
+        return;
+
+    }
+
+
+    const previous =
+        document.createElement('button');
+
+
+    previous.type =
+        'button';
+
+    previous.className =
+        'modal-page-button';
+
+    previous.textContent =
+        '‹';
+
+    previous.disabled =
+        currentPage <= 1;
+
+
+    previous.onclick =
+        function () {
+
+            if (
+                currentPage > 1
+            ) {
+
+                loadQuotationItems(
+                    currentPage - 1
+                );
+
+            }
+
+        };
+
+
+    container.appendChild(
+        previous
+    );
+
+
+    let startPage =
+        Math.max(
+            1,
+            currentPage - 2
+        );
+
+
+    let endPage =
+        Math.min(
+            lastPage,
+            currentPage + 2
+        );
+
+
+    if (startPage > 1) {
+
+        addQuotationPageButton(
+            1,
+            currentPage,
+            container
+        );
+
+
+        if (startPage > 2) {
+
+            const dots =
+                document.createElement(
+                    'span'
+                );
+
+            dots.textContent =
+                '...';
+
+            dots.style.padding =
+                '0 4px';
+
+            dots.style.color =
+                '#9aa3b1';
+
+            container.appendChild(
+                dots
+            );
+
+        }
+
+    }
+
+
+    for (
+        let page = startPage;
+        page <= endPage;
+        page++
+    ) {
+
+        addQuotationPageButton(
+            page,
+            currentPage,
+            container
+        );
+
+    }
+
+
+    if (endPage < lastPage) {
+
+        if (
+            endPage < lastPage - 1
+        ) {
+
+            const dots =
+                document.createElement(
+                    'span'
+                );
+
+            dots.textContent =
+                '...';
+
+            dots.style.padding =
+                '0 4px';
+
+            dots.style.color =
+                '#9aa3b1';
+
+            container.appendChild(
+                dots
+            );
+
+        }
+
+
+        addQuotationPageButton(
+            lastPage,
+            currentPage,
+            container
+        );
+
+    }
+
+
+    const next =
+        document.createElement('button');
+
+
+    next.type =
+        'button';
+
+    next.className =
+        'modal-page-button';
+
+    next.textContent =
+        '›';
+
+    next.disabled =
+        currentPage >= lastPage;
+
+
+    next.onclick =
+        function () {
+
+            if (
+                currentPage < lastPage
+            ) {
+
+                loadQuotationItems(
+                    currentPage + 1
+                );
+
+            }
+
+        };
+
+
+    container.appendChild(
+        next
+    );
+
+}
+
+
+/* =========================================================
+   PAGE BUTTON
+========================================================= */
+
+function addQuotationPageButton(
+    page,
+    currentPage,
+    container
+) {
+
+    const button =
+        document.createElement(
+            'button'
+        );
+
+
+    button.type =
+        'button';
+
+    button.className =
+        'modal-page-button';
+
+
+    if (
+        page === currentPage
+    ) {
+
+        button.classList.add(
+            'active'
+        );
+
+    }
+
+
+    button.textContent =
+        page;
+
+
+    button.onclick =
+        function () {
+
+            loadQuotationItems(
+                page
+            );
+
+        };
+
+
+    container.appendChild(
+        button
+    );
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+    .getElementById(
+        'quotationItemsSearch'
+    )
+    .addEventListener(
+        'input',
+        function () {
+
+            clearTimeout(
+                quotationItemsSearchTimer
+            );
+
+
+            quotationItemsSearchTimer =
+                setTimeout(
+                    function () {
+
+                        if (
+                            document
+                                .getElementById(
+                                    'quotationItemsModal'
+                                )
+                                .classList
+                                .contains(
+                                    'is-open'
+                                )
+                        ) {
+
+                            quotationItemsCurrentPage =
+                                1;
+
+                            loadQuotationItems(
+                                1
+                            );
+
+                        }
+
+                    },
+                    350
+                );
+
+        }
+    );
+
+
+/* =========================================================
+   SORT
+========================================================= */
+
+document
+    .getElementById(
+        'quotationItemsSort'
+    )
+    .addEventListener(
+        'change',
+        function () {
+
+            if (
+                document
+                    .getElementById(
+                        'quotationItemsModal'
+                    )
+                    .classList
+                    .contains(
+                        'is-open'
+                    )
+            ) {
+
+                quotationItemsCurrentPage =
+                    1;
+
+                loadQuotationItems(
+                    1
+                );
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
+
+function formatNumber(
+    value
+) {
+
+    return new Intl.NumberFormat(
+        'id-ID',
+        {
+            maximumFractionDigits: 0
+        }
+    ).format(
+        Number(value || 0)
+    );
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(value ?? '')
+        .replace(
+            /&/g,
+            '&amp;'
+        )
+        .replace(
+            /</g,
+            '&lt;'
+        )
+        .replace(
+            />/g,
+            '&gt;'
+        )
+        .replace(
+            /"/g,
+            '&quot;'
+        )
+        .replace(
+            /'/g,
+            '&#039;'
+        );
+
+}
+
+</script>
 
 @endsection

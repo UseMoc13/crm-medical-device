@@ -107,3 +107,8 @@ Route::delete(
     '/opportunities/{opportunity}/items/{item}',
     [OpportunityItemController::class, 'destroy']
 )->name('opportunities.items.destroy');
+
+Route::get(
+    '/quotations/{quotation}/items',
+    [QuotationController::class, 'items']
+)->name('quotations.items');
