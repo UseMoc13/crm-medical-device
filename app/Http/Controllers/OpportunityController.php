@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\Product;
 
 class OpportunityController extends Controller
 {
@@ -34,10 +35,26 @@ class OpportunityController extends Controller
 
             $query->where(function ($q) use ($search) {
 
-                $q->where('opportunity_code', 'ILIKE', "%{$search}%")
-                    ->orWhere('name', 'ILIKE', "%{$search}%")
-                    ->orWhere('stage', 'ILIKE', "%{$search}%")
-                    ->orWhere('status', 'ILIKE', "%{$search}%");
+                $q->where(
+                    'opportunity_code',
+                    'ILIKE',
+                    "%{$search}%"
+                )
+                    ->orWhere(
+                        'name',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                    ->orWhere(
+                        'stage',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                    ->orWhere(
+                        'status',
+                        'ILIKE',
+                        "%{$search}%"
+                    );
             });
         }
 
@@ -331,18 +348,232 @@ class OpportunityController extends Controller
     /**
      * Display the specified opportunity.
      */
-    public function show(Opportunity $opportunity)
+    public function show(Request $request, Opportunity $opportunity)
     {
         $opportunity->load([
             'customer',
             'lead',
             'user',
-            'items.product',
         ]);
+
+        // Item yang ditampilkan pada tabel utama
+        $items = $opportunity->items()
+            ->with('product')
+            ->orderByDesc('created_at')
+            ->paginate(
+                5,
+                ['*'],
+                'items_page'
+            )
+            ->withQueryString();
+
+        // Query untuk item pada modal Show All
+        $modalQuery = $opportunity->items()
+            ->with('product');
+
+        // Search item
+        if ($request->filled('item_search')) {
+            $search = trim($request->item_search);
+
+            $modalQuery->where(function ($query) use ($search) {
+                $query->where('notes', 'ILIKE', "%{$search}%")
+                    ->orWhereHas('product', function ($productQuery) use ($search) {
+                        $productQuery
+                            ->where('product_name', 'ILIKE', "%{$search}%")
+                            ->orWhere('product_code', 'ILIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter berdasarkan product
+        if ($request->filled('item_product_id')) {
+            $modalQuery->where(
+                'product_id',
+                $request->item_product_id
+            );
+        }
+
+        // Pagination modal
+        $modalItems = $modalQuery
+            ->orderByDesc('created_at')
+            ->paginate(
+                10,
+                ['*'],
+                'items_modal_page'
+            )
+            ->withQueryString();
+
+        // Product yang tersedia untuk filter
+        $itemProducts = Product::query()
+            ->whereIn(
+                'product_id',
+                $opportunity->items()
+                    ->select('product_id')
+            )
+            ->orderBy('product_name')
+            ->get([
+                'product_id',
+                'product_name',
+                'product_code',
+            ]);
 
         return view(
             'opportunities.show',
-            compact('opportunity')
+            compact(
+                'opportunity',
+                'items',
+                'modalItems',
+                'itemProducts'
+            )
+        );
+    }
+
+
+    /**
+     * Display all opportunity items.
+     *
+     * Digunakan oleh modal Opportunity Items.
+     */
+    public function items(
+        Request $request,
+        Opportunity $opportunity
+    ) {
+        $query = $opportunity->items()
+            ->with('product');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->whereHas(
+                'product',
+                function ($q) use ($search) {
+
+                    $q->where(
+                        'product_name',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                        ->orWhere(
+                            'product_code',
+                            'ILIKE',
+                            "%{$search}%"
+                        )
+                        ->orWhere(
+                            'product_type',
+                            'ILIKE',
+                            "%{$search}%"
+                        );
+                }
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Product Type
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('product_type')) {
+
+            $query->whereHas(
+                'product',
+                function ($q) use ($request) {
+
+                    $q->where(
+                        'product_type',
+                        $request->product_type
+                    );
+                }
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+
+        $items = $query
+            ->orderByDesc('created_at')
+            ->paginate(
+                10,
+                ['*'],
+                'items_page'
+            )
+            ->withQueryString();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Product Type Filter Options
+        |--------------------------------------------------------------------------
+        */
+
+        $productTypes = $opportunity->items()
+            ->whereHas('product')
+            ->join(
+                'products',
+                'opportunity_items.product_id',
+                '=',
+                'products.product_id'
+            )
+            ->whereNotNull(
+                'products.product_type'
+            )
+            ->where(
+                'products.product_type',
+                '!=',
+                ''
+            )
+            ->distinct()
+            ->orderBy(
+                'products.product_type'
+            )
+            ->pluck(
+                'products.product_type'
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | AJAX Response
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->ajax()) {
+
+            return response()->json([
+
+                'html' => view(
+                    'opportunities.partials.items-table',
+                    compact(
+                        'opportunity',
+                        'items'
+                    )
+                )->render(),
+
+                'pagination' => view(
+                    'opportunities.partials.items-pagination',
+                    compact('items')
+                )->render(),
+
+                'total' => $items->total(),
+
+            ]);
+        }
+
+        return view(
+            'opportunities.items',
+            compact(
+                'opportunity',
+                'items',
+                'productTypes'
+            )
         );
     }
 
@@ -434,7 +665,6 @@ class OpportunityController extends Controller
         Request $request,
         Opportunity $opportunity
     ) {
-
         $validated = $request->validate([
 
             'customer_id' => [
@@ -539,7 +769,6 @@ class OpportunityController extends Controller
                 strtoupper(
                     Str::random(5)
                 );
-
         } while (
             Opportunity::where(
                 'opportunity_code',

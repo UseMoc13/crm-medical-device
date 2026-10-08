@@ -112,3 +112,8 @@ Route::get(
     '/quotations/{quotation}/items',
     [QuotationController::class, 'items']
 )->name('quotations.items');
+
+Route::get(
+    '/opportunities/{opportunity}/items',
+    [OpportunityController::class, 'items']
+)->name('opportunities.items');

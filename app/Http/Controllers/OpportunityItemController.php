@@ -107,7 +107,6 @@ class OpportunityItemController extends Controller
             $item->opportunity_id !==
             $opportunity->opportunity_id
         ) {
-
             abort(404);
         }
 
@@ -134,12 +133,8 @@ class OpportunityItemController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Include current product
+        | Include Current Product
         |--------------------------------------------------------------------------
-        |
-        | Jika product yang sedang digunakan ternyata sudah inactive,
-        | tetap tampilkan agar data existing tidak hilang dari form.
-        |
         */
 
         if (
@@ -203,16 +198,9 @@ class OpportunityItemController extends Controller
             $item->opportunity_id !==
             $opportunity->opportunity_id
         ) {
-
             abort(404);
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Validation
-        |--------------------------------------------------------------------------
-        */
 
         $validated = $request->validate([
 
@@ -241,12 +229,6 @@ class OpportunityItemController extends Controller
 
         ]);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Update
-        |--------------------------------------------------------------------------
-        */
 
         $item->update(
             $validated
@@ -282,7 +264,6 @@ class OpportunityItemController extends Controller
             $item->opportunity_id !==
             $opportunity->opportunity_id
         ) {
-
             abort(404);
         }
 
