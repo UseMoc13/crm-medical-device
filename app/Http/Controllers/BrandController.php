@@ -100,15 +100,21 @@ class BrandController extends Controller
     /**
      * Display the specified brand.
      */
-    public function show(Brand $brand)
-    {
-        $brand->loadCount('products');
+public function show(Brand $brand)
+{
+    $products = $brand->products()
+        ->latest('created_at')
+        ->paginate(10)
+        ->withQueryString();
 
-        return view(
-            'brands.show',
-            compact('brand')
-        );
-    }
+    return view(
+        'brands.show',
+        compact(
+            'brand',
+            'products'
+        )
+    );
+}
 
 
     /**
@@ -178,3 +184,4 @@ class BrandController extends Controller
             ->with('success', 'Brand deleted successfully.');
     }
 }
+

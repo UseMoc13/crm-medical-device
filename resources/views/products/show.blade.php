@@ -7,26 +7,27 @@
 <div class="page-head">
 
     <div>
+
         <h1>Product Details</h1>
 
         <p>
             View product information, commercial details, and related opportunity items.
         </p>
+
     </div>
+
 
     <div class="actions">
 
         <a
             href="{{ route('products.index') }}"
-            class="btn"
-        >
+            class="btn">
             ← Back to Products
         </a>
 
         <a
             href="{{ route('products.edit', $product) }}"
-            class="btn primary"
-        >
+            class="btn primary">
             Edit Product
         </a>
 
@@ -35,32 +36,44 @@
 </div>
 
 
+{{-- =========================================================
+ALERT
+========================================================= --}}
+
 @if(session('success'))
 
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
+<div class="alert success">
+
+    {{ session('success') }}
+
+</div>
 
 @endif
 
 
 @if(session('error'))
 
-    <div class="alert error">
-        {{ session('error') }}
-    </div>
+<div class="alert error">
+
+    {{ session('error') }}
+
+</div>
 
 @endif
 
 
-<div class="product-show-layout">
+{{-- =========================================================
+PRODUCT OVERVIEW
+========================================================= --}}
+
+<div class="product-overview-grid">
 
 
     {{-- =====================================================
          PRODUCT INFORMATION
     ====================================================== --}}
 
-    <div class="card">
+    <div class="card product-information-card">
 
         <div class="card-head">
 
@@ -85,7 +98,8 @@
                     P
                 </div>
 
-                <div>
+
+                <div class="product-identity-content">
 
                     <h2>
                         {{ $product->product_name }}
@@ -97,10 +111,32 @@
 
                 </div>
 
+
+                <div class="product-status">
+
+                    @if($product->status === 'active')
+
+                    <span class="status-badge active">
+                        Active
+                    </span>
+
+                    @else
+
+                    <span class="status-badge inactive">
+                        Inactive
+                    </span>
+
+                    @endif
+
+                </div>
+
             </div>
 
 
-            <div class="info-grid">
+            <div class="product-info-grid">
+
+
+                {{-- Product Code --}}
 
                 <div class="info-item">
 
@@ -109,11 +145,13 @@
                     </span>
 
                     <strong>
-                        {{ $product->product_code }}
+                        {{ $product->product_code ?: '-' }}
                     </strong>
 
                 </div>
 
+
+                {{-- Product Name --}}
 
                 <div class="info-item">
 
@@ -122,11 +160,13 @@
                     </span>
 
                     <strong>
-                        {{ $product->product_name }}
+                        {{ $product->product_name ?: '-' }}
                     </strong>
 
                 </div>
 
+
+                {{-- Category --}}
 
                 <div class="info-item">
 
@@ -141,6 +181,8 @@
                 </div>
 
 
+                {{-- Brand --}}
+
                 <div class="info-item">
 
                     <span class="info-label">
@@ -153,6 +195,8 @@
 
                 </div>
 
+
+                {{-- Product Type --}}
 
                 <div class="info-item">
 
@@ -167,6 +211,8 @@
                 </div>
 
 
+                {{-- Unit --}}
+
                 <div class="info-item">
 
                     <span class="info-label">
@@ -180,28 +226,7 @@
                 </div>
 
 
-                <div class="info-item">
-
-                    <span class="info-label">
-                        Status
-                    </span>
-
-                    @if($product->status === 'active')
-
-                        <span class="status-badge active">
-                            Active
-                        </span>
-
-                    @else
-
-                        <span class="status-badge inactive">
-                            Inactive
-                        </span>
-
-                    @endif
-
-                </div>
-
+                {{-- Created --}}
 
                 <div class="info-item">
 
@@ -215,6 +240,21 @@
 
                 </div>
 
+
+                {{-- Updated --}}
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        Updated
+                    </span>
+
+                    <strong>
+                        {{ $product->updated_at?->format('d M Y, H:i') ?? '-' }}
+                    </strong>
+
+                </div>
+
             </div>
 
         </div>
@@ -223,19 +263,19 @@
 
 
     {{-- =====================================================
-         COMMERCIAL INFORMATION
+         COMMERCIAL SUMMARY
     ====================================================== --}}
 
-    <div class="card">
+    <div class="card commercial-summary-card">
 
         <div class="card-head">
 
             <div>
 
-                <h3>Commercial Information</h3>
+                <h3>Commercial Summary</h3>
 
                 <p>
-                    Pricing and warranty information for this product.
+                    Pricing and warranty information.
                 </p>
 
             </div>
@@ -245,244 +285,377 @@
 
         <div class="card-body">
 
-            <div class="commercial-grid">
+            <div class="commercial-summary">
 
-                <div class="commercial-card">
 
-                    <span>
-                        Product Price
-                    </span>
+                {{-- Price --}}
 
-                    <strong>
-                        Rp {{ number_format((float) ($product->price ?? 0), 2, ',', '.') }}
-                    </strong>
+                <div class="commercial-item">
 
-                    <small>
-                        Base selling price
-                    </small>
-
-                </div>
-
-
-                <div class="commercial-card">
-
-                    <span>
-                        Warranty Period
-                    </span>
-
-                    <strong>
-                        {{ $product->warranty_period ?? 0 }}
-                        Months
-                    </strong>
-
-                    <small>
-                        Product warranty duration
-                    </small>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- =====================================================
-         SPECIFICATION
-    ====================================================== --}}
-
-    <div class="card">
-
-        <div class="card-head">
-
-            <div>
-
-                <h3>Product Specification</h3>
-
-                <p>
-                    Technical specification and additional product information.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="card-body">
-
-            <div class="specification-box">
-
-                @if($product->specification)
-
-                    {!! nl2br(e($product->specification)) !!}
-
-                @else
-
-                    <span class="empty-text">
-                        No specification provided.
-                    </span>
-
-                @endif
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- =====================================================
-         OPPORTUNITY ITEMS
-    ====================================================== --}}
-
-    <div class="card">
-
-        <div class="card-head">
-
-            <div>
-
-                <h3>Opportunity Items</h3>
-
-                <p>
-                    Opportunities where this product has been included.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="card-body no-padding">
-
-
-            @if($product->opportunityItems->count())
-
-                <div class="table-wrap">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Opportunity
-                                </th>
-
-                                <th>
-                                    Quantity
-                                </th>
-
-                                <th>
-                                    Estimated Price
-                                </th>
-
-                                <th>
-                                    Notes
-                                </th>
-
-                                <th>
-                                    Created
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            @foreach($product->opportunityItems as $item)
-
-                                <tr>
-
-                                    <td>
-
-                                        @if($item->opportunity)
-
-                                            <a
-                                                href="{{ route('opportunities.show', $item->opportunity) }}"
-                                                class="table-link"
-                                            >
-                                                {{ $item->opportunity->opportunity_name ?? 'Opportunity' }}
-                                            </a>
-
-                                        @else
-
-                                            <span class="muted">
-                                                -
-
-                                            </span>
-
-                                        @endif
-
-                                    </td>
-
-
-                                    <td>
-
-                                        {{ $item->quantity }}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        Rp
-                                        {{ number_format((float) ($item->estimated_price ?? 0), 2, ',', '.') }}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        {{ $item->notes ?: '-' }}
-
-                                    </td>
-
-
-                                    <td>
-
-                                        {{ $item->created_at?->format('d M Y') ?? '-' }}
-
-                                    </td>
-
-                                </tr>
-
-                            @endforeach
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            @else
-
-                <div class="empty-state">
-
-                    <div class="empty-icon">
-                        P
+                    <div class="commercial-item-icon">
+                        Rp
                     </div>
 
-                    <h4>
-                        No Opportunity Items
-                    </h4>
+                    <div>
 
-                    <p>
-                        This product has not been added to any opportunity yet.
-                    </p>
+                        <span>
+                            Product Price
+                        </span>
+
+                        <strong>
+                            Rp {{ number_format((float) ($product->price ?? 0), 2, ',', '.') }}
+                        </strong>
+
+                        <small>
+                            Base selling price
+                        </small>
+
+                    </div>
 
                 </div>
 
-            @endif
 
+                {{-- Warranty --}}
+
+                <div class="commercial-item">
+
+                    <div class="commercial-item-icon">
+                        W
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Warranty Period
+                        </span>
+
+                        <strong>
+                            {{ $product->warranty_period ?? 0 }}
+                            Months
+                        </strong>
+
+                        <small>
+                            Product warranty duration
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Product Status --}}
+
+                <div class="commercial-item">
+
+                    <div class="commercial-item-icon">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Product Status
+                        </span>
+
+                        @if($product->status === 'active')
+
+                        <strong class="commercial-status active">
+                            Active
+                        </strong>
+
+                        @else
+
+                        <strong class="commercial-status inactive">
+                            Inactive
+                        </strong>
+
+                        @endif
+
+                        <small>
+                            Current product availability
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
+</div>
+
+
+{{-- =========================================================
+PRODUCT SPECIFICATION
+========================================================= --}}
+
+<div class="card specification-card">
+
+    <div class="card-head">
+
+        <div>
+
+            <h3>Product Specification</h3>
+
+            <p>
+                Technical specification and additional product information.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body">
+
+        @if($product->specification)
+
+        <div class="specification-box">
+
+            {!! nl2br(e($product->specification)) !!}
+
+        </div>
+
+        @else
+
+        <div class="specification-empty">
+
+            <span class="specification-empty-icon">
+                P
+            </span>
+
+            <div>
+
+                <strong>
+                    No specification provided
+                </strong>
+
+                <p>
+                    Technical specification has not been added for this product.
+                </p>
+
+            </div>
+
+        </div>
+
+        @endif
+
+    </div>
+
+</div>
+
+
+{{-- =========================================================
+OPPORTUNITY ITEMS
+========================================================= --}}
+
+<div class="card opportunity-items-card">
+
+    <div class="card-head">
+
+        <div>
+
+            <h3>Opportunity Items</h3>
+
+            <p>
+                Opportunities where this product has been included.
+            </p>
+
+        </div>
+
+
+        <div class="section-count">
+
+            {{ $product->opportunityItems->count() }}
+
+            {{ $product->opportunityItems->count() == 1
+                ? 'item'
+                : 'items'
+            }}
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body no-padding">
+
+
+        @if($product->opportunityItems->count())
+
+
+        <div class="table-wrap opportunity-table-wrap">
+
+            <table class="opportunity-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Opportunity
+                        </th>
+
+                        <th>
+                            Quantity
+                        </th>
+
+                        <th>
+                            Estimated Price
+                        </th>
+
+                        <th>
+                            Notes
+                        </th>
+
+                        <th>
+                            Created
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @foreach($product->opportunityItems as $item)
+
+                    <tr>
+
+
+                        {{-- Opportunity --}}
+
+                        <td>
+
+                            @if($item->opportunity)
+
+                            <a
+                                href="{{ route(
+                                    'opportunities.show',
+                                    $item->opportunity
+                                ) }}"
+                                class="table-link">
+
+                                {{ $item->opportunity->opportunity_name ?? 'Opportunity' }}
+
+                            </a>
+
+                            @else
+
+                            <span class="muted">
+                                -
+                            </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- Quantity --}}
+
+                        <td>
+
+                            <span class="quantity-value">
+                                {{ $item->quantity }}
+                            </span>
+
+                        </td>
+
+
+                        {{-- Estimated Price --}}
+
+                        <td>
+
+                            <span class="price-value">
+
+                                Rp
+                                {{ number_format(
+                                    (float) ($item->estimated_price ?? 0),
+                                    2,
+                                    ',',
+                                    '.'
+                                ) }}
+
+                            </span>
+
+                        </td>
+
+
+                        {{-- Notes --}}
+
+                        <td>
+
+                            @if($item->notes)
+
+                            <div
+                                class="opportunity-notes"
+                                title="{{ $item->notes }}">
+
+                                {{ $item->notes }}
+
+                            </div>
+
+                            @else
+
+                            <span class="muted">
+                                -
+                            </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- Created --}}
+
+                        <td>
+
+                            <span class="date-value">
+
+                                {{ $item->created_at?->format('d M Y') ?? '-' }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        @else
+
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                P
+            </div>
+
+            <h4>
+                No Opportunity Items
+            </h4>
+
+            <p>
+                This product has not been added to any opportunity yet.
+            </p>
+
+        </div>
+
+
+        @endif
+
+    </div>
 
 </div>
 
@@ -490,20 +663,42 @@
 <style>
 
 /* =========================================================
-   PRODUCT SHOW
+   PRODUCT OVERVIEW
 ========================================================= */
 
-.product-show-layout {
+.product-overview-grid {
 
     display: grid;
 
     grid-template-columns:
-        minmax(0, 1.25fr)
-        minmax(320px, .75fr);
+        minmax(0, 1.55fr)
+        minmax(320px, .85fr);
 
-    gap: 24px;
+    gap: 18px;
 
-    align-items: start;
+    align-items: stretch;
+
+    margin-bottom: 18px;
+
+}
+
+
+.product-information-card,
+.commercial-summary-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+}
+
+
+.product-information-card .card-body,
+.commercial-summary-card .card-body {
+
+    flex: 1;
 
 }
 
@@ -520,15 +715,22 @@
 
     gap: 14px;
 
-    padding-bottom: 24px;
+    padding-bottom: 18px;
 
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 
     border-bottom: 1px solid #edf0f5;
 
 }
 
+
 .product-icon {
+
+    width: 50px;
+
+    height: 50px;
+
+    flex-shrink: 0;
 
     display: flex;
 
@@ -536,27 +738,33 @@
 
     justify-content: center;
 
-    width: 52px;
-
-    height: 52px;
-
-    flex-shrink: 0;
-
-    border-radius: 12px;
+    border-radius: 11px;
 
     background: #eaf7f3;
 
     color: #167d70;
 
-    font-size: 18px;
+    font-size: 17px;
 
     font-weight: 700;
 
 }
 
-.product-identity h2 {
 
-    margin: 0 0 5px;
+.product-identity-content {
+
+    min-width: 0;
+
+    flex: 1;
+
+}
+
+
+.product-identity-content h2 {
+
+    margin: 0 0 4px;
+
+    overflow: hidden;
 
     color: #17284f;
 
@@ -564,9 +772,14 @@
 
     font-weight: 700;
 
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
 }
 
-.product-identity span {
+
+.product-identity-content span {
 
     color: #7d8797;
 
@@ -575,19 +788,30 @@
 }
 
 
+.product-status {
+
+    flex-shrink: 0;
+
+}
+
+
 /* =========================================================
    INFORMATION GRID
 ========================================================= */
 
-.info-grid {
+.product-info-grid {
 
     display: grid;
 
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-    gap: 20px 24px;
+    column-gap: 28px;
+
+    row-gap: 18px;
 
 }
+
 
 .info-item {
 
@@ -595,17 +819,23 @@
 
 }
 
+
 .info-label {
 
     display: block;
 
-    margin-bottom: 7px;
+    margin-bottom: 5px;
 
     color: #8a94a6;
 
-    font-size: 11px;
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .35px;
 
 }
+
 
 .info-item strong {
 
@@ -636,8 +866,6 @@
 
     align-items: center;
 
-    width: fit-content;
-
     padding: 4px 9px;
 
     border-radius: 6px;
@@ -648,6 +876,7 @@
 
 }
 
+
 .status-badge.active {
 
     background: #eaf7f3;
@@ -655,6 +884,7 @@
     color: #167d70;
 
 }
+
 
 .status-badge.inactive {
 
@@ -666,58 +896,101 @@
 
 
 /* =========================================================
-   COMMERCIAL
+   COMMERCIAL SUMMARY
 ========================================================= */
 
-.commercial-grid {
+.commercial-summary {
 
-    display: grid;
+    display: flex;
 
-    grid-template-columns: 1fr 1fr;
-
-    gap: 16px;
+    flex-direction: column;
 
 }
 
-.commercial-card {
 
-    padding: 18px;
+.commercial-item {
 
-    border: 1px solid #e6eaf0;
+    display: flex;
 
-    border-radius: 10px;
+    align-items: center;
 
-    background: #fafbfd;
+    gap: 12px;
 
-}
-
-.commercial-card span {
-
-    display: block;
-
-    margin-bottom: 8px;
-
-    color: #8a94a6;
-
-    font-size: 11px;
+    padding: 14px 0;
 
 }
 
-.commercial-card strong {
 
-    display: block;
+.commercial-item + .commercial-item {
 
-    margin-bottom: 5px;
+    border-top: 1px solid #edf0f5;
 
-    color: #17284f;
+}
 
-    font-size: 16px;
+
+.commercial-item-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #f1f6f7;
+
+    color: #167d70;
+
+    font-size: 10px;
 
     font-weight: 700;
 
 }
 
-.commercial-card small {
+
+.commercial-item > div:last-child {
+
+    min-width: 0;
+
+}
+
+
+.commercial-item span {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #8a94a6;
+
+    font-size: 10px;
+
+}
+
+
+.commercial-item strong {
+
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #17284f;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+}
+
+
+.commercial-item small {
 
     color: #9aa3b2;
 
@@ -726,13 +999,32 @@
 }
 
 
+.commercial-status.active {
+
+    color: #167d70;
+
+}
+
+
+.commercial-status.inactive {
+
+    color: #7d8797;
+
+}
+
+
 /* =========================================================
    SPECIFICATION
 ========================================================= */
 
-.specification-box {
+.specification-card {
 
-    min-height: 100px;
+    margin-bottom: 18px;
+
+}
+
+
+.specification-box {
 
     padding: 16px;
 
@@ -748,24 +1040,123 @@
 
     line-height: 1.7;
 
-    white-space: normal;
-
     word-break: break-word;
 
 }
 
-.empty-text {
+
+.specification-empty {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 16px;
+
+    border: 1px dashed #dfe4eb;
+
+    border-radius: 9px;
+
+    background: #fafbfd;
+
+}
+
+
+.specification-empty-icon {
+
+    width: 36px;
+
+    height: 36px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background: #f1f3f6;
+
+    color: #8a94a6;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+}
+
+
+.specification-empty strong {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #596579;
+
+    font-size: 12px;
+
+}
+
+
+.specification-empty p {
+
+    margin: 0;
 
     color: #9aa3b2;
 
-    font-style: italic;
+    font-size: 10px;
 
 }
 
 
 /* =========================================================
-   TABLE
+   OPPORTUNITY ITEMS
 ========================================================= */
+
+.opportunity-items-card {
+
+    min-width: 0;
+
+}
+
+
+.opportunity-items-card .card-head {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+}
+
+
+.section-count {
+
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    border-radius: 6px;
+
+    background: #f1f5f7;
+
+    color: #596579;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+}
+
 
 .no-padding {
 
@@ -773,7 +1164,8 @@
 
 }
 
-.table-wrap {
+
+.opportunity-table-wrap {
 
     width: 100%;
 
@@ -781,17 +1173,21 @@
 
 }
 
-table {
+
+.opportunity-table {
 
     width: 100%;
+
+    min-width: 900px;
 
     border-collapse: collapse;
 
 }
 
-th {
 
-    padding: 12px 16px;
+.opportunity-table th {
+
+    padding: 11px 16px;
 
     border-bottom: 1px solid #e6eaf0;
 
@@ -809,7 +1205,8 @@ th {
 
 }
 
-td {
+
+.opportunity-table td {
 
     padding: 13px 16px;
 
@@ -823,13 +1220,32 @@ td {
 
 }
 
-tbody tr:last-child td {
+
+.opportunity-table tbody tr:last-child td {
 
     border-bottom: 0;
 
 }
 
+
+.opportunity-table tbody tr:hover {
+
+    background: #fafbfd;
+
+}
+
+
+/* =========================================================
+   OPPORTUNITY DATA
+========================================================= */
+
 .table-link {
+
+    display: block;
+
+    max-width: 280px;
+
+    overflow: hidden;
 
     color: #167d70;
 
@@ -837,13 +1253,69 @@ tbody tr:last-child td {
 
     text-decoration: none;
 
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
 }
 
+
 .table-link:hover {
+
+    color: #12685e;
 
     text-decoration: underline;
 
 }
+
+
+.quantity-value {
+
+    color: #34415c;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+.price-value {
+
+    color: #17284f;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+.opportunity-notes {
+
+    max-width: 280px;
+
+    overflow: hidden;
+
+    color: #596579;
+
+    line-height: 1.45;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.date-value {
+
+    color: #718096;
+
+    white-space: nowrap;
+
+}
+
 
 .muted {
 
@@ -858,23 +1330,24 @@ tbody tr:last-child td {
 
 .empty-state {
 
-    padding: 40px 24px;
+    padding: 45px 24px;
 
     text-align: center;
 
 }
 
+
 .empty-icon {
+
+    width: 44px;
+
+    height: 44px;
 
     display: flex;
 
     align-items: center;
 
     justify-content: center;
-
-    width: 44px;
-
-    height: 44px;
 
     margin: 0 auto 12px;
 
@@ -890,6 +1363,7 @@ tbody tr:last-child td {
 
 }
 
+
 .empty-state h4 {
 
     margin: 0 0 5px;
@@ -899,6 +1373,7 @@ tbody tr:last-child td {
     font-size: 13px;
 
 }
+
 
 .empty-state p {
 
@@ -912,79 +1387,12 @@ tbody tr:last-child td {
 
 
 /* =========================================================
-   DANGER ZONE
-========================================================= */
-
-.danger-zone {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 20px;
-
-    margin-top: 24px;
-
-    padding: 18px 20px;
-
-    border: 1px solid #f0dada;
-
-    border-radius: 10px;
-
-    background: #fffafa;
-
-}
-
-.danger-zone strong {
-
-    display: block;
-
-    margin-bottom: 4px;
-
-    color: #a94343;
-
-    font-size: 12px;
-
-}
-
-.danger-zone p {
-
-    margin: 0;
-
-    color: #9a7777;
-
-    font-size: 10px;
-
-    line-height: 1.5;
-
-}
-
-.btn.danger {
-
-    border: 1px solid #d96b6b;
-
-    background: #fff;
-
-    color: #b84949;
-
-}
-
-.btn.danger:hover {
-
-    background: #fff1f1;
-
-}
-
-
-/* =========================================================
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 900px) {
+@media (max-width: 950px) {
 
-    .product-show-layout {
+    .product-overview-grid {
 
         grid-template-columns: 1fr;
 
@@ -992,28 +1400,42 @@ tbody tr:last-child td {
 
 }
 
+
 @media (max-width: 600px) {
 
-    .info-grid,
-    .commercial-grid {
+    .product-info-grid {
 
         grid-template-columns: 1fr;
 
     }
 
-    .danger-zone {
 
-        flex-direction: column;
+    .product-identity {
 
-        align-items: stretch;
+        align-items: flex-start;
 
     }
 
-    .danger-zone .btn {
 
-        width: 100%;
+    .product-status {
 
-        justify-content: center;
+        margin-left: auto;
+
+    }
+
+
+    .product-identity-content h2 {
+
+        white-space: normal;
+
+    }
+
+
+    .opportunity-items-card .card-head {
+
+        align-items: flex-start;
+
+        flex-direction: column;
 
     }
 
