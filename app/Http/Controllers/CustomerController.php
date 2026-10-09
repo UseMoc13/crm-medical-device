@@ -187,74 +187,41 @@ class CustomerController extends Controller
     }
 
 
-    /**
-     * Menyimpan customer baru.
-     */
-    public function store(Request $request)
-    {
-        $number = DB::selectOne(
-            "SELECT nextval('customer_code_seq') AS number"
-        )->number;
+   
+/**
+ * Menyimpan customer baru.
+ */
+public function store(Request $request)
+{
+    // 1. Validasi input terlebih dahulu
+    $validated = $request->validate([
+        'customer_name' => ['required', 'string', 'max:150'],
+        'customer_type' => ['nullable', 'string', 'max:50'],
+        'phone' => ['nullable', 'string', 'max:30'],
+        'email' => ['nullable', 'email', 'max:150'],
+        'address' => ['nullable', 'string'],
+        'city' => ['nullable', 'string', 'max:100'],
+        'province' => ['nullable', 'string', 'max:100'],
+        'status' => ['required', 'string', 'max:30'],
+    ]);
 
-        $validated['customer_code'] = 'CUST-' .
-            str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+    // 2. Buat customer code menggunakan sequence PostgreSQL
+    $number = DB::selectOne(
+        "SELECT nextval('customer_code_seq') AS number"
+    )->number;
 
-Customer::create($validated);
-        $validated = $request->validate([
-            'customer_name' => ['required', 'string', 'max:150'],
-            'customer_type' => ['nullable', 'string', 'max:50'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:150'],
-            'address' => ['nullable', 'string'],
-            'city' => ['nullable', 'string', 'max:100'],
-            'province' => ['nullable', 'string', 'max:100'],
-            'status' => ['required', 'string', 'max:30'],
-        ]);
+    $validated['customer_code'] = 'CUST-' .
+        str_pad((string) $number, 4, '0', STR_PAD_LEFT);
 
+    // 3. Simpan data hanya satu kali
+    Customer::create($validated);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Generate Customer Code
-        |--------------------------------------------------------------------------
-        */
+    // 4. Kembali ke daftar customer
+    return redirect()
+        ->route('customers.index')
+        ->with('success', 'Customer berhasil ditambahkan.');
+}
 
-        
-
-        if (
-            $lastCustomer &&
-            preg_match(
-                '/CUST-(\d+)/',
-                $lastCustomer->customer_code,
-                $matches
-            )
-        ) {
-
-            $number =
-                ((int) $matches[1]) + 1;
-
-        }
-
-
-        $validated['customer_code'] =
-            'CUST-' .
-            str_pad(
-                $number,
-                4,
-                '0',
-                STR_PAD_LEFT
-            );
-
-
-        Customer::create($validated);
-
-
-        return redirect()
-            ->route('customers.index')
-            ->with(
-                'success',
-                'Customer berhasil ditambahkan.'
-            );
-    }
 
 
     /**
