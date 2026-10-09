@@ -7,6 +7,7 @@ use App\Models\ProductCategory;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\Opportunity;
 
 class ProductController extends Controller
 {
@@ -348,6 +349,7 @@ class ProductController extends Controller
     |--------------------------------------------------------------------------
     */
 
+
     public function show(Product $product)
     {
         $product->load([
@@ -356,9 +358,13 @@ class ProductController extends Controller
             'opportunityItems.opportunity',
         ]);
 
+        $opportunities = Opportunity::query()
+            ->orderByDesc('created_at')
+            ->get();
+
         return view(
             'products.show',
-            compact('product')
+            compact('product', 'opportunities')
         );
     }
 
