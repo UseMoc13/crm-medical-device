@@ -1383,41 +1383,14 @@ class QuotationController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function destroy(
-        Quotation $quotation
-    ) {
 
-        if (
-            $quotation->items()->exists()
-        ) {
-
-            return redirect()
-                ->route(
-                    'quotations.index'
-                )
-                ->with(
-                    'error',
-                    'Quotation tidak dapat dihapus karena masih memiliki item.'
-                );
-        }
-
-
-        $quotation->delete();
-
-
-        return redirect()
-            ->route(
-                'quotations.index'
-            )
-            ->with(
-                'success',
-                'Quotation berhasil dihapus.'
-            );
-
-
-
+    public function destroy(Quotation $quotation)
+    {
         DB::transaction(function () use ($quotation) {
+            // Hapus semua item quotation terlebih dahulu
             $quotation->items()->delete();
+
+            // Hapus quotation utama
             $quotation->delete();
         });
 
@@ -1425,6 +1398,8 @@ class QuotationController extends Controller
             ->route('quotations.index')
             ->with('success', 'Quotation berhasil dihapus.');
     }
+
+
 
     /*
     |--------------------------------------------------------------------------
