@@ -893,7 +893,7 @@ class QuotationController extends Controller
         $quotationItems = $quotation
             ->items()
             ->with('product')
-            ->orderBy('created_at', 'asc')
+            ->orderBy('quotation_item_id', 'asc')
             ->paginate(10)
             ->withQueryString();
 
