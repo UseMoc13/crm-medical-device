@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuotationItem extends Model
 {
+    
     protected $table = 'quotation_items';
-
+    public $timestamps = false;
     protected $primaryKey = 'quotation_item_id';
 
     public $incrementing = false;
