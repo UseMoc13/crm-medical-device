@@ -75,7 +75,7 @@ class BrandController extends Controller
             'brand_name' => [
                 'required',
                 'string',
-                'max:255',
+                'max:100',
                 'unique:brands,brand_name',
             ],
 
@@ -132,7 +132,7 @@ class BrandController extends Controller
             'brand_name' => [
                 'required',
                 'string',
-                'max:255',
+                'max:100',
                 'unique:brands,brand_name,' . $brand->brand_id . ',brand_id',
             ],
 

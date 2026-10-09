@@ -428,7 +428,7 @@ class ProductController extends Controller
             'product_code' => [
                 'required',
                 'string',
-                'max:100',
+                'max:50',
                 Rule::unique(
                     'products',
                     'product_code'
@@ -441,13 +441,13 @@ class ProductController extends Controller
             'product_name' => [
                 'required',
                 'string',
-                'max:255',
+                'max:150',
             ],
 
             'product_type' => [
                 'required',
                 'string',
-                'max:100',
+                'max:50',
             ],
 
             'specification' => [
@@ -458,7 +458,7 @@ class ProductController extends Controller
             'unit' => [
                 'required',
                 'string',
-                'max:50',
+                'max:20',
             ],
 
             'price' => [
