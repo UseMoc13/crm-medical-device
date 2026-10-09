@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
@@ -191,6 +192,14 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        $number = DB::selectOne(
+            "SELECT nextval('customer_code_seq') AS number"
+        )->number;
+
+        $validated['customer_code'] = 'CUST-' .
+            str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+
+Customer::create($validated);
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:150'],
             'customer_type' => ['nullable', 'string', 'max:50'],
@@ -209,11 +218,7 @@ class CustomerController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $lastCustomer = Customer::query()
-            ->orderByDesc('created_at')
-            ->first();
-
-        $number = 1;
+        
 
         if (
             $lastCustomer &&
