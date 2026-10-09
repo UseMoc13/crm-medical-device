@@ -12,9 +12,6 @@ $opportunityItems = $product->opportunityItems
 $itemCount = $opportunityItems->count();
 @endphp
 
-{{-- =========================================================
-    PAGE HEADER
-========================================================= --}}
 <div class="page-head">
     <div>
         <h1>Product Details</h1>
@@ -32,9 +29,6 @@ $itemCount = $opportunityItems->count();
     </div>
 </div>
 
-{{-- =========================================================
-    ALERTS
-========================================================= --}}
 @if (session('success'))
 <div class="alert success">{{ session('success') }}</div>
 @endif
@@ -43,12 +37,8 @@ $itemCount = $opportunityItems->count();
 <div class="alert error">{{ session('error') }}</div>
 @endif
 
-{{-- =========================================================
-    PRODUCT OVERVIEW
-========================================================= --}}
 <div class="product-overview-grid">
 
-    {{-- PRODUCT INFORMATION --}}
     <section class="card product-information-card">
         <div class="card-head">
             <div>
@@ -123,7 +113,6 @@ $itemCount = $opportunityItems->count();
         </div>
     </section>
 
-    {{-- COMMERCIAL SUMMARY --}}
     <section class="card commercial-summary-card">
         <div class="card-head">
             <div>
@@ -178,9 +167,6 @@ $itemCount = $opportunityItems->count();
     </section>
 </div>
 
-{{-- =========================================================
-    PRODUCT SPECIFICATION
-========================================================= --}}
 <section class="card specification-card">
     <div class="card-head">
         <div>
@@ -205,9 +191,6 @@ $itemCount = $opportunityItems->count();
     </div>
 </section>
 
-{{-- =========================================================
-    OPPORTUNITY ITEMS — READ ONLY
-========================================================= --}}
 <section class="card opportunity-items-card">
     <div class="card-head opportunity-items-head">
         <div>
@@ -337,9 +320,6 @@ $itemCount = $opportunityItems->count();
     </div>
 </section>
 
-{{-- =========================================================
-    SHOW ALL MODAL — SINGLE INSTANCE
-========================================================= --}}
 <div
     class="product-modal-overlay"
     id="productItemsModal"
@@ -352,7 +332,6 @@ $itemCount = $opportunityItems->count();
         aria-labelledby="productItemsModalTitle"
         aria-describedby="productItemsModalDescription"
         tabindex="-1">
-        {{-- MODAL HEADER --}}
         <header class="product-modal-header">
             <div>
                 <h3 id="productItemsModalTitle">All Opportunity Items</h3>
@@ -409,7 +388,6 @@ $itemCount = $opportunityItems->count();
                 aria-live="polite"></span>
         </div>
 
-        {{-- MODAL TABLE --}}
         <div class="table-wrap modal-table-wrap">
             <table class="opportunity-table modal-items-table">
                 <thead>
@@ -499,7 +477,6 @@ $itemCount = $opportunityItems->count();
             </div>
         </div>
 
-        {{-- MODAL FOOTER / PAGINATION --}}
         <footer class="product-modal-footer">
             <span id="productItemsPaginationInfo" aria-live="polite"></span>
 
@@ -526,12 +503,7 @@ $itemCount = $opportunityItems->count();
     </section>
 </div>
 
-{{-- =========================================================
-    STYLES
-========================================================= --}}
 <style>
-    /* PRODUCT OVERVIEW */
-
     .product-overview-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr);
@@ -552,8 +524,6 @@ $itemCount = $opportunityItems->count();
         flex: 1;
         min-width: 0;
     }
-
-    /* PRODUCT IDENTITY */
 
     .product-identity {
         display: flex;
@@ -621,7 +591,6 @@ $itemCount = $opportunityItems->count();
         color: #7d8797;
     }
 
-    /* PRODUCT INFORMATION GRID */
 
     .product-info-grid {
         display: grid;
@@ -651,8 +620,6 @@ $itemCount = $opportunityItems->count();
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-
-    /* COMMERCIAL SUMMARY */
 
     .commercial-summary {
         display: flex;
@@ -716,8 +683,6 @@ $itemCount = $opportunityItems->count();
         color: #7d8797;
     }
 
-    /* PRODUCT SPECIFICATION */
-
     .specification-card,
     .opportunity-items-card {
         min-width: 0;
@@ -772,8 +737,6 @@ $itemCount = $opportunityItems->count();
         font-size: 10px;
     }
 
-    /* OPPORTUNITY ITEMS HEADER */
-
     .opportunity-items-head {
         display: flex;
         align-items: center;
@@ -805,8 +768,6 @@ $itemCount = $opportunityItems->count();
     .no-padding {
         padding: 0 !important;
     }
-
-    /* TABLE */
 
     .opportunity-table-wrap {
         width: 100%;
@@ -845,8 +806,6 @@ $itemCount = $opportunityItems->count();
     .opportunity-table tbody tr:hover {
         background: #fafbfd;
     }
-
-    /* PRODUCT / OPPORTUNITY CELLS */
 
     .item-product-cell {
         display: flex;
@@ -908,8 +867,6 @@ $itemCount = $opportunityItems->count();
         text-decoration: underline;
     }
 
-    /* PRICE, QUANTITY AND NOTES */
-
     .quantity-value,
     .price-value,
     .subtotal-value {
@@ -945,8 +902,6 @@ $itemCount = $opportunityItems->count();
         color: #9aa3b2;
     }
 
-    /* TABLE FOOTER */
-
     .items-footer {
         display: flex;
         align-items: center;
@@ -976,8 +931,6 @@ $itemCount = $opportunityItems->count();
     .empty-state-button {
         margin-top: 14px;
     }
-
-    /* EMPTY STATE */
 
     .empty-state {
         padding: 45px 24px;
@@ -1009,8 +962,6 @@ $itemCount = $opportunityItems->count();
         color: #9aa3b2;
         font-size: 11px;
     }
-
-    /* MODAL OVERLAY */
 
     .product-modal-overlay {
         position: fixed;
@@ -1051,8 +1002,6 @@ $itemCount = $opportunityItems->count();
     .product-modal-overlay.is-open .product-modal {
         transform: translateY(0);
     }
-
-    /* MODAL HEADER */
 
     .product-modal-header {
         display: flex;
@@ -1167,8 +1116,6 @@ $itemCount = $opportunityItems->count();
         white-space: nowrap;
     }
 
-    /* MODAL TABLE */
-
     .modal-table-wrap {
         flex: 1;
         min-height: 100px;
@@ -1219,8 +1166,6 @@ $itemCount = $opportunityItems->count();
         display: none !important;
     }
 
-    /* MODAL PAGINATION */
-
     .product-modal-footer {
         display: flex;
         align-items: center;
@@ -1254,8 +1199,6 @@ $itemCount = $opportunityItems->count();
         color: #596579;
         text-align: center;
     }
-
-    /* RESPONSIVE */
 
     @media (max-width: 950px) {
         .product-overview-grid {
@@ -1370,9 +1313,6 @@ $itemCount = $opportunityItems->count();
     }
 </style>
 
-{{-- =========================================================
-    JAVASCRIPT — SEARCH, SORT, PAGINATION AND MODAL
-========================================================= --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('productItemsModal');
@@ -1461,12 +1401,10 @@ $itemCount = $opportunityItems->count();
             const end = Math.min(start + pageSize, total);
             const visibleRows = filteredRows.slice(start, end);
 
-            // Hide every row before displaying the current page.
             allRows.forEach(function(row) {
                 row.hidden = true;
             });
 
-            // Append in sorted order so the displayed order matches the filter.
             visibleRows.forEach(function(row) {
                 row.hidden = false;
                 tableBody.appendChild(row);
@@ -1519,7 +1457,6 @@ $itemCount = $opportunityItems->count();
             }
         }
 
-        // Open modal from any button marked as an opener.
         if (openButton) {
             openButton.addEventListener('click', openModal);
         }
@@ -1558,14 +1495,12 @@ $itemCount = $opportunityItems->count();
             }
         });
 
-        // Escape closes the modal.
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' && modal.classList.contains('is-open')) {
                 closeModal();
             }
         });
 
-        // Basic focus containment while the modal is open.
         modal.addEventListener('keydown', function(event) {
             if (event.key !== 'Tab' || !modal.classList.contains('is-open')) {
                 return;
@@ -1597,7 +1532,6 @@ $itemCount = $opportunityItems->count();
             }
         });
 
-        // Render the first page and prepare the modal for use.
         renderItems();
     });
 </script>

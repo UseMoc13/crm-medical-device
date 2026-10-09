@@ -96,30 +96,17 @@ class BrandController extends Controller
             ->with('success', 'Brand created successfully.');
     }
 
+    public function show(Brand $brand)
+    {
+        $products = $brand->products()
+            ->with('category')
+            ->orderBy('product_name')
+            ->get();
 
-    /**
-     * Display the specified brand.
-     */
-public function show(Brand $brand)
-{
-    $products = $brand->products()
-        ->latest('created_at')
-        ->paginate(10)
-        ->withQueryString();
-
-    return view(
-        'brands.show',
-        compact(
-            'brand',
-            'products'
-        )
-    );
-}
+        return view('brands.show', compact('brand', 'products'));
+    }
 
 
-    /**
-     * Show the form for editing the specified brand.
-     */
     public function edit(Brand $brand)
     {
         return view(
@@ -184,4 +171,3 @@ public function show(Brand $brand)
             ->with('success', 'Brand deleted successfully.');
     }
 }
-
