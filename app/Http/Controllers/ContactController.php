@@ -206,13 +206,13 @@ class ContactController extends Controller
             'position' => [
                 'nullable',
                 'string',
-                'max:150',
+                'max:100',
             ],
 
             'department' => [
                 'nullable',
                 'string',
-                'max:150',
+                'max:100',
             ],
 
             'phone' => [
