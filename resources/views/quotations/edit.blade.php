@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.app')
 
 @section('title', 'Edit Quotation')
@@ -1994,4 +1993,3 @@ document.addEventListener(
 </script>
 
 @endsection
-```

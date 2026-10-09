@@ -13,6 +13,7 @@ use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\WarehouseController;
 
 
 Route::resource('roles', RoleController::class);
@@ -83,6 +84,8 @@ Route::resource(
     UserController::class
 );
 
+Route::resource('warehouses', WarehouseController::class);
+
 Route::get(
     '/opportunities/{opportunity}/items/create',
     [OpportunityItemController::class, 'create']
@@ -112,3 +115,8 @@ Route::get(
     '/quotations/{quotation}/items',
     [QuotationController::class, 'items']
 )->name('quotations.items');
+
+Route::get(
+    '/opportunities/{opportunity}/items',
+    [OpportunityController::class, 'items']
+)->name('opportunities.items');

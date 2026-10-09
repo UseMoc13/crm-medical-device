@@ -170,7 +170,7 @@
             Product & Inventory
         </div>
 
-        <a 
+        <a
             href="{{ route('products.index') }}"
             class="{{ request()->routeIs('products.*') ? 'active' : '' }}"
             data-label="products">
@@ -179,7 +179,7 @@
             <span class="nav-text">Products</span>
         </a>
 
-        <a 
+        <a
             href="{{ route('product-categories.index') }}"
             class="{{ request()->routeIs('product-categories.*') ? 'active' : '' }}"
             data-label="categories">
@@ -188,7 +188,7 @@
             <span class="nav-text">Categories</span>
         </a>
 
-        <a 
+        <a
             href="{{ route('brands.index') }}"
             class="{{ request()->routeIs('brands.*') ? 'active' : '' }}"
             data-label="brands">
@@ -197,7 +197,11 @@
             <span class="nav-text">Brands</span>
         </a>
 
-        <a href="#" data-label="Warehouses">
+        <a
+            href="{{ route('warehouses.index') }}"
+            class="{{ request()->routeIs('warehouses.*') ? 'active' : '' }}"
+            data-label="warehouses">
+
             <span class="ico">⌂</span>
             <span class="nav-text">Warehouses</span>
         </a>

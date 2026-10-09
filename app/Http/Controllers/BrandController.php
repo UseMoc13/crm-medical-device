@@ -96,24 +96,17 @@ class BrandController extends Controller
             ->with('success', 'Brand created successfully.');
     }
 
-
-    /**
-     * Display the specified brand.
-     */
     public function show(Brand $brand)
     {
-        $brand->loadCount('products');
+        $products = $brand->products()
+            ->with('category')
+            ->orderBy('product_name')
+            ->get();
 
-        return view(
-            'brands.show',
-            compact('brand')
-        );
+        return view('brands.show', compact('brand', 'products'));
     }
 
 
-    /**
-     * Show the form for editing the specified brand.
-     */
     public function edit(Brand $brand)
     {
         return view(
