@@ -81,18 +81,22 @@ class QuotationController extends Controller
             'desc'
         );
 
-        if (!in_array(
-            $sort,
-            $allowedSorts
-        )) {
+        if (
+            !in_array(
+                $sort,
+                $allowedSorts
+            )
+        ) {
 
             $sort = 'created_at';
         }
 
-        if (!in_array(
-            $direction,
-            ['asc', 'desc']
-        )) {
+        if (
+            !in_array(
+                $direction,
+                ['asc', 'desc']
+            )
+        ) {
 
             $direction = 'desc';
         }
@@ -223,33 +227,33 @@ class QuotationController extends Controller
                 $items[] = [
 
                     'opportunity_item_id' =>
-                    $item->opportunity_item_id,
+                        $item->opportunity_item_id,
 
                     'product_id' =>
-                    $item->product_id,
+                        $item->product_id,
 
                     'product_code' =>
-                    $item->product
+                        $item->product
                         ? $item->product->product_code
                         : '-',
 
                     'product_name' =>
-                    $item->product
+                        $item->product
                         ? $item->product->product_name
                         : 'Unknown Product',
 
                     'quantity' =>
-                    (int) (
-                        $item->quantity ?? 1
-                    ),
+                        (int) (
+                            $item->quantity ?? 1
+                        ),
 
                     'unit' =>
-                    $item->product
+                        $item->product
                         ? ($item->product->unit ?? 'Unit')
                         : 'Unit',
 
                     'estimated_price' =>
-                    $price !== null
+                        $price !== null
                         ? (float) $price
                         : 0,
 
@@ -260,28 +264,28 @@ class QuotationController extends Controller
             $opportunityData[$opportunity->opportunity_id] = [
 
                 'id' =>
-                $opportunity->opportunity_id,
+                    $opportunity->opportunity_id,
 
                 'code' =>
-                $opportunity->opportunity_code,
+                    $opportunity->opportunity_code,
 
                 'name' =>
-                $opportunity->name,
+                    $opportunity->name,
 
                 'customer' =>
-                $customerName,
+                    $customerName,
 
                 'sales' =>
-                $salesName,
+                    $salesName,
 
                 'stage' =>
-                $opportunity->stage,
+                    $opportunity->stage,
 
                 'status' =>
-                $opportunity->status,
+                    $opportunity->status,
 
                 'items' =>
-                $items,
+                    $items,
 
             ];
         }
@@ -453,7 +457,7 @@ class QuotationController extends Controller
             return back()
                 ->withErrors([
                     'discount' =>
-                    'Discount dalam persen tidak boleh lebih dari 100%.',
+                        'Discount dalam persen tidak boleh lebih dari 100%.',
                 ])
                 ->withInput();
         }
@@ -495,7 +499,7 @@ class QuotationController extends Controller
             return back()
                 ->withErrors([
                     'tax' =>
-                    'Tax dalam persen tidak boleh lebih dari 100%.',
+                        'Tax dalam persen tidak boleh lebih dari 100%.',
                 ])
                 ->withInput();
         }
@@ -542,10 +546,10 @@ class QuotationController extends Controller
 
             $opportunityItem =
                 $opportunity->items
-                ->firstWhere(
-                    'opportunity_item_id',
-                    $item['opportunity_item_id']
-                );
+                    ->firstWhere(
+                        'opportunity_item_id',
+                        $item['opportunity_item_id']
+                    );
 
 
             if (!$opportunityItem) {
@@ -637,19 +641,19 @@ class QuotationController extends Controller
             $quotationItems[] = [
 
                 'product_id' =>
-                $opportunityItem->product_id,
+                    $opportunityItem->product_id,
 
                 'quantity' =>
-                $quantity,
+                    $quantity,
 
                 'unit_price' =>
-                $unitPrice,
+                    $unitPrice,
 
                 'discount' =>
-                0,
+                    0,
 
                 'subtotal' =>
-                $itemSubtotal,
+                    $itemSubtotal,
 
             ];
         }
@@ -698,7 +702,7 @@ class QuotationController extends Controller
             max(
                 0,
                 $subtotal -
-                    $discountAmount
+                $discountAmount
             );
 
 
@@ -756,60 +760,50 @@ class QuotationController extends Controller
         */
 
         DB::transaction(
-            function () use (
-                $validated,
-                $quotationNumber,
-                $subtotal,
-                $discount,
-                $discountType,
-                $tax,
-                $taxType,
-                $totalAmount,
-                $quotationItems
-            ) {
+            function () use ($validated, $quotationNumber, $subtotal, $discount, $discountType, $tax, $taxType, $totalAmount, $quotationItems) {
 
                 $quotation =
                     Quotation::create([
 
                         'quotation_id' =>
-                        (string) Str::uuid(),
+                            (string) Str::uuid(),
 
                         'opportunity_id' =>
-                        $validated['opportunity_id'],
+                            $validated['opportunity_id'],
 
                         'quotation_number' =>
-                        $quotationNumber,
+                            $quotationNumber,
 
                         'quotation_date' =>
-                        $validated['quotation_date'],
+                            $validated['quotation_date'],
 
                         'valid_until' =>
-                        $validated['valid_until']
+                            $validated['valid_until']
                             ?? null,
 
                         'subtotal' =>
-                        $subtotal,
+                            $subtotal,
 
                         'discount' =>
-                        $discount,
+                            $discount,
 
                         'discount_type' =>
-                        $discountType,
+                            $discountType,
 
                         'tax' =>
-                        $tax,
+                            $tax,
 
                         'tax_type' =>
-                        $taxType,
+                            $taxType,
 
                         'total_amount' =>
-                        $totalAmount,
+                            $totalAmount,
 
                         'status' =>
-                        $validated['status'],
+                            $validated['status'],
 
                         'notes' =>
-                        $validated['notes']
+                            $validated['notes']
                             ?? null,
 
                     ]);
@@ -829,22 +823,22 @@ class QuotationController extends Controller
                     QuotationItem::create([
 
                         'quotation_id' =>
-                        $quotation->quotation_id,
+                            $quotation->quotation_id,
 
                         'product_id' =>
-                        $item['product_id'],
+                            $item['product_id'],
 
                         'quantity' =>
-                        $item['quantity'],
+                            $item['quantity'],
 
                         'unit_price' =>
-                        $item['unit_price'],
+                            $item['unit_price'],
 
                         'discount' =>
-                        $item['discount'],
+                            $item['discount'],
 
                         'subtotal' =>
-                        $item['subtotal'],
+                            $item['subtotal'],
 
                     ]);
                 }
@@ -893,7 +887,7 @@ class QuotationController extends Controller
         $quotationItems = $quotation
             ->items()
             ->with('product')
-            ->orderBy('created_at', 'asc')
+            ->orderBy('quotation_item_id', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -973,21 +967,25 @@ class QuotationController extends Controller
         ];
 
 
-        if (!in_array(
-            $sort,
-            $allowedSorts,
-            true
-        )) {
+        if (
+            !in_array(
+                $sort,
+                $allowedSorts,
+                true
+            )
+        ) {
 
             $sort = 'created_at';
         }
 
 
-        if (!in_array(
-            $direction,
-            ['asc', 'desc'],
-            true
-        )) {
+        if (
+            !in_array(
+                $direction,
+                ['asc', 'desc'],
+                true
+            )
+        ) {
 
             $direction = 'asc';
         }
@@ -1012,51 +1010,51 @@ class QuotationController extends Controller
                     return [
 
                         'id' =>
-                        $item->quotation_item_id,
+                            $item->quotation_item_id,
 
                         'product_name' =>
-                        $item->product
+                            $item->product
                             ? $item->product->product_name
                             : 'Unknown Product',
 
                         'product_code' =>
-                        $item->product
+                            $item->product
                             ? $item->product->product_code
                             : '-',
 
                         'quantity' =>
-                        (int) $item->quantity,
+                            (int) $item->quantity,
 
                         'unit_price' =>
-                        (float) $item->unit_price,
+                            (float) $item->unit_price,
 
                         'discount' =>
-                        (float) ($item->discount ?? 0),
+                            (float) ($item->discount ?? 0),
 
                         'subtotal' =>
-                        (float) $item->subtotal,
+                            (float) $item->subtotal,
 
                     ];
                 }
             )->values(),
 
             'current_page' =>
-            $items->currentPage(),
+                $items->currentPage(),
 
             'last_page' =>
-            $items->lastPage(),
+                $items->lastPage(),
 
             'per_page' =>
-            $items->perPage(),
+                $items->perPage(),
 
             'total' =>
-            $items->total(),
+                $items->total(),
 
             'from' =>
-            $items->firstItem(),
+                $items->firstItem(),
 
             'to' =>
-            $items->lastItem(),
+                $items->lastItem(),
 
         ]);
     }
@@ -1067,15 +1065,15 @@ class QuotationController extends Controller
 
         $opportunities =
             Opportunity::query()
-            ->orderBy('name')
-            ->get([
-                'opportunity_id',
-                'opportunity_code',
-                'name',
-                'customer_id',
-                'stage',
-                'status',
-            ]);
+                ->orderBy('name')
+                ->get([
+                    'opportunity_id',
+                    'opportunity_code',
+                    'name',
+                    'customer_id',
+                    'stage',
+                    'status',
+                ]);
 
         return view(
             'quotations.edit',
@@ -1206,7 +1204,7 @@ class QuotationController extends Controller
             return back()
                 ->withErrors([
                     'discount' =>
-                    'Discount dalam persen tidak boleh lebih dari 100%.',
+                        'Discount dalam persen tidak boleh lebih dari 100%.',
                 ])
                 ->withInput();
         }
@@ -1249,7 +1247,7 @@ class QuotationController extends Controller
             return back()
                 ->withErrors([
                     'tax' =>
-                    'Tax dalam persen tidak boleh lebih dari 100%.',
+                        'Tax dalam persen tidak boleh lebih dari 100%.',
                 ])
                 ->withInput();
         }
@@ -1302,7 +1300,7 @@ class QuotationController extends Controller
             max(
                 0,
                 $subtotal -
-                    $discountAmount
+                $discountAmount
             );
 
 
@@ -1385,37 +1383,22 @@ class QuotationController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function destroy(
-        Quotation $quotation
-    ) {
 
-        if (
-            $quotation->items()->exists()
-        ) {
+    public function destroy(Quotation $quotation)
+    {
+        DB::transaction(function () use ($quotation) {
+            // Hapus semua item quotation terlebih dahulu
+            $quotation->items()->delete();
 
-            return redirect()
-                ->route(
-                    'quotations.index'
-                )
-                ->with(
-                    'error',
-                    'Quotation tidak dapat dihapus karena masih memiliki item.'
-                );
-        }
-
-
-        $quotation->delete();
-
+            // Hapus quotation utama
+            $quotation->delete();
+        });
 
         return redirect()
-            ->route(
-                'quotations.index'
-            )
-            ->with(
-                'success',
-                'Quotation berhasil dihapus.'
-            );
+            ->route('quotations.index')
+            ->with('success', 'Quotation berhasil dihapus.');
     }
+
 
 
     /*

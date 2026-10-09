@@ -359,7 +359,7 @@ class OpportunityController extends Controller
         // Item yang ditampilkan pada tabel utama
         $items = $opportunity->items()
             ->with('product')
-            ->orderByDesc('created_at')
+            ->orderByDesc('opportunity_item_id')
             ->paginate(
                 5,
                 ['*'],
@@ -395,7 +395,7 @@ class OpportunityController extends Controller
 
         // Pagination modal
         $modalItems = $modalQuery
-            ->orderByDesc('created_at')
+            ->orderByDesc('opportunity_item_id')
             ->paginate(
                 10,
                 ['*'],
@@ -501,7 +501,7 @@ class OpportunityController extends Controller
         */
 
         $items = $query
-            ->orderByDesc('created_at')
+            ->orderByDesc('opportunity_item_id')
             ->paginate(
                 10,
                 ['*'],
