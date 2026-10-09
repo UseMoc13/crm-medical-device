@@ -8,36 +8,17 @@
 
 $initialPrice = old('price', $product->price ?? 0);
 
-$initialPriceRaw = is_numeric($initialPrice)
-? (string) $initialPrice
-: '0';
+$initialPriceRaw = is_numeric($initialPrice)? (string) $initialPrice: '0';
 
-$initialPriceDisplay = number_format(
-(float) $initialPriceRaw,
-0,
-',',
-'.'
-);
+$initialPriceDisplay = number_format((float) $initialPriceRaw,0,',','.');
 
-$initialWarranty = old(
-'warranty_period',
-$product->warranty_period ?? 0
-);
+$initialWarranty = old('warranty_period',$product->warranty_period ?? 0);
 
-$initialStatus = old(
-'status',
-$product->status ?? 'active'
-);
+$initialStatus = old('status',$product->status ?? 'active');
 
-$initialCategoryId = (string) old(
-'category_id',
-$product->category_id ?? ''
-);
+$initialCategoryId = (string) old('category_id',$product->category_id ?? '');
 
-$initialBrandId = (string) old(
-'brand_id',
-$product->brand_id ?? ''
-);
+$initialBrandId = (string) old('brand_id',$product->brand_id ?? '');
 @endphp
 
 <div class="page-head">
@@ -55,10 +36,6 @@ $product->brand_id ?? ''
     </div>
 </div>
 
-{{-- =========================================================
-     VALIDATION ERRORS
-========================================================= --}}
-
 @if ($errors->any())
 <div class="alert error">
     <strong>Please check the following errors:</strong>
@@ -70,10 +47,6 @@ $product->brand_id ?? ''
     </ul>
 </div>
 @endif
-
-{{-- =========================================================
-     PRODUCT FORM CARD
-========================================================= --}}
 
 <div class="card product-edit-card">
 
@@ -94,15 +67,7 @@ $product->brand_id ?? ''
             @method('PUT')
 
             <div class="product-form-layout">
-
-                {{-- =================================================
-                     LEFT: FORM
-                ================================================== --}}
-
                 <div class="product-form-main">
-
-                    {{-- PRODUCT IDENTITY --}}
-
                     <div class="section-divider first-section">
                         <div>
                             <h4>Product Identity</h4>
@@ -111,8 +76,6 @@ $product->brand_id ?? ''
                             </p>
                         </div>
                     </div>
-
-                    {{-- Product Code --}}
 
                     <div class="form-group">
                         <label for="product_code">
@@ -138,8 +101,6 @@ $product->brand_id ?? ''
                         @enderror
                     </div>
 
-                    {{-- Product Name --}}
-
                     <div class="form-group">
                         <label for="product_name">
                             Product Name <span class="required">*</span>
@@ -162,8 +123,6 @@ $product->brand_id ?? ''
                         <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    {{-- CATEGORY AND BRAND --}}
 
                     <div class="product-two-column">
 
@@ -223,8 +182,6 @@ $product->brand_id ?? ''
 
                     </div>
 
-                    {{-- PRODUCT TYPE AND UNIT --}}
-
                     <div class="product-two-column">
 
                         <div class="form-group">
@@ -275,8 +232,6 @@ $product->brand_id ?? ''
 
                     </div>
 
-                    {{-- COMMERCIAL INFORMATION --}}
-
                     <div class="section-divider">
                         <div>
                             <h4>Commercial Information</h4>
@@ -288,8 +243,6 @@ $product->brand_id ?? ''
 
                     <div class="product-two-column">
 
-                        {{-- PRICE --}}
-
                         <div class="form-group">
                             <label for="price_display">Price</label>
 
@@ -297,7 +250,6 @@ $product->brand_id ?? ''
 
                                 <span class="input-prefix">Rp</span>
 
-                                {{-- Visible formatted price --}}
                                 <input
                                     type="text"
                                     id="price_display"
@@ -307,7 +259,6 @@ $product->brand_id ?? ''
                                     autocomplete="off"
                                     aria-describedby="priceHint">
 
-                                {{-- Raw numeric price sent to Laravel --}}
                                 <input
                                     type="hidden"
                                     id="price"
@@ -340,8 +291,6 @@ $product->brand_id ?? ''
                             <span class="form-error">{{ $message }}</span>
                             @enderror
                         </div>
-
-                        {{-- WARRANTY --}}
 
                         <div class="form-group">
                             <label for="warranty_period">Warranty Period</label>
@@ -389,8 +338,6 @@ $product->brand_id ?? ''
 
                     </div>
 
-                    {{-- STATUS --}}
-
                     <div class="form-group">
                         <label for="status">
                             Status <span class="required">*</span>
@@ -419,8 +366,6 @@ $product->brand_id ?? ''
                         @enderror
                     </div>
 
-                    {{-- PRODUCT SPECIFICATION --}}
-
                     <div class="section-divider">
                         <div>
                             <h4>Product Specification</h4>
@@ -447,8 +392,6 @@ $product->brand_id ?? ''
                         @enderror
                     </div>
 
-                    {{-- FORM ACTIONS --}}
-
                     <div class="form-actions">
                         <a
                             href="{{ route('products.show', $product) }}"
@@ -465,10 +408,6 @@ $product->brand_id ?? ''
                     </div>
 
                 </div>
-
-                {{-- =================================================
-                     RIGHT: PRODUCT PREVIEW
-                ================================================== --}}
 
                 <aside class="product-preview-panel">
 
@@ -568,10 +507,6 @@ $product->brand_id ?? ''
 </div>
 
 <style>
-    /* =========================================================
-   FORM LAYOUT
-========================================================= */
-
     .product-edit-card,
     .product-edit-body,
     .product-form-layout,
@@ -590,10 +525,6 @@ $product->brand_id ?? ''
     .product-form-main {
         min-width: 0;
     }
-
-    /* =========================================================
-   SECTION HEADINGS
-========================================================= */
 
     .section-divider {
         display: flex;
@@ -622,10 +553,6 @@ $product->brand_id ?? ''
         font-size: 11px;
         line-height: 1.5;
     }
-
-    /* =========================================================
-   FORM ELEMENTS
-========================================================= */
 
     .form-group {
         min-width: 0;
@@ -701,19 +628,11 @@ $product->brand_id ?? ''
         line-height: 1.5;
     }
 
-    /* =========================================================
-   TWO-COLUMN FORM ROWS
-========================================================= */
-
     .product-two-column {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px;
     }
-
-    /* =========================================================
-   PRICE AND WARRANTY INPUTS
-========================================================= */
 
     .input-with-prefix,
     .input-with-suffix {
