@@ -15,7 +15,6 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\WarehouseController;
 
-
 Route::resource('roles', RoleController::class);
 
 Route::resource('brands', BrandController::class);

@@ -1,16 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Create Warehouse')
+@section('title', 'Edit Warehouse')
 
 @section('content')
 
 <div class="page-head">
-
     <div>
-        <h1>Create Warehouse</h1>
-
+        <h1>Edit Warehouse</h1>
         <p>
-            Register a new warehouse location and configure its basic information and operational status.
+            Update warehouse information, location, and operational status.
         </p>
     </div>
 
@@ -19,7 +17,6 @@
             ← Back to Warehouses
         </a>
     </div>
-
 </div>
 
 
@@ -31,61 +28,55 @@
 
     <ul>
         @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
+            <li>{{ $error }}</li>
         @endforeach
     </ul>
 </div>
 @endif
 
 
-<div class="card warehouse-create-card">
+<div class="card warehouse-edit-card">
 
     <div class="card-head">
         <div>
             <h3>Warehouse Information</h3>
-
             <p>
-                Enter the warehouse details, location, and operational settings.
+                Review and update the warehouse details and operational settings.
             </p>
         </div>
     </div>
 
-
-    <div class="card-body warehouse-create-body">
+    <div class="card-body warehouse-edit-body">
 
         <form
             method="POST"
-            action="{{ route('warehouses.store') }}"
-            id="warehouseCreateForm">
+            action="{{ route('warehouses.update', $warehouse->warehouse_id) }}"
+            id="warehouseEditForm">
 
             @csrf
+            @method('PUT')
 
             <div class="warehouse-form-layout">
 
-                {{-- =================================================
-                     LEFT: WAREHOUSE FORM
-                ================================================== --}}
+                {{-- LEFT: WAREHOUSE FORM --}}
 
                 <div class="warehouse-form-main">
-
 
                     {{-- WAREHOUSE INFORMATION --}}
 
                     <div class="section-divider first-section">
                         <div>
                             <h4>Warehouse Information</h4>
-
                             <p>
-                                Enter the basic information used to identify this warehouse.
+                                Update the information used to identify this warehouse.
                             </p>
                         </div>
                     </div>
 
 
-                    {{-- Warehouse Code --}}
+                    {{-- WAREHOUSE CODE --}}
 
                     <div class="form-group">
-
                         <label for="warehouse_code">
                             Warehouse Code
                             <span class="required">*</span>
@@ -96,9 +87,10 @@
                             name="warehouse_code"
                             id="warehouse_code"
                             maxlength="30"
-                            value="{{ old('warehouse_code') }}"
+                            value="{{ old('warehouse_code', $warehouse->warehouse_code) }}"
                             placeholder="Example: WH-JKT-001"
                             autocomplete="off"
+                            class="@error('warehouse_code') is-invalid @enderror"
                             required>
 
                         <span class="form-hint">
@@ -106,16 +98,14 @@
                         </span>
 
                         @error('warehouse_code')
-                        <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
-
                     </div>
 
 
-                    {{-- Warehouse Name --}}
+                    {{-- WAREHOUSE NAME --}}
 
                     <div class="form-group">
-
                         <label for="warehouse_name">
                             Warehouse Name
                             <span class="required">*</span>
@@ -126,8 +116,9 @@
                             name="warehouse_name"
                             id="warehouse_name"
                             maxlength="100"
-                            value="{{ old('warehouse_name') }}"
+                            value="{{ old('warehouse_name', $warehouse->warehouse_name) }}"
                             placeholder="Enter warehouse name"
+                            class="@error('warehouse_name') is-invalid @enderror"
                             required>
 
                         <span class="form-hint">
@@ -135,16 +126,14 @@
                         </span>
 
                         @error('warehouse_name')
-                        <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
-
                     </div>
 
 
-                    {{-- ADDRESS --}}
+                    {{-- WAREHOUSE ADDRESS --}}
 
                     <div class="form-group">
-
                         <label for="address">
                             Warehouse Address
                         </label>
@@ -153,38 +142,34 @@
                             name="address"
                             id="address"
                             rows="5"
-                            placeholder="Enter the complete warehouse address...">{{ old('address') }}</textarea>
+                            placeholder="Enter the complete warehouse address..."
+                            class="@error('address') is-invalid @enderror">{{ old('address', $warehouse->address) }}</textarea>
 
                         <span class="form-hint">
                             Include the street, city, and other relevant location details.
                         </span>
 
                         @error('address')
-                        <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
-
                     </div>
 
 
                     {{-- WAREHOUSE SETTINGS --}}
 
                     <div class="section-divider">
-
                         <div>
                             <h4>Warehouse Settings</h4>
-
                             <p>
                                 Configure the operational status of this warehouse.
                             </p>
                         </div>
-
                     </div>
 
 
-                    {{-- STATUS --}}
+                    {{-- WAREHOUSE STATUS --}}
 
                     <div class="form-group">
-
                         <label for="status">
                             Warehouse Status
                             <span class="required">*</span>
@@ -193,30 +178,30 @@
                         <select
                             name="status"
                             id="status"
+                            class="@error('status') is-invalid @enderror"
                             required>
 
                             <option
                                 value="Active"
-                                @selected(old('status', 'Active' )==='Active' )>
+                                @selected(old('status', $warehouse->status) === 'Active')>
                                 Active
                             </option>
 
                             <option
                                 value="Inactive"
-                                @selected(old('status')==='Inactive' )>
+                                @selected(old('status', $warehouse->status) === 'Inactive')>
                                 Inactive
                             </option>
-
                         </select>
 
                         <span class="form-hint">
-                            Active warehouses are available for operational use. Inactive warehouses are marked as unavailable for new operations.
+                            Active warehouses are available for operational use.
+                            Inactive warehouses are marked as unavailable for new operations.
                         </span>
 
                         @error('status')
-                        <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                         @enderror
-
                     </div>
 
 
@@ -234,7 +219,7 @@
                             type="submit"
                             class="btn primary"
                             id="warehouseSubmitButton">
-                            Create Warehouse
+                            Update Warehouse
                         </button>
 
                     </div>
@@ -242,9 +227,7 @@
                 </div>
 
 
-                {{-- =================================================
-                     RIGHT: WAREHOUSE PREVIEW
-                ================================================== --}}
+                {{-- RIGHT: WAREHOUSE PREVIEW --}}
 
                 <aside class="warehouse-preview-panel">
 
@@ -253,7 +236,7 @@
                     </div>
 
 
-                    {{-- Preview Header --}}
+                    {{-- PREVIEW HEADER --}}
 
                     <div class="warehouse-preview-header">
 
@@ -262,15 +245,13 @@
                         </div>
 
                         <div class="warehouse-preview-main">
-
                             <h3 id="previewWarehouseName">
-                                New Warehouse
+                                {{ old('warehouse_name', $warehouse->warehouse_name) ?: 'Warehouse Name' }}
                             </h3>
 
                             <span id="previewWarehouseCode">
-                                No Code Assigned
+                                {{ old('warehouse_code', $warehouse->warehouse_code) ?: 'No Code Assigned' }}
                             </span>
-
                         </div>
 
                     </div>
@@ -279,26 +260,27 @@
                     <div class="warehouse-preview-divider"></div>
 
 
-                    {{-- Status --}}
+                    {{-- STATUS --}}
 
                     <div class="warehouse-preview-detail">
-
                         <span>Operational Status</span>
 
                         <strong
                             id="previewWarehouseStatus"
-                            class="warehouse-status-badge active">
-                            <span class="status-dot"></span>
-                            Active
-                        </strong>
+                            class="warehouse-status-badge {{ old('status', $warehouse->status) === 'Inactive' ? 'inactive' : 'active' }}">
 
+                            <span class="status-dot"></span>
+                            <span id="previewStatusText">
+                                {{ old('status', $warehouse->status) }}
+                            </span>
+                        </strong>
                     </div>
 
 
                     <div class="warehouse-preview-divider"></div>
 
 
-                    {{-- Address --}}
+                    {{-- ADDRESS --}}
 
                     <div class="warehouse-preview-address">
 
@@ -320,14 +302,13 @@
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     aria-hidden="true">
+
                                     <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
                                     <circle cx="12" cy="10" r="2.5" />
                                 </svg>
                             </span>
 
-                            <p id="previewWarehouseAddress">
-                                No address provided.
-                            </p>
+                            <p id="previewWarehouseAddress">{{ old('address', $warehouse->address) ?: 'No address provided.' }}</p>
 
                         </div>
 
@@ -337,7 +318,7 @@
                     <div class="warehouse-preview-divider"></div>
 
 
-                    {{-- Summary --}}
+                    {{-- SUMMARY --}}
 
                     <div class="warehouse-preview-summary">
 
@@ -346,33 +327,24 @@
                         </div>
 
                         <div class="warehouse-summary-item">
-
                             <span>Warehouse Code</span>
-
                             <strong id="previewSummaryCode">
-                                —
+                                {{ old('warehouse_code', $warehouse->warehouse_code) ?: '—' }}
                             </strong>
-
                         </div>
 
                         <div class="warehouse-summary-item">
-
                             <span>Warehouse Name</span>
-
                             <strong id="previewSummaryName">
-                                —
+                                {{ old('warehouse_name', $warehouse->warehouse_name) ?: '—' }}
                             </strong>
-
                         </div>
 
                         <div class="warehouse-summary-item">
-
                             <span>Address Status</span>
-
                             <strong id="previewAddressStatus">
-                                Not Provided
+                                {{ trim((string) old('address', $warehouse->address)) !== '' ? 'Provided' : 'Not Provided' }}
                             </strong>
-
                         </div>
 
                     </div>
@@ -382,15 +354,13 @@
 
                     <div class="warehouse-preview-note">
 
-                        <div class="warehouse-note-icon">
-                            i
-                        </div>
+                        <div class="warehouse-note-icon">i</div>
 
                         <div>
-                            <strong>Before You Create</strong>
-
+                            <strong>Before You Update</strong>
                             <p>
-                                Make sure the warehouse code is unique and the information is correct. You can update these details later.
+                                Review the warehouse information before saving.
+                                Make sure the warehouse code remains unique.
                             </p>
                         </div>
 
@@ -409,29 +379,29 @@
 
 <style>
     /* =========================================================
-       CREATE LAYOUT
+       EDIT LAYOUT
     ========================================================= */
 
-    .warehouse-create-card,
-    .warehouse-create-body,
+    .warehouse-edit-card,
+    .warehouse-edit-body,
     .warehouse-form-layout,
     .warehouse-form-main {
         overflow: visible !important;
     }
 
-    .warehouse-create-card {
+    .warehouse-edit-card {
         width: 100%;
         box-sizing: border-box;
     }
 
-    .warehouse-create-card>.card-head h3 {
+    .warehouse-edit-card > .card-head h3 {
         margin: 0 0 5px;
         color: #17284f;
         font-size: 16px;
         font-weight: 700;
     }
 
-    .warehouse-create-card>.card-head p {
+    .warehouse-edit-card > .card-head p {
         margin: 0;
         color: #8a94a6;
         font-size: 12px;
@@ -536,9 +506,7 @@
         font-family: inherit;
         font-size: 13px;
         outline: none;
-        transition:
-            border-color .18s ease,
-            box-shadow .18s ease;
+        transition: border-color .18s ease, box-shadow .18s ease;
     }
 
     .warehouse-form-main .form-group input,
@@ -566,9 +534,7 @@
         color: #a0a8b6;
     }
 
-    .warehouse-form-main .form-group input.is-invalid,
-    .warehouse-form-main .form-group select.is-invalid,
-    .warehouse-form-main .form-group textarea.is-invalid {
+    .warehouse-form-main .form-group .is-invalid {
         border-color: #c94a4a;
     }
 
@@ -691,7 +657,7 @@
         line-height: 1.4;
     }
 
-    .warehouse-preview-main>span {
+    .warehouse-preview-main > span {
         display: block;
         overflow-wrap: anywhere;
         color: #7d8797;
@@ -712,7 +678,7 @@
 
 
     /* =========================================================
-       PREVIEW DETAIL / STATUS
+       STATUS
     ========================================================= */
 
     .warehouse-preview-detail {
@@ -722,7 +688,7 @@
         gap: 12px;
     }
 
-    .warehouse-preview-detail>span {
+    .warehouse-preview-detail > span {
         color: #8a94a6;
         font-size: 11px;
     }
@@ -758,7 +724,7 @@
 
 
     /* =========================================================
-       PREVIEW ADDRESS
+       ADDRESS
     ========================================================= */
 
     .warehouse-preview-section-title {
@@ -797,7 +763,7 @@
 
 
     /* =========================================================
-       PREVIEW SUMMARY
+       SUMMARY
     ========================================================= */
 
     .warehouse-summary-item {
@@ -814,13 +780,13 @@
         border-bottom: 0;
     }
 
-    .warehouse-summary-item>span {
+    .warehouse-summary-item > span {
         flex-shrink: 0;
         color: #8a94a6;
         font-size: 11px;
     }
 
-    .warehouse-summary-item>strong {
+    .warehouse-summary-item > strong {
         min-width: 0;
         max-width: 60%;
         color: #34415c;
@@ -832,7 +798,7 @@
 
 
     /* =========================================================
-       PREVIEW NOTE
+       INFORMATION NOTE
     ========================================================= */
 
     .warehouse-preview-note {
@@ -859,7 +825,7 @@
         font-weight: 700;
     }
 
-    .warehouse-preview-note>div:last-child {
+    .warehouse-preview-note > div:last-child {
         min-width: 0;
     }
 
@@ -918,89 +884,86 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
-        const form = document.getElementById('warehouseCreateForm');
+    const form = document.getElementById('warehouseEditForm');
 
-        if (!form) {
+    if (!form) {
+        return;
+    }
+
+    const warehouseCode = document.getElementById('warehouse_code');
+    const warehouseName = document.getElementById('warehouse_name');
+    const warehouseAddress = document.getElementById('address');
+    const warehouseStatus = document.getElementById('status');
+
+    const previewName = document.getElementById('previewWarehouseName');
+    const previewCode = document.getElementById('previewWarehouseCode');
+    const previewStatus = document.getElementById('previewWarehouseStatus');
+    const previewStatusText = document.getElementById('previewStatusText');
+    const previewAddress = document.getElementById('previewWarehouseAddress');
+
+    const summaryCode = document.getElementById('previewSummaryCode');
+    const summaryName = document.getElementById('previewSummaryName');
+    const summaryAddressStatus = document.getElementById('previewAddressStatus');
+
+    function updateWarehousePreview() {
+
+        const code = warehouseCode.value.trim();
+        const name = warehouseName.value.trim();
+        const address = warehouseAddress.value.trim();
+        const status = warehouseStatus.value;
+
+        // Warehouse name
+        previewName.textContent = name || 'Warehouse Name';
+        summaryName.textContent = name || '—';
+
+        // Warehouse code
+        previewCode.textContent = code || 'No Code Assigned';
+        summaryCode.textContent = code || '—';
+
+        // Warehouse status
+        previewStatus.classList.remove('active', 'inactive');
+        previewStatus.classList.add(status === 'Inactive' ? 'inactive' : 'active');
+        previewStatusText.textContent = status || 'Active';
+
+        // Warehouse address
+        previewAddress.textContent = address || 'No address provided.';
+
+        summaryAddressStatus.textContent = address
+            ? 'Provided'
+            : 'Not Provided';
+    }
+
+    [
+        warehouseCode,
+        warehouseName,
+        warehouseAddress,
+        warehouseStatus
+    ].forEach(function (field) {
+        field.addEventListener('input', updateWarehousePreview);
+        field.addEventListener('change', updateWarehousePreview);
+    });
+
+    // Prevent accidental double submission
+    form.addEventListener('submit', function (event) {
+
+        if (!form.checkValidity()) {
             return;
         }
 
-        const warehouseCode = document.getElementById('warehouse_code');
-        const warehouseName = document.getElementById('warehouse_name');
-        const warehouseAddress = document.getElementById('address');
-        const warehouseStatus = document.getElementById('status');
+        const submitButton = document.getElementById('warehouseSubmitButton');
 
-        const previewName = document.getElementById('previewWarehouseName');
-        const previewCode = document.getElementById('previewWarehouseCode');
-        const previewStatus = document.getElementById('previewWarehouseStatus');
-        const previewAddress = document.getElementById('previewWarehouseAddress');
-
-        const summaryCode = document.getElementById('previewSummaryCode');
-        const summaryName = document.getElementById('previewSummaryName');
-        const summaryAddressStatus = document.getElementById('previewAddressStatus');
-
-        function updateWarehousePreview() {
-
-            const code = warehouseCode.value.trim();
-            const name = warehouseName.value.trim();
-            const address = warehouseAddress.value.trim();
-            const status = warehouseStatus.value;
-
-            // Warehouse name
-            previewName.textContent = name || 'New Warehouse';
-            summaryName.textContent = name || '—';
-
-            // Warehouse code
-            previewCode.textContent = code || 'No Code Assigned';
-            summaryCode.textContent = code || '—';
-
-            // Warehouse status
-            previewStatus.classList.remove('active', 'inactive');
-
-            if (status === 'Inactive') {
-                previewStatus.classList.add('inactive');
-                previewStatus.innerHTML =
-                    '<span class="status-dot"></span> Inactive';
-            } else {
-                previewStatus.classList.add('active');
-                previewStatus.innerHTML =
-                    '<span class="status-dot"></span> Active';
-            }
-
-            // Warehouse address
-            previewAddress.textContent = address || 'No address provided.';
-
-            summaryAddressStatus.textContent = address ?
-                'Provided' :
-                'Not Provided';
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Updating Warehouse...';
         }
-
-        // Update preview when input changes
-        [
-            warehouseCode,
-            warehouseName,
-            warehouseAddress,
-            warehouseStatus
-        ].forEach(function(field) {
-            field.addEventListener('input', updateWarehousePreview);
-            field.addEventListener('change', updateWarehousePreview);
-        });
-
-        // Prevent accidental double submission
-        form.addEventListener('submit', function() {
-            const submitButton = document.getElementById('warehouseSubmitButton');
-
-            if (submitButton && form.checkValidity()) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Saving Warehouse...';
-            }
-        });
-
-        // Initialize preview with old input values
-        updateWarehousePreview();
-
     });
+
+    // Initialize preview with the existing warehouse data
+    updateWarehousePreview();
+
+});
 </script>
 
 @endsection
