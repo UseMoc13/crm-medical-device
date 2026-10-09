@@ -8,6 +8,7 @@ class OpportunityItem extends Model
 {
     protected $table = 'opportunity_items';
 
+    public $timestamps = false;
     protected $primaryKey = 'opportunity_item_id';
 
     public $incrementing = false;
