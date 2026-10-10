@@ -15,6 +15,25 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\StockMovementController;
+
+Route::get('/stock-movements', [StockMovementController::class, 'index'])
+    ->name('stock-movements.index');
+
+Route::get('/stock-movements/create', [StockMovementController::class, 'create'])
+    ->name('stock-movements.create');
+
+Route::post('/stock-movements', [StockMovementController::class, 'store'])
+    ->name('stock-movements.store');
+
+Route::get('/stock-movements/{stockMovement}/edit', [StockMovementController::class, 'edit'])
+    ->name('stock-movements.edit');
+
+Route::put('/stock-movements/{stockMovement}', [StockMovementController::class, 'update'])
+    ->name('stock-movements.update');
+
+Route::delete('/stock-movements/{stockMovement}', [StockMovementController::class, 'destroy'])
+    ->name('stock-movements.destroy');
 
 Route::resource('roles', RoleController::class);
 
@@ -43,6 +62,9 @@ Route::put('/customers/{customer}', [CustomerController::class, 'update'])
 
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
     ->name('customers.destroy');
+
+Route::get('/stock-movements', [StockMovementController::class, 'index'])
+    ->name('stock-movements.index');
 
 Route::resource(
     'contacts',
@@ -125,3 +147,17 @@ Route::get(
     '/opportunities/{opportunity}/items',
     [OpportunityController::class, 'items']
 )->name('opportunities.items');
+
+Route::get('/stock-movements', [
+    StockMovementController::class, 'index'
+])->name('stock-movements.index');
+
+Route::get('/stock-movements/create', [
+    StockMovementController::class, 'create'
+])->name('stock-movements.create');
+
+Route::post('/stock-movements', [
+    StockMovementController::class, 'store'
+])->name('stock-movements.store');
+
+

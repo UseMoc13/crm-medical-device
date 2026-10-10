@@ -215,7 +215,11 @@
             <span class="nav-text">Inventory</span>
         </a>
 
-        <a href="#" data-label="Stock Movements">
+        <a
+            href="{{ route('stock-movements.index') }}"
+            class="{{ request()->routeIs('stock-movements.*') ? 'active' : '' }}"
+            data-label="stock-movements">
+
             <span class="ico">↕</span>
             <span class="nav-text">Stock Movements</span>
         </a>
