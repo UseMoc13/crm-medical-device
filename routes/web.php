@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\InventoryController;
 
 Route::resource('roles', RoleController::class);
 
@@ -72,6 +73,11 @@ Route::resource(
     'products',
     ProductController::class
 );
+
+Route::get(
+    '/inventories',
+    [InventoryController::class, 'index']
+)->name('inventories.index');
 
 Route::get(
     '/brands',

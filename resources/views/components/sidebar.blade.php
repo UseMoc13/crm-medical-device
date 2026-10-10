@@ -206,7 +206,11 @@
             <span class="nav-text">Warehouses</span>
         </a>
 
-        <a href="#" data-label="Inventory">
+        <a
+            href="{{ route('inventories.index') }}"
+            class="{{ request()->routeIs('inventories.*') ? 'active' : '' }}"
+            data-label="inventories">
+
             <span class="ico">▥</span>
             <span class="nav-text">Inventory</span>
         </a>
