@@ -86,7 +86,7 @@ class StockMovementController extends Controller
                     'inbound',
                     'stock_in',
                     'masuk',
-                    'opening_stock',
+                    
                 ])
                 ->sum('sm.quantity'),
 
