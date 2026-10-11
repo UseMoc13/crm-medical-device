@@ -224,7 +224,11 @@
             <span class="nav-text">Stock Movements</span>
         </a>
 
-        <a href="#" data-label="Serial Numbers">
+        <a
+            href="{{ route('serial-numbers.index') }}"
+            class="{{ request()->routeIs('serial-numbers.*') ? 'active' : '' }}"
+            data-label="serial-numbers">
+
             <span class="ico">▣</span>
             <span class="nav-text">Serial Numbers</span>
         </a>

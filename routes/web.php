@@ -16,6 +16,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\SerialNumberController;
 
 Route::get('/stock-movements', [StockMovementController::class, 'index'])
     ->name('stock-movements.index');
@@ -34,6 +35,15 @@ Route::put('/stock-movements/{stockMovement}', [StockMovementController::class, 
 
 Route::delete('/stock-movements/{stockMovement}', [StockMovementController::class, 'destroy'])
     ->name('stock-movements.destroy');
+
+Route::get('/serial-numbers', [SerialNumberController::class, 'index'])
+    ->name('serial-numbers.index');
+
+Route::get('/serial-numbers/create', [SerialNumberController::class, 'create'])
+    ->name('serial-numbers.create');
+
+Route::post('/serial-numbers', [SerialNumberController::class, 'store'])
+    ->name('serial-numbers.store');
 
 Route::resource('roles', RoleController::class);
 
@@ -63,6 +73,14 @@ Route::put('/customers/{customer}', [CustomerController::class, 'update'])
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
     ->name('customers.destroy');
 
+Route::get('/serial-numbers', [SerialNumberController::class, 'index'])
+    ->name('serial-numbers.index');
+
+Route::get('/serial-numbers/create', [SerialNumberController::class, 'create'])
+    ->name('serial-numbers.create');
+
+Route::post('/serial-numbers', [SerialNumberController::class, 'store'])
+    ->name('serial-numbers.store');
 
 
 Route::resource(
