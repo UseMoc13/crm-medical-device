@@ -843,7 +843,7 @@
         const previewQuantity = document.getElementById('previewQuantity');
         const previewDescription = document.getElementById('previewDescription');
 
-        const movementType = @json($movement - > movement_type);
+        const movementType = @json($movement -> movement_type);
 
         const typeInformation = {
             opening_stock: {

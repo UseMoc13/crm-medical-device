@@ -11,11 +11,12 @@ class StockMovementController extends Controller
 {
     public function index(Request $request)
     {
-        $search = trim($request->input('search', ''));
-        $movementType = $request->input('movement_type', '');
-        $warehouseId = $request->input('warehouse_id', '');
-        $dateFrom = $request->input('date_from', '');
-        $dateTo = $request->input('date_to', '');
+        $search = trim((string) $request->input('search', ''));
+
+        $movementType = $request->input('movement_type') ?: '';
+        $warehouseId = $request->input('warehouse_id') ?: '';
+        $dateFrom = $request->input('date_from') ?: '';
+        $dateTo = $request->input('date_to') ?: '';
 
         $sortColumns = [
             'created_at' => 'sm.created_at',
@@ -29,13 +30,15 @@ class StockMovementController extends Controller
         $sort = $request->input('sort', 'created_at');
         $direction = strtolower($request->input('direction', 'desc'));
 
-        if (! array_key_exists($sort, $sortColumns)) {
+        if (!array_key_exists($sort, $sortColumns)) {
             $sort = 'created_at';
         }
 
-        if (! in_array($direction, ['asc', 'desc'], true)) {
+        if (!in_array($direction, ['asc', 'desc'], true)) {
             $direction = 'desc';
         }
+
+        // Lanjutkan dengan query dan bagian lainnya.
 
         $baseQuery = DB::table('stock_movements as sm')
             ->join('products as p', 'sm.product_id', '=', 'p.product_id')

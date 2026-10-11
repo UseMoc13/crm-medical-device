@@ -42,15 +42,18 @@
     </div>
 
     <div class="card-body sm-create-body">
-        <form method="POST"
-              action="{{ route('stock-movements.store') }}"
-              id="stockMovementForm">
+        <form
+            method="POST"
+            action="{{ route('stock-movements.store') }}"
+            id="stockMovementForm">
             @csrf
 
             <div class="sm-form-layout">
 
+                {{-- LEFT: FORM --}}
                 <div class="sm-form-main">
 
+                    {{-- TRANSACTION DETAILS --}}
                     <div class="sm-section-heading sm-first-section">
                         <div>
                             <h4>Transaction Details</h4>
@@ -66,13 +69,22 @@
 
                         <select id="movement_type" name="movement_type" required>
                             <option value="">Select Movement Type</option>
-                            <option value="opening_stock" @selected(old('movement_type') === 'opening_stock')>
+
+                            <option
+                                value="opening_stock"
+                                @selected(old('movement_type') === 'opening_stock')>
                                 Stock Opening
                             </option>
-                            <option value="stock_in" @selected(old('movement_type') === 'stock_in')>
+
+                            <option
+                                value="stock_in"
+                                @selected(old('movement_type') === 'stock_in')>
                                 Stock In
                             </option>
-                            <option value="stock_out" @selected(old('movement_type') === 'stock_out')>
+
+                            <option
+                                value="stock_out"
+                                @selected(old('movement_type') === 'stock_out')>
                                 Stock Out
                             </option>
                         </select>
@@ -102,7 +114,7 @@
                                     data-name="{{ $product->product_name }}"
                                     data-unit="{{ $product->unit }}"
                                     @selected((string) old('product_id') === (string) $product->product_id)>
-                                    {{ $product->product_code }} - {{ $product->product_name }}
+                                    {{ $product->product_code }} — {{ $product->product_name }}
                                 </option>
                             @endforeach
                         </select>
@@ -145,7 +157,7 @@
                         @enderror
                     </div>
 
-                    {{-- QUANTITY --}}
+                    {{-- QUANTITY WITH STEPPER BUTTONS --}}
                     <div class="sm-form-group">
                         <label for="quantity">
                             Quantity <span class="sm-required">*</span>
@@ -162,18 +174,26 @@
                                 placeholder="Enter quantity"
                                 required>
 
+                            <span class="sm-quantity-unit" id="quantityUnit">
+                                Unit
+                            </span>
+
                             <div class="sm-quantity-stepper">
                                 <button
                                     type="button"
                                     id="quantityMinus"
                                     class="sm-stepper-button"
-                                    aria-label="Decrease quantity">−</button>
+                                    aria-label="Decrease quantity">
+                                    −
+                                </button>
 
                                 <button
                                     type="button"
                                     id="quantityPlus"
                                     class="sm-stepper-button"
-                                    aria-label="Increase quantity">+</button>
+                                    aria-label="Increase quantity">
+                                    +
+                                </button>
                             </div>
                         </div>
 
@@ -194,6 +214,7 @@
                         </div>
                     </div>
 
+                    {{-- REFERENCE TYPE --}}
                     <div class="sm-form-group">
                         <label for="reference_type">Reference Type</label>
 
@@ -214,6 +235,7 @@
                         @enderror
                     </div>
 
+                    {{-- REFERENCE ID --}}
                     <div class="sm-form-group">
                         <label for="reference_id">Reference ID</label>
 
@@ -234,6 +256,7 @@
                         @enderror
                     </div>
 
+                    {{-- NOTES --}}
                     <div class="sm-form-group">
                         <label for="notes">Notes</label>
 
@@ -254,25 +277,28 @@
                         @enderror
                     </div>
 
-                    {{-- ACTIONS --}}
+                    {{-- FORM ACTIONS --}}
                     <div class="sm-form-actions">
                         <a href="{{ route('stock-movements.index') }}" class="btn">
                             Cancel
                         </a>
 
-                        <button type="submit"
-                                class="btn primary"
-                                id="saveMovementButton">
+                        <button
+                            type="submit"
+                            class="btn primary"
+                            id="saveMovementButton">
                             Save Movement
                         </button>
                     </div>
 
                 </div>
 
-                {{-- TRANSACTION PREVIEW --}}
+                {{-- RIGHT: TRANSACTION PREVIEW --}}
                 <aside class="sm-preview-panel">
 
-                    <div class="sm-preview-label">TRANSACTION PREVIEW</div>
+                    <div class="sm-preview-label">
+                        TRANSACTION PREVIEW
+                    </div>
 
                     <div class="sm-preview-head">
                         <div class="sm-preview-icon" id="previewIcon">S</div>
@@ -287,7 +313,10 @@
 
                     <div class="sm-preview-detail">
                         <span>Movement Type</span>
-                        <strong id="previewMovementType" class="sm-movement-badge">
+
+                        <strong
+                            id="previewMovementType"
+                            class="sm-movement-badge">
                             Not Selected
                         </strong>
                     </div>
@@ -299,6 +328,7 @@
 
                     <div class="sm-preview-divider"></div>
 
+                    {{-- QUANTITY AND UNIT IN ONE ROW --}}
                     <div class="sm-preview-quantity">
                         <span>Transaction Quantity</span>
 
@@ -314,6 +344,7 @@
 
                     <div class="sm-preview-note">
                         <strong>Important Notes</strong>
+
                         <ul>
                             <li>Stock Opening sets the initial stock balance.</li>
                             <li>Stock In increases the current balance.</li>
@@ -323,6 +354,7 @@
 
                     <div class="sm-preview-footer">
                         <span class="sm-preview-dot"></span>
+
                         <span>
                             Stock balance and movement history will be updated when the
                             transaction is saved successfully.
@@ -337,7 +369,10 @@
 </div>
 
 <style>
-    /* LAYOUT */
+    /* ========================================
+       MAIN LAYOUT
+    ======================================== */
+
     .sm-create-card,
     .sm-create-body,
     .sm-form-layout,
@@ -357,7 +392,10 @@
         min-width: 0;
     }
 
-    /* SECTION HEADINGS */
+    /* ========================================
+       SECTION HEADINGS
+    ======================================== */
+
     .sm-section-heading {
         margin: 26px 0 18px;
         padding-top: 22px;
@@ -384,7 +422,10 @@
         line-height: 1.6;
     }
 
-    /* FORM FIELDS */
+    /* ========================================
+       FORM FIELDS
+    ======================================== */
+
     .sm-form-group {
         min-width: 0;
         margin-bottom: 20px;
@@ -432,7 +473,8 @@
 
     .sm-form-group > input:focus,
     .sm-form-group > select:focus,
-    .sm-form-group > textarea:focus {
+    .sm-form-group > textarea:focus,
+    .sm-quantity-input:focus-within {
         outline: none;
         border-color: #2ba7a0;
         box-shadow: 0 0 0 3px rgba(43, 167, 160, .10);
@@ -459,7 +501,10 @@
         line-height: 1.5;
     }
 
-    /* QUANTITY INPUT */
+    /* ========================================
+       QUANTITY INPUT AND STEPPER BUTTONS
+    ======================================== */
+
     .sm-quantity-input {
         display: flex;
         align-items: center;
@@ -478,7 +523,7 @@
         box-shadow: 0 0 0 3px rgba(43, 167, 160, .10);
     }
 
-    .sm-quantity-input input[type="number"] {
+    .sm-quantity-input input {
         flex: 1;
         min-width: 0;
         width: 100%;
@@ -486,8 +531,6 @@
         padding: 0;
         border: 0;
         outline: 0;
-        appearance: textfield;
-        -moz-appearance: textfield;
         background: transparent;
         color: #17284f;
         font-family: inherit;
@@ -495,17 +538,17 @@
         box-shadow: none !important;
     }
 
-    /* HIDE NUMBER ARROWS IN CHROME, EDGE, SAFARI, OPERA */
-    .sm-quantity-input input[type="number"]::-webkit-inner-spin-button,
-    .sm-quantity-input input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    .sm-quantity-input input[type="number"]:focus {
+    .sm-quantity-input input:focus {
         outline: none;
         border: 0;
         box-shadow: none !important;
+    }
+
+    .sm-quantity-unit {
+        flex-shrink: 0;
+        color: #718096;
+        font-size: 11px;
+        white-space: nowrap;
     }
 
     .sm-quantity-stepper {
@@ -545,7 +588,10 @@
         transform: scale(.95);
     }
 
-    /* NOTES COUNTER */
+    /* ========================================
+       NOTES COUNTER
+    ======================================== */
+
     .sm-notes-footer {
         display: flex;
         justify-content: space-between;
@@ -564,7 +610,10 @@
         font-size: 10px;
     }
 
-    /* FORM ACTIONS */
+    /* ========================================
+       FORM ACTIONS
+    ======================================== */
+
     .sm-form-actions {
         display: flex;
         justify-content: flex-end;
@@ -580,7 +629,10 @@
         cursor: wait;
     }
 
-    /* PREVIEW PANEL */
+    /* ========================================
+       TRANSACTION PREVIEW PANEL
+    ======================================== */
+
     .sm-preview-panel {
         position: sticky;
         top: 92px;
@@ -670,6 +722,7 @@
     }
 
     /* MOVEMENT TYPE BADGES */
+
     .sm-movement-badge {
         padding: 5px 8px;
         border-radius: 6px;
@@ -692,7 +745,8 @@
         color: #c45142 !important;
     }
 
-    /* PREVIEW QUANTITY */
+    /* TRANSACTION QUANTITY */
+
     .sm-preview-quantity {
         padding: 15px;
         border: 1px solid #e2eae9;
@@ -734,7 +788,10 @@
         line-height: 1.7;
     }
 
-    /* IMPORTANT NOTES */
+    /* ========================================
+       IMPORTANT NOTES
+    ======================================== */
+
     .sm-preview-note {
         margin-top: 22px;
         padding: 15px;
@@ -776,7 +833,10 @@
         background: #2ba7a0;
     }
 
-    /* RESPONSIVE */
+    /* ========================================
+       RESPONSIVE
+    ======================================== */
+
     @media (max-width: 950px) {
         .sm-form-layout {
             grid-template-columns: minmax(0, 1fr);
@@ -838,6 +898,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const typeHint = document.getElementById('movementTypeHint');
     const quantityHint = document.getElementById('quantityHint');
+    const quantityUnit = document.getElementById('quantityUnit');
     const notesCounter = document.getElementById('notesCounter');
 
     const previewIcon = document.getElementById('previewIcon');
@@ -846,6 +907,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewMovementType = document.getElementById('previewMovementType');
     const previewWarehouse = document.getElementById('previewWarehouse');
     const previewQuantity = document.getElementById('previewQuantity');
+    const previewQuantityUnit = document.getElementById('previewQuantityUnit');
     const previewDescription = document.getElementById('previewDescription');
 
     const typeInformation = {
@@ -857,6 +919,7 @@ document.addEventListener('DOMContentLoaded', function () {
             badge: 'opening',
             icon: 'O'
         },
+
         stock_in: {
             label: 'Stock In',
             hint: 'Adds the entered quantity to the current stock balance.',
@@ -865,6 +928,7 @@ document.addEventListener('DOMContentLoaded', function () {
             badge: 'in',
             icon: 'IN'
         },
+
         stock_out: {
             label: 'Stock Out',
             hint: 'Removes the entered quantity from the current stock balance.',
@@ -923,9 +987,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const unit = product && product.dataset.unit
             ? product.dataset.unit
-            : '';
+            : 'Unit';
 
+        quantityUnit.textContent = unit;
         previewQuantity.textContent = quantity.toLocaleString('id-ID');
+        previewQuantityUnit.textContent = unit;
 
         typeHint.textContent = type
             ? type.hint
@@ -947,11 +1013,15 @@ document.addEventListener('DOMContentLoaded', function () {
         previewDescription.textContent = description;
     }
 
-    /* QUANTITY BUTTONS */
+    /* ========================================
+       QUANTITY STEPPER BUTTONS
+    ======================================== */
+
     quantityMinus.addEventListener('click', function () {
         const current = Number.parseInt(quantityInput.value, 10) || 1;
 
         quantityInput.value = Math.max(1, current - 1);
+
         updatePreview();
     });
 
@@ -959,10 +1029,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const current = Number.parseInt(quantityInput.value, 10) || 0;
 
         quantityInput.value = current + 1;
+
         updatePreview();
     });
 
-    quantityInput.addEventListener('input', updatePreview);
+    quantityInput.addEventListener('input', function () {
+        updatePreview();
+    });
 
     quantityInput.addEventListener('change', function () {
         const parsed = Number.parseInt(quantityInput.value, 10);
@@ -976,18 +1049,23 @@ document.addEventListener('DOMContentLoaded', function () {
         updatePreview();
     });
 
-    /* NOTES COUNTER */
+    /* ========================================
+       OTHER FORM EVENTS
+    ======================================== */
+
     function updateNotesCounter() {
         notesCounter.textContent = notesInput.value.length + ' / 2000';
     }
 
-    /* FORM EVENTS */
     movementType.addEventListener('change', updatePreview);
     productSelect.addEventListener('change', updatePreview);
     warehouseSelect.addEventListener('change', updatePreview);
     notesInput.addEventListener('input', updateNotesCounter);
 
-    /* FORM VALIDATION */
+    /* ========================================
+       FORM VALIDATION
+    ======================================== */
+
     form.addEventListener('submit', function (event) {
         if (!form.checkValidity()) {
             event.preventDefault();
@@ -1025,7 +1103,8 @@ document.addEventListener('DOMContentLoaded', function () {
         button.disabled = true;
         button.textContent = 'Saving...';
     });
-    
+
+    /* INITIALIZE */
     updatePreview();
     updateNotesCounter();
 });
