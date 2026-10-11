@@ -86,6 +86,7 @@ class StockMovementController extends Controller
                     'inbound',
                     'stock_in',
                     'masuk',
+                    'opening_stock',
                 ])
                 ->sum('sm.quantity'),
 
@@ -230,7 +231,17 @@ class StockMovementController extends Controller
         |--------------------------------------------------------------------------
         | Menetapkan saldo awal produk pada gudang.
         */
-            if ($type === 'opening_stock') {
+           if ($type === 'opening_stock') {
+                $openingExists = DB::table('stock_movements')
+                    ->where('product_id', $validated['product_id'])
+                    ->where('warehouse_id', $validated['warehouse_id'])
+                    ->whereRaw(
+                        'LOWER(movement_type) = ?',
+                        ['opening_stock']
+                    )
+                    ->exists();
+
+            if ($openingExists) {
                 if ($inventory && (int) $inventory->quantity > 0) {
                     throw ValidationException::withMessages([
                         'movement_type' =>
