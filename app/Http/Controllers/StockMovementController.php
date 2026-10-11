@@ -231,7 +231,7 @@ class StockMovementController extends Controller
         |--------------------------------------------------------------------------
         | Menetapkan saldo awal produk pada gudang.
         */
-           if ($type === 'opening_stock') {
+            if ($type === 'opening_stock') {
                 $openingExists = DB::table('stock_movements')
                     ->where('product_id', $validated['product_id'])
                     ->where('warehouse_id', $validated['warehouse_id'])
@@ -241,11 +241,11 @@ class StockMovementController extends Controller
                     )
                     ->exists();
 
-            if ($openingExists) {
-                if ($inventory && (int) $inventory->quantity > 0) {
+
+                if ($openingExists) {
                     throw ValidationException::withMessages([
                         'movement_type' =>
-                        'Stok untuk produk dan gudang ini sudah tersedia. Gunakan Stock In untuk menambah stok.',
+                            'Stok awal untuk produk dan gudang ini sudah pernah dicatat. Gunakan Stock In untuk menambah stok.',
                     ]);
                 }
 
@@ -266,6 +266,7 @@ class StockMovementController extends Controller
                         'updated_at' => $now,
                     ]);
                 }
+
             }
 
             /*
@@ -300,12 +301,12 @@ class StockMovementController extends Controller
         | Mengurangi stok jika saldo mencukupi.
         */ else {
                 if (
-                    ! $inventory ||
+                    !$inventory ||
                     (int) $inventory->quantity < $quantity
                 ) {
                     throw ValidationException::withMessages([
                         'quantity' =>
-                        'Stok tidak mencukupi untuk transaksi Stock Out.',
+                            'Stok tidak mencukupi untuk transaksi Stock Out.',
                     ]);
                 }
 
@@ -368,7 +369,7 @@ class StockMovementController extends Controller
             ->where('sm.stock_movement_id', $stockMovement)
             ->first();
 
-        abort_if(! $movement, 404, 'Stock movement tidak ditemukan.');
+        abort_if(!$movement, 404, 'Stock movement tidak ditemukan.');
 
         return view('stock-movements.edit', compact('movement'));
     }
@@ -393,7 +394,7 @@ class StockMovementController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (! $movement) {
+            if (!$movement) {
                 abort(404, 'Stock movement tidak ditemukan.');
             }
 
@@ -403,7 +404,7 @@ class StockMovementController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (! $inventory) {
+            if (!$inventory) {
                 throw ValidationException::withMessages([
                     'quantity' => 'Data inventaris untuk transaksi ini tidak ditemukan. Stok tidak dapat diperbarui dengan aman.',
                 ]);
@@ -471,7 +472,7 @@ class StockMovementController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (! $movement) {
+            if (!$movement) {
                 abort(404, 'Stock movement tidak ditemukan.');
             }
 
@@ -481,7 +482,7 @@ class StockMovementController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (! $inventory) {
+            if (!$inventory) {
                 throw ValidationException::withMessages([
                     'stock_movement' => 'Data inventaris tidak ditemukan. Transaksi tidak dihapus agar konsistensi data tetap terjaga.',
                 ]);
