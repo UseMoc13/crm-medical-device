@@ -63,8 +63,7 @@ Route::put('/customers/{customer}', [CustomerController::class, 'update'])
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
     ->name('customers.destroy');
 
-Route::get('/stock-movements', [StockMovementController::class, 'index'])
-    ->name('stock-movements.index');
+
 
 Route::resource(
     'contacts',
@@ -148,16 +147,6 @@ Route::get(
     [OpportunityController::class, 'items']
 )->name('opportunities.items');
 
-Route::get('/stock-movements', [
-    StockMovementController::class, 'index'
-])->name('stock-movements.index');
 
-Route::get('/stock-movements/create', [
-    StockMovementController::class, 'create'
-])->name('stock-movements.create');
-
-Route::post('/stock-movements', [
-    StockMovementController::class, 'store'
-])->name('stock-movements.store');
 
 

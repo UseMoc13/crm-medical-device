@@ -6,47 +6,67 @@ use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WarehouseController extends Controller
 {
     /**
      * Menampilkan daftar gudang.
      */
+
     public function index(Request $request)
     {
         $query = Warehouse::query()
             ->withCount('inventories')
             ->withCount('stockMovements');
 
-        // Pencarian berdasarkan kode atau nama gudang.
         if ($request->filled('search')) {
             $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
-                $q->where(
-                    'warehouse_code',
-                    'ILIKE',
-                    "%{$search}%"
-                )->orWhere(
-                    'warehouse_name',
-                    'ILIKE',
-                    "%{$search}%"
-                );
+                $q->where('warehouse_code', 'ILIKE', "%{$search}%")
+                    ->orWhere('warehouse_name', 'ILIKE', "%{$search}%");
             });
         }
 
-        // Filter status gudang.
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
+        $allowedSorts = [
+            'created_at',
+            'warehouse_code',
+            'warehouse_name',
+            'status',
+        ];
+
+        $sort = $request->query('sort', 'created_at');
+
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'created_at';
+        }
+
+        $direction = strtolower(
+            $request->query('direction', 'desc')
+        );
+
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+
         $warehouses = $query
-            ->orderBy('warehouse_name')
+            ->orderBy($sort, $direction)
+            ->orderBy('warehouse_id')
             ->paginate(10)
             ->withQueryString();
 
-        return view('warehouses.index', compact('warehouses'));
+        return view('warehouses.index', compact(
+            'warehouses',
+            'sort',
+            'direction'
+        ));
     }
+
 
     /**
      * Menampilkan form tambah gudang.
@@ -93,11 +113,9 @@ class WarehouseController extends Controller
             'status.in' => 'Status gudang tidak valid.',
         ]);
 
-        Warehouse::create($validated);
+        $validated['warehouse_id'] = (string) Str::uuid();
 
-        return redirect()
-            ->route('warehouses.index')
-            ->with('success', 'Gudang berhasil ditambahkan.');
+        Warehouse::create($validated);
     }
 
     /**
