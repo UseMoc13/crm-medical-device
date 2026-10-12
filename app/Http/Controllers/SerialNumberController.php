@@ -69,21 +69,21 @@ class SerialNumberController extends Controller
                     'ILIKE',
                     "%{$search}%"
                 )
-                ->orWhere(
-                    'products.product_name',
-                    'ILIKE',
-                    "%{$search}%"
-                )
-                ->orWhere(
-                    'products.product_code',
-                    'ILIKE',
-                    "%{$search}%"
-                )
-                ->orWhere(
-                    'customers.customer_name',
-                    'ILIKE',
-                    "%{$search}%"
-                );
+                    ->orWhere(
+                        'products.product_name',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                    ->orWhere(
+                        'products.product_code',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                    ->orWhere(
+                        'customers.customer_name',
+                        'ILIKE',
+                        "%{$search}%"
+                    );
             });
         }
 
@@ -348,6 +348,161 @@ class SerialNumberController extends Controller
             ->with(
                 'success',
                 'Serial number created successfully.'
+            );
+    }
+    public function show(string $serialNumber)
+    {
+        $serialNumber = DB::table('serial_numbers')
+            ->leftJoin(
+                'products',
+                'serial_numbers.product_id',
+                '=',
+                'products.product_id'
+            )
+            ->leftJoin(
+                'customers',
+                'serial_numbers.customer_id',
+                '=',
+                'customers.customer_id'
+            )
+            ->select(
+                'serial_numbers.*',
+                'products.product_name',
+                'products.product_code',
+                'customers.customer_name'
+            )
+            ->where(
+                'serial_numbers.serial_number_id',
+                $serialNumber
+            )
+            ->first();
+
+        abort_if(!$serialNumber, 404);
+
+        return view(
+            'serial-numbers.show',
+            compact('serialNumber')
+        );
+    }
+
+    public function edit(string $serialNumber)
+    {
+        $serialNumber = DB::table('serial_numbers')
+            ->where(
+                'serial_number_id',
+                $serialNumber
+            )
+            ->first();
+
+        abort_if(!$serialNumber, 404);
+
+        $products = DB::table('products')
+            ->select(
+                'product_id',
+                'product_name',
+                'product_code'
+            )
+            ->orderBy('product_name')
+            ->get();
+
+        $customers = DB::table('customers')
+            ->select(
+                'customer_id',
+                'customer_name'
+            )
+            ->orderBy('customer_name')
+            ->get();
+
+        $statuses = self::SERIAL_STATUSES;
+
+        return view(
+            'serial-numbers.edit',
+            compact(
+                'serialNumber',
+                'products',
+                'customers',
+                'statuses'
+            )
+        );
+    }
+
+    public function update(Request $request, string $serialNumber)
+    {
+        $existingSerialNumber = DB::table('serial_numbers')
+            ->where(
+                'serial_number_id',
+                $serialNumber
+            )
+            ->first();
+
+        abort_if(!$existingSerialNumber, 404);
+
+        $request->merge([
+            'serial_number' => trim(
+                (string) $request->input('serial_number')
+            ),
+            'status' => trim(
+                (string) $request->input('status')
+            ),
+        ]);
+
+        $validated = $request->validate([
+            'serial_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique(
+                    'serial_numbers',
+                    'serial_number'
+                )->ignore(
+                    $serialNumber,
+                    'serial_number_id'
+                ),
+            ],
+
+            'product_id' => [
+                'required',
+                'uuid',
+                'exists:products,product_id',
+            ],
+
+            'customer_id' => [
+                'nullable',
+                'uuid',
+                'exists:customers,customer_id',
+            ],
+
+            'status' => [
+                'required',
+                'string',
+                Rule::in(self::SERIAL_STATUSES),
+            ],
+
+            'purchase_date' => [
+                'nullable',
+                'date',
+            ],
+        ]);
+
+        DB::table('serial_numbers')
+            ->where(
+                'serial_number_id',
+                $serialNumber
+            )
+            ->update([
+                'serial_number' => $validated['serial_number'],
+                'product_id' => $validated['product_id'],
+                'customer_id' => $validated['customer_id'] ?? null,
+                'status' => $validated['status'],
+                'purchase_date' => $validated['purchase_date'] ?? null,
+                'updated_at' => now(),
+            ]);
+
+        return redirect()
+            ->route('serial-numbers.index')
+            ->with(
+                'success',
+                'Serial number updated successfully.'
             );
     }
 }

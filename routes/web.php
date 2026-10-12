@@ -45,6 +45,15 @@ Route::get('/serial-numbers/create', [SerialNumberController::class, 'create'])
 Route::post('/serial-numbers', [SerialNumberController::class, 'store'])
     ->name('serial-numbers.store');
 
+Route::get('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'show'])
+    ->name('serial-numbers.show');
+
+Route::get('/serial-numbers/{serialNumber}/edit', [SerialNumberController::class, 'edit'])
+    ->name('serial-numbers.edit');
+
+Route::put('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'update'])
+    ->name('serial-numbers.update');
+
 Route::resource('roles', RoleController::class);
 
 Route::resource('brands', BrandController::class);
