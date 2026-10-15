@@ -18,6 +18,24 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SerialNumberController;
 
+Route::get('/', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
+Route::resource('roles', RoleController::class);
+Route::resource('users', UserController::class);
+Route::resource('brands', BrandController::class);
+Route::resource('warehouses', WarehouseController::class);
+Route::resource('contacts', ContactController::class);
+Route::resource('leads', LeadController::class);
+Route::resource('opportunities', OpportunityController::class);
+Route::resource('quotations', QuotationController::class);
+Route::resource('product-categories', ProductCategoryController::class);
+Route::resource('products', ProductController::class);
+Route::resource('customers', CustomerController::class);
+
+Route::get('/inventories', [InventoryController::class, 'index'])
+    ->name('inventories.index');
+
 Route::get('/stock-movements', [StockMovementController::class, 'index'])
     ->name('stock-movements.index');
 
@@ -27,14 +45,22 @@ Route::get('/stock-movements/create', [StockMovementController::class, 'create']
 Route::post('/stock-movements', [StockMovementController::class, 'store'])
     ->name('stock-movements.store');
 
-Route::get('/stock-movements/{stockMovement}/edit', [StockMovementController::class, 'edit'])
-    ->name('stock-movements.edit');
+Route::get('/stock-movements/correction/create', [
+    StockMovementController::class,
+    'createCorrection',
+])->name('stock-movements.correction.create');
 
-Route::put('/stock-movements/{stockMovement}', [StockMovementController::class, 'update'])
-    ->name('stock-movements.update');
+Route::post('/stock-movements/{stockMovement}/correction', [
+    StockMovementController::class,
+    'storeCorrection',
+])->whereUuid('stockMovement')
+    ->name('stock-movements.correction.store');
 
-Route::delete('/stock-movements/{stockMovement}', [StockMovementController::class, 'destroy'])
-    ->name('stock-movements.destroy');
+Route::get('/stock-movements/{stockMovement}', [
+    StockMovementController::class,
+    'show',
+])->whereUuid('stockMovement')
+    ->name('stock-movements.show');
 
 Route::get('/serial-numbers', [SerialNumberController::class, 'index'])
     ->name('serial-numbers.index');
@@ -54,126 +80,37 @@ Route::get('/serial-numbers/{serialNumber}/edit', [SerialNumberController::class
 Route::put('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'update'])
     ->name('serial-numbers.update');
 
-Route::resource('roles', RoleController::class);
+Route::get('/opportunities/{opportunity}/items/create', [
+    OpportunityItemController::class,
+    'create',
+])->name('opportunities.items.create');
 
-Route::resource('brands', BrandController::class);
+Route::post('/opportunities/{opportunity}/items', [
+    OpportunityItemController::class,
+    'store',
+])->name('opportunities.items.store');
 
-Route::get('/', [DashboardController::class, 'index'])
-    ->name('dashboard');
+Route::get('/opportunities/{opportunity}/items/{item}/edit', [
+    OpportunityItemController::class,
+    'edit',
+])->name('opportunities.items.edit');
 
-Route::get('/customers', [CustomerController::class, 'index'])
-    ->name('customers.index');
+Route::put('/opportunities/{opportunity}/items/{item}', [
+    OpportunityItemController::class,
+    'update',
+])->name('opportunities.items.update');
 
-Route::get('/customers/create', [CustomerController::class, 'create'])
-    ->name('customers.create');
+Route::delete('/opportunities/{opportunity}/items/{item}', [
+    OpportunityItemController::class,
+    'destroy',
+])->name('opportunities.items.destroy');
 
-Route::post('/customers', [CustomerController::class, 'store'])
-    ->name('customers.store');
+Route::get('/quotations/{quotation}/items', [
+    QuotationController::class,
+    'items',
+])->name('quotations.items');
 
-Route::get('/customers/{customer}', [CustomerController::class, 'show'])
-    ->name('customers.show');
-
-Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
-    ->name('customers.edit');
-
-Route::put('/customers/{customer}', [CustomerController::class, 'update'])
-    ->name('customers.update');
-
-Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
-    ->name('customers.destroy');
-
-Route::get('/serial-numbers', [SerialNumberController::class, 'index'])
-    ->name('serial-numbers.index');
-
-Route::get('/serial-numbers/create', [SerialNumberController::class, 'create'])
-    ->name('serial-numbers.create');
-
-Route::post('/serial-numbers', [SerialNumberController::class, 'store'])
-    ->name('serial-numbers.store');
-
-
-Route::resource(
-    'contacts',
-    ContactController::class
-);
-
-Route::resource(
-    'leads',
-    LeadController::class
-);
-
-Route::resource(
-    'opportunities',
-    OpportunityController::class
-);
-
-Route::resource(
-    'quotations',
-    QuotationController::class
-);
-
-Route::resource(
-    'product-categories',
-    ProductCategoryController::class
-);
-
-Route::resource(
-    'products',
-    ProductController::class
-);
-
-Route::get(
-    '/inventories',
-    [InventoryController::class, 'index']
-)->name('inventories.index');
-
-Route::get(
-    '/brands',
-    [BrandController::class, 'index']
-)->name('brands.index');
-
-Route::resource(
-    'users',
-    UserController::class
-);
-
-Route::resource('warehouses', WarehouseController::class);
-
-Route::get(
-    '/opportunities/{opportunity}/items/create',
-    [OpportunityItemController::class, 'create']
-)->name('opportunities.items.create');
-
-Route::post(
-    '/opportunities/{opportunity}/items',
-    [OpportunityItemController::class, 'store']
-)->name('opportunities.items.store');
-
-Route::get(
-    '/opportunities/{opportunity}/items/{item}/edit',
-    [OpportunityItemController::class, 'edit']
-)->name('opportunities.items.edit');
-
-Route::put(
-    '/opportunities/{opportunity}/items/{item}',
-    [OpportunityItemController::class, 'update']
-)->name('opportunities.items.update');
-
-Route::delete(
-    '/opportunities/{opportunity}/items/{item}',
-    [OpportunityItemController::class, 'destroy']
-)->name('opportunities.items.destroy');
-
-Route::get(
-    '/quotations/{quotation}/items',
-    [QuotationController::class, 'items']
-)->name('quotations.items');
-
-Route::get(
-    '/opportunities/{opportunity}/items',
-    [OpportunityController::class, 'items']
-)->name('opportunities.items');
-
-
-
-
+Route::get('/opportunities/{opportunity}/items', [
+    OpportunityController::class,
+    'items',
+])->name('opportunities.items');
