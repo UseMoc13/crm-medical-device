@@ -1222,11 +1222,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const notesCounter = document.getElementById('notesCounter');
     const submitButton = document.getElementById('submitCorrectionButton');
 
-    const originalWarehouseId = @json($selectedMovement->warehouse_id);
-    const originalWarehouseName = @json($selectedMovement->warehouse_code . ' — ' . $selectedMovement->warehouse_name);
-    const originalType = @json($selectedMovement->movement_type);
-    const originalQuantity = @json((int) $selectedMovement->quantity);
-
     function currentQuantity() {
         const value = Number.parseInt(quantityInput.value, 10);
         return Number.isFinite(value) && value > 0 ? value : 1;

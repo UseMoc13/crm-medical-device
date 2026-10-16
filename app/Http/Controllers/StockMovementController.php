@@ -448,9 +448,11 @@ class StockMovementController extends Controller
         ));
     }
 
+
     public function storeCorrection(Request $request, string $stockMovement)
     {
         $validated = $request->validate([
+            'warehouse_id' => ['required', 'uuid', 'exists:warehouses,warehouse_id'],
             'movement_type' => ['required', 'in:stock_in,stock_out'],
             'quantity' => ['required', 'integer', 'min:1'],
             'correction_reason' => ['required', 'string', 'max:2000'],
@@ -469,31 +471,22 @@ class StockMovementController extends Controller
 
             if (!in_array($original->movement_type, ['stock_in', 'stock_out'], true)) {
                 throw ValidationException::withMessages([
-                    'stock_movement' => 'Hanya transaksi Stock In dan Stock Out yang dapat dikoreksi melalui alur ini.',
+                    'stock_movement' => 'Hanya transaksi Stock In dan Stock Out yang dapat dikoreksi.',
                 ]);
             }
 
             if ($original->reversal_of_id || $original->reversed_by_id) {
                 throw ValidationException::withMessages([
-                    'stock_movement' => 'Transaksi ini merupakan transaksi pembalik atau sudah pernah dikoreksi.',
+                    'stock_movement' => 'Transaksi ini sudah pernah dikoreksi atau merupakan transaksi pembalik.',
                 ]);
             }
 
-            $inventory = DB::table('inventories')
-                ->where('product_id', $original->product_id)
-                ->where('warehouse_id', $original->warehouse_id)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$inventory) {
-                throw ValidationException::withMessages([
-                    'stock_movement' => 'Data inventaris untuk transaksi ini tidak ditemukan. Koreksi dibatalkan.',
-                ]);
-            }
+            $sourceWarehouseId = $original->warehouse_id;
+            $targetWarehouseId = $validated['warehouse_id'];
+            $productId = $original->product_id;
 
             $oldQuantity = (int) $original->quantity;
             $newQuantity = (int) $validated['quantity'];
-            $currentStock = (int) $inventory->quantity;
 
             $oldDelta = $original->movement_type === 'stock_in'
                 ? $oldQuantity
@@ -503,12 +496,65 @@ class StockMovementController extends Controller
                 ? $newQuantity
                 : -$newQuantity;
 
-            $newStock = $currentStock - $oldDelta + $newDelta;
+            $warehouseIds = array_values(array_unique([
+                $sourceWarehouseId,
+                $targetWarehouseId,
+            ]));
 
-            if ($newStock < 0) {
+            sort($warehouseIds);
+
+            $inventories = DB::table('inventories')
+                ->where('product_id', $productId)
+                ->whereIn('warehouse_id', $warehouseIds)
+                ->orderBy('warehouse_id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('warehouse_id');
+
+            $sourceInventory = $inventories->get($sourceWarehouseId);
+
+            if (!$sourceInventory) {
                 throw ValidationException::withMessages([
-                    'quantity' => 'Koreksi ditolak karena saldo stok akan menjadi negatif. Periksa transaksi berikutnya atau gunakan kuantitas yang sesuai.',
+                    'stock_movement' => 'Data inventory untuk warehouse asal tidak ditemukan. Koreksi dibatalkan.',
                 ]);
+            }
+
+            $sourceCurrentStock = (int) $sourceInventory->quantity;
+            $sourceNewStock = $sourceCurrentStock - $oldDelta;
+
+            if ($sourceWarehouseId === $targetWarehouseId) {
+                $sourceNewStock += $newDelta;
+
+                if ($sourceNewStock < 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Koreksi ditolak karena saldo stok warehouse akan menjadi negatif.',
+                    ]);
+                }
+            } else {
+                if ($sourceNewStock < 0) {
+                    throw ValidationException::withMessages([
+                        'stock_movement' => 'Koreksi ditolak karena pembalikan transaksi akan membuat stok warehouse asal menjadi negatif.',
+                    ]);
+                }
+
+                $targetInventory = $inventories->get($targetWarehouseId);
+                $targetCurrentStock = $targetInventory
+                    ? (int) $targetInventory->quantity
+                    : 0;
+
+                $targetNewStock = $targetCurrentStock + $newDelta;
+
+                if ($targetNewStock < 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Stok warehouse tujuan tidak mencukupi untuk transaksi Stock Out.',
+                    ]);
+                }
+
+                if (!$targetInventory && $newDelta < 0) {
+                    throw ValidationException::withMessages([
+                        'warehouse_id' => 'Inventory untuk warehouse tujuan belum tersedia. Stock Out tidak dapat dilakukan.',
+                    ]);
+                }
             }
 
             $now = now();
@@ -521,8 +567,8 @@ class StockMovementController extends Controller
 
             DB::table('stock_movements')->insert([
                 'stock_movement_id' => $reversalId,
-                'product_id' => $original->product_id,
-                'warehouse_id' => $original->warehouse_id,
+                'product_id' => $productId,
+                'warehouse_id' => $sourceWarehouseId,
                 'movement_type' => $reversalType,
                 'quantity' => $oldQuantity,
                 'reference_type' => 'correction_reversal',
@@ -535,8 +581,8 @@ class StockMovementController extends Controller
 
             DB::table('stock_movements')->insert([
                 'stock_movement_id' => $replacementId,
-                'product_id' => $original->product_id,
-                'warehouse_id' => $original->warehouse_id,
+                'product_id' => $productId,
+                'warehouse_id' => $targetWarehouseId,
                 'movement_type' => $validated['movement_type'],
                 'quantity' => $newQuantity,
                 'reference_type' => 'correction',
@@ -554,15 +600,37 @@ class StockMovementController extends Controller
                 ]);
 
             DB::table('inventories')
-                ->where('inventory_id', $inventory->inventory_id)
+                ->where('inventory_id', $sourceInventory->inventory_id)
                 ->update([
-                    'quantity' => $newStock,
+                    'quantity' => $sourceNewStock,
                     'updated_at' => $now,
                 ]);
+
+            if ($sourceWarehouseId !== $targetWarehouseId) {
+                $targetInventory = $inventories->get($targetWarehouseId);
+
+                if ($targetInventory) {
+                    DB::table('inventories')
+                        ->where('inventory_id', $targetInventory->inventory_id)
+                        ->update([
+                            'quantity' => $targetNewStock,
+                            'updated_at' => $now,
+                        ]);
+                } else {
+                    DB::table('inventories')->insert([
+                        'inventory_id' => (string) Str::uuid(),
+                        'product_id' => $productId,
+                        'warehouse_id' => $targetWarehouseId,
+                        'quantity' => $targetNewStock,
+                        'minimum_stock' => null,
+                        'updated_at' => $now,
+                    ]);
+                }
+            }
         }, 3);
 
         return redirect()
             ->route('stock-movements.index')
-            ->with('success', 'Koreksi berhasil dicatat. Transaksi lama tetap tersimpan dan saldo inventaris telah disesuaikan.');
+            ->with('success', 'Koreksi berhasil. Stok warehouse asal dan tujuan serta riwayat pergerakan telah diperbarui.');
     }
 }
