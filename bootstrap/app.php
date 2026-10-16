@@ -1,18 +1,21 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+namespace App\Providers;
 
-return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-    )
-    ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
-    })
-    ->withExceptions(function (Exceptions $exceptions): void {
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
         //
-    })->create();
+    }
+
+    public function boot(): void
+    {
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+    }
+}
