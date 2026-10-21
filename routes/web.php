@@ -36,10 +36,13 @@ Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('customers', CustomerController::class);
 
-Route::post(
-    '/sales_orders/from-quotation/{quotationId}',
-    [SalesOrderController::class, 'storeFromQuotation']
-)->name('sales_orders.from_quotation');
+Route::get('/sales_orders', [SalesOrderController::class, 'index'])
+    ->name('sales_orders.index');
+
+Route::post('/sales_orders/from-quotation/{quotationId}', [
+    SalesOrderController::class,
+    'storeFromQuotation',
+])->name('sales_orders.from_quotation');
 
 Route::get('/inventories', [InventoryController::class, 'index'])
     ->name('inventories.index');

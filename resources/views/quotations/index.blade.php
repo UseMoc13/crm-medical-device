@@ -684,6 +684,60 @@
                             </div>
 
                         </td>
+                         
+                            
+                            {{-- Sales Order --}}
+                            <td>
+                                @php
+                                    $existingSalesOrder = \Illuminate\Support\Facades\DB::table('sales_orders')
+                                        ->where('quotation_id', $quotation->quotation_id)
+                                        ->first();
+                                @endphp
+
+                                @if ($existingSalesOrder)
+                                    <span class="quotation-status-badge quotation-status-approved">
+                                        {{ $existingSalesOrder->sales_order_number }}
+                                    </span>
+                                @elseif (strtolower(trim($quotation->status ?? '')) === 'approved')
+                                    <form
+                                        method="POST"
+                                        action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
+                                        onsubmit="return confirm('Buat Sales Order dari quotation ini?')"
+                                    >
+                                        @csrf
+                                        <button type="submit" class="btn primary">
+                                            Buat Sales Order
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="muted">Belum disetujui</span>
+                                @endif
+                            </td>
+
+
+                        <td>
+                            @if (strtolower(trim($quotation->status ?? '')) === 'approved')
+
+                                @if (
+                                    \Illuminate\Support\Facades\DB::table('sales_orders')
+                                        ->where('quotation_id', $quotation->quotation_id)
+                                        ->exists()
+                                )
+                                    <span class="badge green">Sudah dibuat</span>
+                                @else
+                                    <form
+                                        method="POST"
+                                        action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
+                                        onsubmit="return confirm('Konversi quotation ini menjadi Sales Order?')"
+                                    >
+                                        @csrf
+                                    </form>
+                                @endif
+
+                            @else
+                                <span class="muted">Menunggu Approved</span>
+                            @endif
+                        </td>
 
                     </tr>
 
