@@ -20,19 +20,19 @@
     @endif
 
     
-<form method="GET" class="row g-2 mb-3 align-items-center">
-    <div class="col-md-5">
+
+<form method="GET" class="quotation-filter-bar">
+    <div class="filter-field">
         <input
             type="text"
             name="search"
-            class="form-control"
             placeholder="Cari nomor SO, quotation, atau status"
             value="{{ request('search') }}"
         >
     </div>
 
-    <div class="col-md-3">
-        <select name="status" class="form-select">
+    <div class="filter-field">
+        <select name="status">
             <option value="">Semua status</option>
 
             @foreach ([
@@ -52,12 +52,11 @@
         </select>
     </div>
 
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">
-            Cari
-        </button>
-    </div>
+    <button type="submit" class="btn primary">
+        Cari
+    </button>
 </form>
+
 
 
     <div class="card">
