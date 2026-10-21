@@ -16,43 +16,44 @@
         </div>
     @endif
 
-    <form method="GET" class="row g-2 align-items-stretch mb-3">
-        <div class="col-md-6">
-            <input
-                type="text"
-                name="search"
-                class="form-control h-100"
-                placeholder="Cari nomor SO, quotation, atau status"
-                value="{{ request('search') }}"
-            >
-        </div>
+    <form method="GET" class="quotation-filter-bar" style="display:flex; align-items:stretch; gap:10px; width:100%; margin-bottom:16px;">
+        <input
+            type="text"
+            name="search"
+            placeholder="Cari nomor SO, quotation, atau status"
+            value="{{ request('search') }}"
+            style="display:block; flex:1 1 0; width:0; min-width:0; box-sizing:border-box;"
+        >
 
-        <div class="col-md-3">
-            <select name="status" class="form-select h-100">
-                <option value="">Semua status</option>
+        <select
+            name="status"
+            style="display:block; flex:0 0 25%; width:25%; min-width:0; box-sizing:border-box;"
+        >
+            <option value="">Semua status</option>
 
-                @foreach ([
-                    'draft',
-                    'confirmed',
-                    'processing',
-                    'completed',
-                    'cancelled',
-                ] as $status)
-                    <option
-                        value="{{ $status }}"
-                        @selected(request('status') === $status)
-                    >
-                        {{ ucfirst($status) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+            @foreach ([
+                'draft',
+                'confirmed',
+                'processing',
+                'completed',
+                'cancelled',
+            ] as $status)
+                <option
+                    value="{{ $status }}"
+                    @selected(request('status') === $status)
+                >
+                    {{ ucfirst($status) }}
+                </option>
+            @endforeach
+        </select>
 
-        <div class="col-md-3">
-            <button type="submit" class="btn primary w-100 h-100">
-                Cari
-            </button>
-        </div>
+        <button
+            type="submit"
+            class="btn primary"
+            style="display:block; flex:0 0 20%; width:20%; white-space:nowrap;"
+        >
+            Cari
+        </button>
     </form>
 
     <div class="card">
