@@ -181,10 +181,10 @@
         </a>
 
         <a href="{{ route('sales_orders.index') }}"
-   data-label="Sales Orders">
-    <span class="ico">▥</span>
-    <span class="nav-text">Sales Orders</span>
-</a>
+            data-label="Sales Orders">
+            <span class="ico">▥</span>
+            <span class="nav-text">Sales Orders</span>
+        </a>
 
         {{-- =================================================
              PRODUCT & INVENTORY
