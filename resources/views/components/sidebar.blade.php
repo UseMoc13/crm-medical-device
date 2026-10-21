@@ -170,10 +170,16 @@
             <span class="nav-text">Quotations</span>
         </a>
 
-        <a href="#" data-label="Sales Orders">
+        
+        <a
+            href="{{ route('sales-orders.index') }}"
+            class="{{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"
+            data-label="Sales Orders"
+>
             <span class="ico">▥</span>
             <span class="nav-text">Sales Orders</span>
         </a>
+
 
         <a href="#" data-label="Contracts">
             <span class="ico">▱</span>
