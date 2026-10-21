@@ -1,123 +1,96 @@
-
 @extends('layouts.app')
 
-@section('content')
-<div class="container-fluid">
+@section('title', 'Sales Orders')
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+@section('content')
+
+<div class="page-head">
+    <div>
+        <h1>Sales Orders</h1>
+        <p>Manage customer orders created from approved quotations.</p>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert error">
+        {{ session('error') }}
+    </div>
+@endif
+
+<div class="card">
+    <div class="card-head">
         <div>
-            <h1 class="h3">Sales Orders</h1>
-            <p class="text-muted">
-                Daftar pesanan pelanggan.
-            </p>
+            <h3>Sales Order List</h3>
+            <p>{{ $orders->total() }} sales orders found</p>
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    <div class="card-body">
+        <form method="GET" action="{{ route('sales_orders.index') }}" class="sales-order-filter-bar">
+            <div class="sales-order-search">
+                <span class="sales-order-search-icon" aria-hidden="true">⌕</span>
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search sales orders..."
+                    autocomplete="off"
+                    aria-label="Search sales orders"
+                >
+                @if(request('search'))
+                    <a
+                        href="{{ route('sales_orders.index', request()->except('search', 'page')) }}"
+                        class="sales-order-search-clear"
+                        title="Clear search"
+                        aria-label="Clear search"
+                    >×</a>
+                @endif
+            </div>
 
-    <form method="GET" class="row g-2 mb-3">
-        <div class="col-md-5">
-            <input
-                type="text"
-                name="search"
-                class="form-control"
-                placeholder="Cari nomor SO, quotation, atau status"
-                value="{{ request('search') }}"
-            >
-        </div>
+            <div class="sales-order-filter-select">
+                <select name="status" aria-label="Filter by status">
+                    <option value="">All Statuses</option>
+                    @foreach(['draft', 'confirmed', 'processing', 'completed', 'cancelled'] as $status)
+                        <option value="{{ $status }}" @selected(request('status') === $status)>
+                            {{ ucfirst($status) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-        <div class="col-md-3">
-            <select name="status" class="form-select">
-                <option value="">Semua status</option>
-                @foreach([
-                    'draft',
-                    'confirmed',
-                    'processing',
-                    'completed',
-                    'cancelled'
-                ] as $status)
-                    <option
-                        value="{{ $status }}"
-                        @selected(request('status') === $status)
-                    >
-                        {{ ucfirst($status) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+            <button type="submit" class="btn primary sales-order-filter-button">Filter</button>
 
-        <div class="col-auto">
-            <button class="btn btn-primary">
-                Cari
-            </button>
-        </div>
-    </form>
+            @if(request()->hasAny(['search', 'status']))
+                <a href="{{ route('sales_orders.index') }}" class="btn sales-order-reset-button">Reset</a>
+            @endif
+        </form>
 
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+        @if(request('search') || request('status'))
+            <div class="sales-order-filter-summary">
+                <span>Showing filtered results</span>
+                @if(request('search'))
+                    <span class="sales-order-filter-chip">Search: “{{ request('search') }}”</span>
+                @endif
+                @if(request('status'))
+                    <span class="sales-order-filter-chip">Status: {{ ucfirst(request('status')) }}</span>
+                @endif
+            </div>
+        @endif
+
+        <div class="table-wrap">
+            <table class="sales-order-table">
                 <thead>
                     <tr>
-                        <th>Nomor Sales Order</th>
+                        <th>Sales Order</th>
                         <th>Quotation</th>
                         <th>Customer</th>
-                        <th>Tanggal Order</th>
-                        <th>Total</th>
+                        <th>Order Date</th>
+                        <th>Total Amount</th>
                         <th>Status</th>
                     </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($orders as $order)
-                        <tr>
-                            <td>
-                                {{ $order->sales_order_number }}
-                            </td>
-
-                            <td>
-                                {{ $order->quotation->quotation_number ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $order->quotation->opportunity->customer->customer_name ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $order->order_date?->format('d/m/Y') ?? '-' }}
-                            </td>
-
-                            <td>
-                                Rp {{ number_format(
-                                    (float) $order->total_amount,
-                                    0, ',', '.'
-                                ) }}
-                            </td>
-
-                            <td>
-                                <span class="badge bg-secondary">
-                                    {{ ucfirst($order->status) }}
-                                </span>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                Belum ada Sales Order.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="mt-3">
-        {{ $orders->links() }}
-    </div>
-
-</div>
-@endsection
