@@ -35,6 +35,8 @@ Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('customers', CustomerController::class);
+Route::resource('sales-orders', SalesOrderController::class)
+    ->only(['index']);
 
 Route::get('/inventories', [InventoryController::class, 'index'])
     ->name('inventories.index');
