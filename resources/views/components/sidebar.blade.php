@@ -171,11 +171,11 @@
         </a>
 
         
-        <a
-            href="{{ route('sales-orders.index') }}"
-            class="{{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"
-            data-label="Sales Orders"
->
+        <<a
+            href="{{ route('sales_orders.index') }}"
+            class="{{ request()->routeIs('sales_orders.*') ? 'active' : '' }}"
+            data-label="Sales Orders">
+
             <span class="ico">▥</span>
             <span class="nav-text">Sales Orders</span>
         </a>
