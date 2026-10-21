@@ -36,6 +36,10 @@ Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('customers', CustomerController::class);
 
+Route::post(
+    '/sales_orders/from-quotation/{quotationId}',
+    [SalesOrderController::class, 'storeFromQuotation']
+)->name('sales_orders.from_quotation');
 
 Route::get('/inventories', [InventoryController::class, 'index'])
     ->name('inventories.index');
@@ -160,3 +164,5 @@ Route::controller(AnnouncementManagementController::class)
             ->whereUuid('announcement')
             ->name('destroy');
     });
+
+    

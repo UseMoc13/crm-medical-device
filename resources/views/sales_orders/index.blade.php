@@ -10,11 +10,17 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+                @if (session('success'))
+                <div class="alert success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert error">
+                    {{ session('error') }}
+                </div>
+            @endif
 
     <form method="GET" class="quotation-filter-bar" style="display:flex; align-items:stretch; gap:10px; width:100%; margin-bottom:16px;">
         <input

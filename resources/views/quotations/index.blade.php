@@ -429,7 +429,9 @@
                         <th>
                             Actions
                         </th>
-
+                        <th>
+                            Sales Order
+                        </th>
                     </tr>
 
                 </thead>

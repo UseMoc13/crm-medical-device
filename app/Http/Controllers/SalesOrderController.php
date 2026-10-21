@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
+use App\Models\Quotation;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SalesOrderController extends Controller
 {
