@@ -19,43 +19,46 @@
         </div>
     @endif
 
-    <form method="GET" class="row g-2 mb-3">
-        <div class="col-md-5">
-            <input
-                type="text"
-                name="search"
-                class="form-control"
-                placeholder="Cari nomor SO, quotation, atau status"
-                value="{{ request('search') }}"
-            >
-        </div>
+    
+<form method="GET" class="row g-2 mb-3 align-items-center">
+    <div class="col-md-5">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Cari nomor SO, quotation, atau status"
+            value="{{ request('search') }}"
+        >
+    </div>
 
-        <div class="col-md-3">
-            <select name="status" class="form-select">
-                <option value="">Semua status</option>
-                @foreach([
-                    'draft',
-                    'confirmed',
-                    'processing',
-                    'completed',
-                    'cancelled'
-                ] as $status)
-                    <option
-                        value="{{ $status }}"
-                        @selected(request('status') === $status)
-                    >
-                        {{ ucfirst($status) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">Semua status</option>
 
-        <div class="col-auto">
-            <button class="btn btn-primary">
-                Cari
-            </button>
-        </div>
-    </form>
+            @foreach ([
+                'draft',
+                'confirmed',
+                'processing',
+                'completed',
+                'cancelled',
+            ] as $status)
+                <option
+                    value="{{ $status }}"
+                    @selected(request('status') === $status)
+                >
+                    {{ ucfirst($status) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">
+            Cari
+        </button>
+    </div>
+</form>
+
 
     <div class="card">
         <div class="table-responsive">
