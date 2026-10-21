@@ -119,7 +119,7 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
-Route::resource('sales-orders', SalesOrderController::class)
+Route::resource('sales_orders', SalesOrderController::class)
     ->only(['index']);
 
 Route::controller(AnnouncementController::class)
