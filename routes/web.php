@@ -17,7 +17,12 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SerialNumberController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\SerialNumberController;
 use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AnnouncementManagementController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -118,3 +123,42 @@ Route::get('/opportunities/{opportunity}/items', [
 
 Route::resource('sales-orders', SalesOrderController::class)
     ->only(['index']);
+
+Route::controller(AnnouncementController::class)
+    ->prefix('announcements')
+    ->name('announcements.')
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{announcement}', 'show')
+            ->whereUuid('announcement')
+            ->name('show');
+    });
+
+Route::controller(AnnouncementManagementController::class)
+    ->prefix('announcement-management')
+    ->name('announcement-management.')
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+
+        Route::post('/{announcement}/toggle-pin', 'togglePin')
+            ->whereUuid('announcement')
+            ->name('toggle-pin');
+
+        Route::get('/{announcement}/edit', 'edit')
+            ->whereUuid('announcement')
+            ->name('edit');
+
+        Route::get('/{announcement}', 'show')
+            ->whereUuid('announcement')
+            ->name('show');
+
+        Route::put('/{announcement}', 'update')
+            ->whereUuid('announcement')
+            ->name('update');
+
+        Route::delete('/{announcement}', 'destroy')
+            ->whereUuid('announcement')
+            ->name('destroy');
+    });

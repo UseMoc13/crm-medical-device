@@ -84,6 +84,25 @@
             <span class="nav-text">Favorites</span>
         </a>
 
+        <a
+            href="{{ route('announcements.index') }}"
+            class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}"
+            data-label="Announcements">
+
+            <span class="ico">▤</span>
+            <span class="nav-text">Announcements</span>
+        </a>
+
+        <a
+            href="{{ route('announcement-management.index') }}"
+            class="{{ request()->routeIs('announcement-management.*') ? 'active' : '' }}"
+            data-label="Announcement Management">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Announcement Management</span>
+        </a>
+
+
         {{-- =================================================
              CUSTOMER & LEAD
         ================================================== --}}
