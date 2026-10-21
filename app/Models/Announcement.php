@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Announcement extends Model
 {
+    use HasUuids;
+
     protected $table = 'announcements';
 
     protected $primaryKey = 'announcement_id';
@@ -44,6 +47,11 @@ class Announcement extends Model
         ];
     }
 
+    public function uniqueIds(): array
+    {
+        return ['announcement_id'];
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by', 'user_id');
@@ -76,10 +84,8 @@ class Announcement extends Model
     {
         return $query
             ->where('status', 'published')
-            ->where(function ($query) {
-                $query->whereNull('published_at')
-                    ->orWhere('published_at', '<=', now());
-            })
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->where(function ($query) {
                 $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());

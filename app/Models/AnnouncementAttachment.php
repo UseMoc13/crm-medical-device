@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnnouncementAttachment extends Model
 {
+    use HasUuids;
+
     protected $table = 'announcement_attachments';
 
     protected $primaryKey = 'attachment_id';
@@ -32,6 +35,11 @@ class AnnouncementAttachment extends Model
             'file_size' => 'integer',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['attachment_id'];
     }
 
     public function announcement(): BelongsTo
