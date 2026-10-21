@@ -180,7 +180,7 @@
             <span class="nav-text">Contracts</span>
         </a>
 
-        <a href="{{ route('sales-orders.index') }}"
+        <a href="{{ route('sales_orders.index') }}"
    data-label="Sales Orders">
     <span class="ico">▥</span>
     <span class="nav-text">Sales Orders</span>
