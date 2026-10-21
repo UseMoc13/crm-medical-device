@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -13,49 +12,50 @@
         </div>
     </div>
 
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
 
-    
-
-
-<form method="GET" class="quotation-filter-bar sales-order-filter">
-    <input
-        type="text"
-        name="search"
-        placeholder="Cari nomor SO, quotation, atau status"
-        value="{{ request('search') }}"
-    >
-
-    <select name="status">
-        <option value="">Semua status</option>
-
-        @foreach ([
-            'draft',
-            'confirmed',
-            'processing',
-            'completed',
-            'cancelled',
-        ] as $status)
-            <option
-                value="{{ $status }}"
-                @selected(request('status') === $status)
+    <form method="GET" class="row g-2 align-items-center mb-3">
+        <div class="col">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Cari nomor SO, quotation, atau status"
+                value="{{ request('search') }}"
             >
-                {{ ucfirst($status) }}
-            </option>
-        @endforeach
-    </select>
+        </div>
 
-    <button type="submit" class="btn primary">
-        Cari
-    </button>
-</form>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">Semua status</option>
 
+                @foreach ([
+                    'draft',
+                    'confirmed',
+                    'processing',
+                    'completed',
+                    'cancelled',
+                ] as $status)
+                    <option
+                        value="{{ $status }}"
+                        @selected(request('status') === $status)
+                    >
+                        {{ ucfirst($status) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-
+        <div class="col-auto">
+            <button type="submit" class="btn primary">
+                Cari
+            </button>
+        </div>
+    </form>
 
     <div class="card">
         <div class="table-responsive">
@@ -72,7 +72,7 @@
                 </thead>
 
                 <tbody>
-                    @forelse($orders as $order)
+                    @forelse ($orders as $order)
                         <tr>
                             <td>
                                 {{ $order->sales_order_number }}
@@ -91,10 +91,7 @@
                             </td>
 
                             <td>
-                                Rp {{ number_format(
-                                    (float) $order->total_amount,
-                                    0, ',', '.'
-                                ) }}
+                                Rp {{ number_format((float) $order->total_amount, 0, ',', '.') }}
                             </td>
 
                             <td>
