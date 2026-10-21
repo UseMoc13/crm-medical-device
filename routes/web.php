@@ -35,8 +35,7 @@ Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('customers', CustomerController::class);
-Route::resource('sales-orders', SalesOrderController::class)
-    ->only(['index']);
+
 
 Route::get('/inventories', [InventoryController::class, 'index'])
     ->name('inventories.index');
@@ -120,7 +119,7 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
-Route::resource('sales-orders', SalesOrderController::class)
+Route::resource('sales_orders', SalesOrderController::class)
     ->only(['index']);
 
 Route::controller(AnnouncementController::class)
