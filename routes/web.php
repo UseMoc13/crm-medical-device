@@ -17,6 +17,7 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SerialNumberController;
+use App\Http\Controllers\SalesOrderController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -114,3 +115,6 @@ Route::get('/opportunities/{opportunity}/items', [
     OpportunityController::class,
     'items',
 ])->name('opportunities.items');
+
+Route::resource('sales-orders', SalesOrderController::class)
+    ->only(['index']);
