@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnnouncementMedia extends Model
 {
+    use HasUuids;
+
     protected $table = 'announcement_media';
 
     protected $primaryKey = 'media_id';
@@ -33,6 +36,11 @@ class AnnouncementMedia extends Model
             'file_size' => 'integer',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['media_id'];
     }
 
     public function announcement(): BelongsTo
