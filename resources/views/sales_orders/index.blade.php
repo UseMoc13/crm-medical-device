@@ -21,41 +21,39 @@
 
     
 
-<form method="GET" class="quotation-filter-bar">
-    <div class="filter-field">
-        <input
-            type="text"
-            name="search"
-            placeholder="Cari nomor SO, quotation, atau status"
-            value="{{ request('search') }}"
-        >
-    </div>
 
-    <div class="filter-field">
-        <select name="status">
-            <option value="">Semua status</option>
+<form method="GET" class="quotation-filter-bar sales-order-filter">
+    <input
+        type="text"
+        name="search"
+        placeholder="Cari nomor SO, quotation, atau status"
+        value="{{ request('search') }}"
+    >
 
-            @foreach ([
-                'draft',
-                'confirmed',
-                'processing',
-                'completed',
-                'cancelled',
-            ] as $status)
-                <option
-                    value="{{ $status }}"
-                    @selected(request('status') === $status)
-                >
-                    {{ ucfirst($status) }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+    <select name="status">
+        <option value="">Semua status</option>
+
+        @foreach ([
+            'draft',
+            'confirmed',
+            'processing',
+            'completed',
+            'cancelled',
+        ] as $status)
+            <option
+                value="{{ $status }}"
+                @selected(request('status') === $status)
+            >
+                {{ ucfirst($status) }}
+            </option>
+        @endforeach
+    </select>
 
     <button type="submit" class="btn primary">
         Cari
     </button>
 </form>
+
 
 
 
