@@ -577,41 +577,49 @@ tr:hover td {
     }
     
 
-form.quotation-filter-bar.sales-order-filter {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 180px auto !important;
-    width: 100% !important;
-    max-width: none !important;
-    box-sizing: border-box;
+.sales-order-filter {
+    display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
 }
 
-form.quotation-filter-bar.sales-order-filter input[name="search"] {
-    display: block;
-    width: 100% !important;
+.sales-order-filter input {
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: none !important;
+    width: 150px;
+    height: 60px;
     box-sizing: border-box;
 }
 
-form.quotation-filter-bar.sales-order-filter select[name="status"] {
-    width: 100% !important;
-    min-width: 0;
+.sales-order-filter select {
+    flex: 0 0 180px;
+    width: 180px;
+    height: 40px;
     box-sizing: border-box;
 }
 
-form.quotation-filter-bar.sales-order-filter button {
+.sales-order-filter button {
+    flex: 0 0 auto;
+    height: 40px;
     white-space: nowrap;
 }
 
 @media (max-width: 600px) {
-    form.quotation-filter-bar.sales-order-filter {
-        grid-template-columns: minmax(0, 1fr) auto !important;
+    .sales-order-filter {
+        flex-wrap: wrap;
     }
 
-    form.quotation-filter-bar.sales-order-filter input[name="search"] {
-        grid-column: 1 / -1;
+    .sales-order-filter input {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .sales-order-filter select {
+        flex: 1 1 auto;
+        width: auto;
     }
 }
 
