@@ -576,25 +576,29 @@ tr:hover td {
         grid-template-columns: 1fr;
     }
     
+
 .sales-order-filter {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
+    box-sizing: border-box;
     flex-wrap: nowrap;
 }
 
 .sales-order-filter input {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    width: 100%;
+    width: 0;
     height: 40px;
+    box-sizing: border-box;
 }
 
 .sales-order-filter select {
     flex: 0 0 180px;
     width: 180px;
     height: 40px;
+    box-sizing: border-box;
 }
 
 .sales-order-filter button {
@@ -610,12 +614,14 @@ tr:hover td {
 
     .sales-order-filter input {
         flex: 1 1 100%;
+        width: 100%;
     }
 
     .sales-order-filter select {
-        flex: 1;
+        flex: 1 1 auto;
         width: auto;
     }
 }
+
 
 }
