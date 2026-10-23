@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', $announcement->title)
@@ -9,11 +8,13 @@
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 
+    $fileUrl = fn (?string $path) => $path ? '/storage/' . ltrim($path, '/') : null;
+
     $publishedDate = $announcement->published_at;
     $thumbnailUrl = null;
 
     if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
-        $thumbnailUrl = Storage::disk('public')->url($announcement->thumbnail_path);
+        $thumbnailUrl = $fileUrl($announcement->thumbnail_path);
     }
 
     $images = $announcement->media->filter(function ($item) {
@@ -158,7 +159,7 @@
                     <div class="announcement-image-grid">
                         @foreach($images as $image)
                             @php
-                                $imageUrl = Storage::disk('public')->url($image->file_path);
+                                $imageUrl = $fileUrl($image->file_path);
                             @endphp
 
                             <button
@@ -197,7 +198,7 @@
                     <div class="announcement-attachment-list">
                         @foreach($otherMedia as $media)
                             @php
-                                $mediaUrl = Storage::disk('public')->url($media->file_path);
+                                $mediaUrl = $fileUrl($media->file_path);
                                 $mediaMime = strtolower((string) $media->mime_type);
                                 $mediaIsPdf = $mediaMime === 'application/pdf'
                                     || strtolower(pathinfo($media->original_name, PATHINFO_EXTENSION)) === 'pdf';
@@ -259,7 +260,7 @@
                     <div class="announcement-attachment-list">
                         @foreach($availableAttachments as $attachment)
                             @php
-                                $attachmentUrl = Storage::disk('public')->url($attachment->file_path);
+                                $attachmentUrl = $fileUrl($attachment->file_path);
                                 $attachmentMime = strtolower((string) $attachment->mime_type);
                                 $attachmentExtension = strtolower(pathinfo($attachment->original_name, PATHINFO_EXTENSION));
                                 $attachmentIsPdf = $attachmentMime === 'application/pdf' || $attachmentExtension === 'pdf';

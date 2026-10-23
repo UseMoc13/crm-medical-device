@@ -19,7 +19,7 @@
         return [
             'id' => (string) $item->{$idKey},
             'name' => $item->original_name,
-            'url' => \Illuminate\Support\Facades\Storage::disk('public')->url($item->file_path),
+            'url' => '/storage/' . ltrim($item->file_path, '/'),
             'type' => $item->mime_type,
             'size' => (int) $item->file_size,
             'media_type' => $item->media_type,
@@ -28,7 +28,7 @@
 
     $existingThumbnail = $announcement->thumbnail_path
         ? [
-            'url' => \Illuminate\Support\Facades\Storage::disk('public')->url($announcement->thumbnail_path),
+            'url' => '/storage/' . ltrim($announcement->thumbnail_path, '/'),
             'name' => basename($announcement->thumbnail_path),
         ]
         : null;

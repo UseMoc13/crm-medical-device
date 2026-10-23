@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Announcements')
@@ -8,6 +7,8 @@
 @php
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
+
+    $fileUrl = fn (?string $path) => $path ? '/storage/' . ltrim($path, '/') : null;
 
     $formatDate = function ($date, $format = 'd M Y') {
         return $date ? $date->format($format) : 'Date unavailable';
@@ -76,7 +77,7 @@
                         $thumbnailUrl = null;
 
                         if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
-                            $thumbnailUrl = Storage::disk('public')->url($announcement->thumbnail_path);
+                            $thumbnailUrl = $fileUrl($announcement->thumbnail_path);
                         }
 
                         $publishedDate = $announcement->published_at;

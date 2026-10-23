@@ -191,10 +191,10 @@
                                 <div class="announcement-title-cell">
                                     <div class="announcement-thumbnail">
                                         @if($announcement->thumbnail_path)
-                                            <img
-                                                src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($announcement->thumbnail_path) }}"
-                                                alt="{{ $announcement->title }}"
-                                                loading="lazy">
+                                        <img
+                                            src="{{ '/storage/' . ltrim($announcement->thumbnail_path, '/') }}"
+                                            alt="{{ $announcement->title }}"
+                                            loading="lazy">
                                         @else
                                             <span>▤</span>
                                         @endif
