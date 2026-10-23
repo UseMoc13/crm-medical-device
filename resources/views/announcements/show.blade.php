@@ -34,6 +34,29 @@
             && Storage::disk('public')->exists($item->file_path);
     });
 
+    $previewKind = function ($mimeType, $fileName) {
+        $mime = strtolower((string) $mimeType);
+        $extension = strtolower(pathinfo((string) $fileName, PATHINFO_EXTENSION));
+
+        if (Str::startsWith($mime, 'image/') || in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+            return 'image';
+        }
+
+        if ($mime === 'application/pdf' || $extension === 'pdf') {
+            return 'pdf';
+        }
+
+        if (Str::startsWith($mime, 'video/') || in_array($extension, ['mp4', 'webm'], true)) {
+            return 'video';
+        }
+
+        if (Str::startsWith($mime, 'audio/') || in_array($extension, ['mp3', 'wav'], true)) {
+            return 'audio';
+        }
+
+        return null;
+    };
+
     $formatSize = function ($bytes) {
         if (!$bytes) {
             return 'File size unavailable';
@@ -200,8 +223,7 @@
                             @php
                                 $mediaUrl = $fileUrl($media->file_path);
                                 $mediaMime = strtolower((string) $media->mime_type);
-                                $mediaIsPdf = $mediaMime === 'application/pdf'
-                                    || strtolower(pathinfo($media->original_name, PATHINFO_EXTENSION)) === 'pdf';
+                                $mediaPreview = $previewKind($media->mime_type, $media->original_name);
                             @endphp
 
                             <div class="announcement-file-card">
@@ -216,11 +238,12 @@
                                     </span>
 
                                     <div class="announcement-file-actions">
-                                        @if($mediaIsPdf)
+                                        @if($mediaPreview)
                                             <button
                                                 type="button"
                                                 class="btn announcement-preview-button"
-                                                data-pdf-url="{{ $mediaUrl }}"
+                                                data-preview-url="{{ $mediaUrl }}"
+                                                data-preview-type="{{ $mediaPreview }}"
                                                 data-file-name="{{ $media->original_name }}">
                                                 Preview
                                             </button>
@@ -263,7 +286,7 @@
                                 $attachmentUrl = $fileUrl($attachment->file_path);
                                 $attachmentMime = strtolower((string) $attachment->mime_type);
                                 $attachmentExtension = strtolower(pathinfo($attachment->original_name, PATHINFO_EXTENSION));
-                                $attachmentIsPdf = $attachmentMime === 'application/pdf' || $attachmentExtension === 'pdf';
+                                $attachmentPreview = $previewKind($attachment->mime_type, $attachment->original_name);
                             @endphp
 
                             <div class="announcement-file-card">
@@ -278,11 +301,12 @@
                                     </span>
 
                                     <div class="announcement-file-actions">
-                                        @if($attachmentIsPdf)
+                                        @if($attachmentPreview)
                                             <button
                                                 type="button"
                                                 class="btn announcement-preview-button"
-                                                data-pdf-url="{{ $attachmentUrl }}"
+                                                data-preview-url="{{ $attachmentUrl }}"
+                                                data-preview-type="{{ $attachmentPreview }}"
                                                 data-file-name="{{ $attachment->original_name }}">
                                                 Preview
                                             </button>
@@ -880,6 +904,31 @@
         background: #fff;
     }
 
+    .announcement-preview-body video {
+        display: block;
+        max-width: 100%;
+        max-height: 65vh;
+        border-radius: 6px;
+        background: #111;
+    }
+
+    .announcement-preview-audio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        width: 100%;
+    }
+
+    .announcement-preview-audio span {
+        color: #17284f;
+        font-size: 52px;
+    }
+
+    .announcement-preview-audio audio {
+        width: min(480px, 100%);
+    }
+
     .announcement-preview-footer {
         display: flex;
         align-items: center;
@@ -993,13 +1042,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let previousFocus = null;
 
+    const previewTitles = {
+        image: 'Image Preview',
+        pdf: 'PDF Preview',
+        video: 'Video Preview',
+        audio: 'Audio Preview'
+    };
+
     function openPreview(url, fileName, type) {
         if (!url) {
             return;
         }
 
         previousFocus = document.activeElement;
-        title.textContent = type === 'image' ? 'Image Preview' : 'PDF Preview';
+        title.textContent = previewTitles[type] || 'File Preview';
         name.textContent = fileName || 'Preview file';
         body.replaceChildren();
 
@@ -1008,6 +1064,24 @@ document.addEventListener('DOMContentLoaded', function () {
             image.src = url;
             image.alt = fileName || 'Announcement image';
             body.appendChild(image);
+        } else if (type === 'video') {
+            const video = document.createElement('video');
+            video.src = url;
+            video.controls = true;
+            video.preload = 'metadata';
+            body.appendChild(video);
+        } else if (type === 'audio') {
+            const wrapper = document.createElement('div');
+            const icon = document.createElement('span');
+            const audio = document.createElement('audio');
+
+            wrapper.className = 'announcement-preview-audio';
+            icon.textContent = '♫';
+            audio.src = url;
+            audio.controls = true;
+
+            wrapper.append(icon, audio);
+            body.appendChild(wrapper);
         } else {
             const frame = document.createElement('iframe');
             frame.src = url;
@@ -1032,6 +1106,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closePreview() {
+        body.querySelectorAll('video,audio').forEach(function (media) {
+            media.pause();
+        });
+
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('announcement-modal-open');
@@ -1055,12 +1133,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('[data-pdf-url]').forEach(function (button) {
+    document.querySelectorAll('[data-preview-url]').forEach(function (button) {
         button.addEventListener('click', function () {
             openPreview(
-                button.dataset.pdfUrl,
+                button.dataset.previewUrl,
                 button.dataset.fileName,
-                'pdf'
+                button.dataset.previewType
             );
         });
     });

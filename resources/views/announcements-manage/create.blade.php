@@ -3828,8 +3828,12 @@
         });
 
         attachmentInput.addEventListener('change', function() {
-            addAttachments(attachmentInput.files);
-            attachmentInput.value = '';
+            // addAttachments() re-fills this input through syncAttachmentInput().
+            // The input must keep that list, so it is not cleared afterwards;
+            // clearing it would send an empty attachment_files[] on submit.
+            const pickedFiles = Array.from(attachmentInput.files);
+
+            addAttachments(pickedFiles);
         });
 
         const attachmentDropzone = document.getElementById('attachmentDropzone');
@@ -4247,6 +4251,7 @@
         form.addEventListener('submit', function(event) {
             syncContent();
             updateTagHiddenField();
+            syncAttachmentInput();
 
             if (!editor.innerText.trim()) {
                 event.preventDefault();
