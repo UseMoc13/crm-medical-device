@@ -1,8 +1,18 @@
+
 @extends('layouts.app')
 
 @section('title', 'Announcements')
 
 @section('content')
+
+@php
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Str;
+
+    $formatDate = function ($date, $format = 'd M Y') {
+        return $date ? $date->format($format) : 'Date unavailable';
+    };
+@endphp
 
 <div class="page-head">
     <div>
@@ -25,7 +35,7 @@
                 <span class="announcement-search-icon">⌕</span>
 
                 <input
-                    type="text"
+                    type="search"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Search announcements..."
@@ -62,24 +72,39 @@
         @if($announcements->isNotEmpty())
             <div class="announcement-list">
                 @foreach($announcements as $announcement)
+                    @php
+                        $thumbnailUrl = null;
+
+                        if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
+                            $thumbnailUrl = Storage::disk('public')->url($announcement->thumbnail_path);
+                        }
+
+                        $publishedDate = $announcement->published_at;
+                        $summary = trim((string) $announcement->summary);
+
+                        if ($summary === '') {
+                            $summary = Str::limit(
+                                trim(preg_replace('/\s+/', ' ', strip_tags((string) $announcement->content))),
+                                180
+                            );
+                        }
+                    @endphp
+
                     <article class="announcement-item {{ $announcement->is_pinned ? 'is-pinned' : '' }}">
-                        @if($announcement->thumbnail_path)
-                            <a
-                                href="{{ route('announcements.show', $announcement) }}"
-                                class="announcement-thumbnail">
+                        <a
+                            href="{{ route('announcements.show', $announcement) }}"
+                            class="announcement-thumbnail {{ $thumbnailUrl ? '' : 'announcement-thumbnail-placeholder' }}"
+                            aria-label="View {{ $announcement->title }}">
+
+                            @if($thumbnailUrl)
                                 <img
-                                    src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($announcement->thumbnail_path) }}"
+                                    src="{{ $thumbnailUrl }}"
                                     alt="{{ $announcement->title }}"
                                     loading="lazy">
-                            </a>
-                        @else
-                            <a
-                                href="{{ route('announcements.show', $announcement) }}"
-                                class="announcement-thumbnail announcement-thumbnail-placeholder"
-                                aria-label="View {{ $announcement->title }}">
-                                <span>▤</span>
-                            </a>
-                        @endif
+                            @else
+                                <span class="announcement-placeholder-icon">▤</span>
+                            @endif
+                        </a>
 
                         <div class="announcement-item-content">
                             <div class="announcement-meta">
@@ -96,7 +121,7 @@
                                 @endif
 
                                 <span class="announcement-date">
-                                    {{ $announcement->published_at->format('d M Y') }}
+                                    {{ $formatDate($publishedDate) }}
                                 </span>
                             </div>
 
@@ -106,14 +131,8 @@
                                 </a>
                             </h3>
 
-                            @if($announcement->summary)
-                                <p class="announcement-summary">
-                                    {{ $announcement->summary }}
-                                </p>
-                            @else
-                                <p class="announcement-summary">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 180) }}
-                                </p>
+                            @if($summary !== '')
+                                <p class="announcement-summary">{{ $summary }}</p>
                             @endif
 
                             <div class="announcement-item-footer">
@@ -124,14 +143,14 @@
                                 </a>
 
                                 <div class="announcement-extra">
-                                    @if($announcement->attachments_count > 0)
+                                    @if(($announcement->attachments_count ?? 0) > 0)
                                         <span title="Attachments">
                                             <span>📎</span>
                                             {{ $announcement->attachments_count }}
                                         </span>
                                     @endif
 
-                                    @if($announcement->media_count > 0)
+                                    @if(($announcement->media_count ?? 0) > 0)
                                         <span title="Media">
                                             <span>▧</span>
                                             {{ $announcement->media_count }}
@@ -146,7 +165,7 @@
 
             @if($announcements->hasPages())
                 <div class="pagination announcement-pagination">
-                    {{ $announcements->links() }}
+                    {{ $announcements->withQueryString()->links() }}
                 </div>
             @endif
         @else
@@ -258,6 +277,7 @@
         border-radius: 6px;
         background: #f1f5f7;
         color: #34415c;
+        overflow-wrap: anywhere;
     }
 
     .announcement-list {
@@ -320,7 +340,7 @@
         color: #2ba7a0;
     }
 
-    .announcement-thumbnail-placeholder span {
+    .announcement-placeholder-icon {
         font-size: 38px;
     }
 
@@ -369,6 +389,7 @@
         font-size: 17px;
         font-weight: 650;
         line-height: 1.45;
+        overflow-wrap: anywhere;
     }
 
     .announcement-item-content h3 a {
@@ -388,6 +409,7 @@
         color: #68758a;
         font-size: 13px;
         line-height: 1.7;
+        overflow-wrap: anywhere;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
     }

@@ -2347,7 +2347,7 @@
                     '>': '&gt;',
                     '"': '&quot;',
                     "'": '&#039;'
-                }[character];
+                } [character];
             });
         }
 
@@ -2424,9 +2424,9 @@
 
             if (!counter) return;
 
-            counter.textContent = max
-                ? input.value.length + ' / ' + max
-                : input.value.length + ' characters';
+            counter.textContent = max ?
+                input.value.length + ' / ' + max :
+                input.value.length + ' characters';
         }
 
         function updateChecklist(id, complete) {
@@ -2490,8 +2490,8 @@
             if (!tag) return;
 
             if (selectedTags.some(function(item) {
-                return item.toLowerCase() === tag.toLowerCase();
-            })) {
+                    return item.toLowerCase() === tag.toLowerCase();
+                })) {
                 tagSearch.value = '';
                 renderTagRecommendations();
                 return;
@@ -2516,9 +2516,9 @@
             container.replaceChildren();
 
             const filtered = tagSuggestions.filter(function(item) {
-                const name = typeof item === 'string'
-                    ? item
-                    : (item.name || item.tag || item.category || '');
+                const name = typeof item === 'string' ?
+                    item :
+                    (item.name || item.tag || item.category || '');
 
                 return name &&
                     name.toLowerCase().includes(search) &&
@@ -2530,22 +2530,22 @@
             if (!filtered.length) {
                 const empty = document.createElement('span');
                 empty.className = 'tag-empty-message';
-                empty.textContent = search
-                    ? 'No matching tags. Press Enter or Add to create this tag.'
-                    : 'No previously used tags were supplied.';
+                empty.textContent = search ?
+                    'No matching tags. Press Enter or Add to create this tag.' :
+                    'No previously used tags were supplied.';
 
                 container.appendChild(empty);
                 return;
             }
 
             filtered.forEach(function(item) {
-                const name = typeof item === 'string'
-                    ? item
-                    : (item.name || item.tag || item.category || '');
+                const name = typeof item === 'string' ?
+                    item :
+                    (item.name || item.tag || item.category || '');
 
-                const count = typeof item === 'object' && item !== null
-                    ? (item.usage_count ?? item.count ?? item.uses ?? null)
-                    : null;
+                const count = typeof item === 'object' && item !== null ?
+                    (item.usage_count ?? item.count ?? item.uses ?? null) :
+                    null;
 
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -2623,7 +2623,7 @@
                 cover: 'mode-cover',
                 fit: 'mode-fit',
                 blur: 'mode-blur'
-            }[mode] || 'mode-cover';
+            } [mode] || 'mode-cover';
 
             [
                 document.getElementById('thumbnailStage'),
@@ -2792,15 +2792,15 @@
 
         function updatePreview() {
             const titleText = title.value.trim();
-            const categoryText = selectedTags.length
-                ? selectedTags.join(', ')
-                : 'General Announcement';
+            const categoryText = selectedTags.length ?
+                selectedTags.join(', ') :
+                'General Announcement';
 
             const summaryText = summary.value.trim();
 
-            const dateValue = status.value === 'scheduled'
-                ? scheduledAt.value
-                : publishedAt.value;
+            const dateValue = status.value === 'scheduled' ?
+                scheduledAt.value :
+                publishedAt.value;
 
             const formattedDate = formatDate(dateValue);
 
@@ -2842,9 +2842,9 @@
         function fileExtension(file) {
             const parts = file.name.split('.');
 
-            return parts.length > 1
-                ? parts.pop().slice(0, 8).toUpperCase()
-                : 'FILE';
+            return parts.length > 1 ?
+                parts.pop().slice(0, 8).toUpperCase() :
+                'FILE';
         }
 
         function fileKind(file) {
@@ -2924,108 +2924,108 @@
             ].join(';');
 
             modalElement.innerHTML = `
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="attachmentPreviewTitle"
-                    style="
-                        display:flex;
-                        flex-direction:column;
-                        width:min(1100px,100%);
-                        max-height:92vh;
-                        overflow:hidden;
-                        background:#fff;
-                        border-radius:16px;
-                        box-shadow:0 24px 80px rgba(0,0,0,.25);
-                    "
-                >
-                    <div style="
-                        display:flex;
-                        align-items:center;
-                        justify-content:space-between;
-                        gap:16px;
-                        padding:18px 22px;
-                        border-bottom:1px solid #e5e7eb;
-                    ">
-                        <div style="min-width:0;">
-                            <h2
-                                id="attachmentPreviewTitle"
-                                style="
-                                    margin:0;
-                                    color:#17284f;
-                                    font-size:17px;
-                                    font-weight:700;
-                                    overflow-wrap:anywhere;
-                                "
-                            >Attachment Preview</h2>
-                            <p
-                                id="attachmentPreviewMeta"
-                                style="
-                                    margin:5px 0 0;
-                                    color:#64748b;
-                                    font-size:12px;
-                                "
-                            ></p>
-                        </div>
-
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="attachmentPreviewTitle"
+                        style="
+                            display:flex;
+                            flex-direction:column;
+                            width:min(1100px,100%);
+                            max-height:92vh;
+                            overflow:hidden;
+                            background:#fff;
+                            border-radius:16px;
+                            box-shadow:0 24px 80px rgba(0,0,0,.25);
+                        "
+                    >
                         <div style="
                             display:flex;
                             align-items:center;
-                            gap:8px;
-                            flex-shrink:0;
+                            justify-content:space-between;
+                            gap:16px;
+                            padding:18px 22px;
+                            border-bottom:1px solid #e5e7eb;
                         ">
-                            <a
-                                id="attachmentPreviewDownload"
-                                href="#"
-                                download
-                                style="
-                                    display:inline-flex;
-                                    align-items:center;
-                                    justify-content:center;
-                                    padding:9px 13px;
-                                    border:1px solid #dce2eb;
-                                    border-radius:8px;
-                                    color:#17284f;
-                                    background:#fff;
-                                    font-size:12px;
-                                    font-weight:600;
-                                    text-decoration:none;
-                                "
-                            >Download</a>
+                            <div style="min-width:0;">
+                                <h2
+                                    id="attachmentPreviewTitle"
+                                    style="
+                                        margin:0;
+                                        color:#17284f;
+                                        font-size:17px;
+                                        font-weight:700;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >Attachment Preview</h2>
+                                <p
+                                    id="attachmentPreviewMeta"
+                                    style="
+                                        margin:5px 0 0;
+                                        color:#64748b;
+                                        font-size:12px;
+                                    "
+                                ></p>
+                            </div>
 
-                            <button
-                                id="closeAttachmentPreview"
-                                type="button"
-                                aria-label="Close attachment preview"
-                                style="
-                                    display:inline-flex;
-                                    align-items:center;
-                                    justify-content:center;
-                                    width:36px;
-                                    height:36px;
-                                    border:0;
-                                    border-radius:8px;
-                                    background:#f1f5f9;
-                                    color:#17284f;
-                                    font-size:23px;
-                                    cursor:pointer;
-                                "
-                            >×</button>
+                            <div style="
+                                display:flex;
+                                align-items:center;
+                                gap:8px;
+                                flex-shrink:0;
+                            ">
+                                <a
+                                    id="attachmentPreviewDownload"
+                                    href="#"
+                                    download
+                                    style="
+                                        display:inline-flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        padding:9px 13px;
+                                        border:1px solid #dce2eb;
+                                        border-radius:8px;
+                                        color:#17284f;
+                                        background:#fff;
+                                        font-size:12px;
+                                        font-weight:600;
+                                        text-decoration:none;
+                                    "
+                                >Download</a>
+
+                                <button
+                                    id="closeAttachmentPreview"
+                                    type="button"
+                                    aria-label="Close attachment preview"
+                                    style="
+                                        display:inline-flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        width:36px;
+                                        height:36px;
+                                        border:0;
+                                        border-radius:8px;
+                                        background:#f1f5f9;
+                                        color:#17284f;
+                                        font-size:23px;
+                                        cursor:pointer;
+                                    "
+                                >×</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div
-                        id="attachmentPreviewBody"
-                        style="
-                            flex:1;
-                            min-height:220px;
-                            overflow:auto;
-                            padding:20px;
-                            background:#f5f7fb;
-                        "
-                    ></div>
-                </div>
-            `;
+                        <div
+                            id="attachmentPreviewBody"
+                            style="
+                                flex:1;
+                                min-height:220px;
+                                overflow:auto;
+                                padding:20px;
+                                background:#f5f7fb;
+                            "
+                        ></div>
+                    </div>
+                `;
 
             document.body.appendChild(modalElement);
 
@@ -3482,9 +3482,9 @@
                 node = node.parentElement;
             }
 
-            const cell = node && node.closest
-                ? node.closest('td, th')
-                : null;
+            const cell = node && node.closest ?
+                node.closest('td, th') :
+                null;
 
             return cell && cell.closest('table') === table ? cell : null;
         }
@@ -3670,9 +3670,9 @@
                 const isHeader = rowIndex === 0;
                 const cell = document.createElement(isHeader ? 'th' : 'td');
 
-                cell.innerHTML = isHeader
-                    ? 'Header ' + (row.cells.length + 1)
-                    : '&nbsp;';
+                cell.innerHTML = isHeader ?
+                    'Header ' + (row.cells.length + 1) :
+                    '&nbsp;';
 
                 row.appendChild(cell);
 
@@ -3969,9 +3969,8 @@
         });
 
         editor.addEventListener('paste', function(event) {
-            const items = event.clipboardData && event.clipboardData.items
-                ? Array.from(event.clipboardData.items)
-                : [];
+            const items = event.clipboardData && event.clipboardData.items ?
+                Array.from(event.clipboardData.items) : [];
 
             const imageItem = items.find(function(item) {
                 return item.type && item.type.startsWith('image/');
@@ -4168,9 +4167,9 @@
                 node = node.parentElement;
             }
 
-            const cell = node && node.closest
-                ? node.closest('td, th')
-                : null;
+            const cell = node && node.closest ?
+                node.closest('td, th') :
+                null;
 
             if (!cell) return;
 

@@ -1,8 +1,88 @@
+
 @extends('layouts.app')
 
 @section('title', $announcement->title)
 
 @section('content')
+
+@php
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Str;
+
+    $publishedDate = $announcement->published_at;
+    $thumbnailUrl = null;
+
+    if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
+        $thumbnailUrl = Storage::disk('public')->url($announcement->thumbnail_path);
+    }
+
+    $images = $announcement->media->filter(function ($item) {
+        return $item->media_type === 'image'
+            && $item->file_path
+            && Storage::disk('public')->exists($item->file_path);
+    });
+
+    $otherMedia = $announcement->media->filter(function ($item) {
+        return $item->media_type !== 'image'
+            && $item->file_path
+            && Storage::disk('public')->exists($item->file_path);
+    });
+
+    $availableAttachments = $announcement->attachments->filter(function ($item) {
+        return $item->file_path
+            && Storage::disk('public')->exists($item->file_path);
+    });
+
+    $formatSize = function ($bytes) {
+        if (!$bytes) {
+            return 'File size unavailable';
+        }
+
+        if ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 2) . ' MB';
+        }
+
+        return number_format($bytes / 1024, 1) . ' KB';
+    };
+
+    $fileIcon = function ($mimeType, $fileName) {
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        if (Str::contains((string) $mimeType, 'pdf') || $extension === 'pdf') {
+            return 'PDF';
+        }
+
+        if (Str::startsWith((string) $mimeType, 'image/')) {
+            return 'IMG';
+        }
+
+        if (Str::startsWith((string) $mimeType, 'video/')) {
+            return 'VID';
+        }
+
+        if (Str::startsWith((string) $mimeType, 'audio/')) {
+            return 'AUD';
+        }
+
+        if (in_array($extension, ['doc', 'docx', 'txt', 'rtf'], true)) {
+            return 'DOC';
+        }
+
+        if (in_array($extension, ['xls', 'xlsx', 'csv'], true)) {
+            return 'XLS';
+        }
+
+        if (in_array($extension, ['ppt', 'pptx'], true)) {
+            return 'PPT';
+        }
+
+        if (in_array($extension, ['zip', 'rar', '7z'], true)) {
+            return 'ZIP';
+        }
+
+        return strtoupper($extension ?: 'FILE');
+    };
+@endphp
 
 <div class="page-head announcement-detail-head">
     <div>
@@ -39,7 +119,7 @@
             <div class="announcement-detail-byline">
                 <span class="announcement-detail-date">
                     <span>▦</span>
-                    Published {{ $announcement->published_at->format('d M Y, H:i') }}
+                    Published {{ $publishedDate ? $publishedDate->format('d M Y, H:i') : 'Date unavailable' }}
                 </span>
 
                 @if($announcement->creator)
@@ -50,11 +130,9 @@
                 @endif
             </div>
 
-            @if($announcement->thumbnail_path)
+            @if($thumbnailUrl)
                 <div class="announcement-detail-thumbnail">
-                    <img
-                        src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($announcement->thumbnail_path) }}"
-                        alt="{{ $announcement->title }}">
+                    <img src="{{ $thumbnailUrl }}" alt="{{ $announcement->title }}">
                 </div>
             @endif
 
@@ -64,37 +142,44 @@
                 </div>
             @endif
 
-            <div class="announcement-detail-content">
-                {!! nl2br(e($announcement->content)) !!}
-            </div>
-
-            @php
-                $images = $announcement->media
-                    ->where('media_type', 'image');
-
-                $otherMedia = $announcement->media
-                    ->where('media_type', '!=', 'image');
-            @endphp
+            <article class="announcement-detail-content">
+                {!! $announcement->content !!}
+            </article>
 
             @if($images->isNotEmpty())
                 <section class="announcement-detail-section">
-                    <h2>Images</h2>
+                    <div class="announcement-section-heading">
+                        <div>
+                            <h2>Images</h2>
+                            <p>{{ $images->count() }} image{{ $images->count() === 1 ? '' : 's' }} attached</p>
+                        </div>
+                    </div>
 
                     <div class="announcement-image-grid">
                         @foreach($images as $image)
-                            <a
-                                href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->file_path) }}"
+                            @php
+                                $imageUrl = Storage::disk('public')->url($image->file_path);
+                            @endphp
+
+                            <button
+                                type="button"
                                 class="announcement-image-item"
-                                target="_blank"
-                                rel="noopener noreferrer">
+                                data-image-url="{{ $imageUrl }}"
+                                data-image-alt="{{ $image->alt_text ?: $image->original_name }}"
+                                aria-label="Preview {{ $image->original_name }}">
 
-                                <img
-                                    src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->file_path) }}"
-                                    alt="{{ $image->alt_text ?: $image->original_name }}"
-                                    loading="lazy">
+                                <span class="announcement-image-preview">
+                                    <img
+                                        src="{{ $imageUrl }}"
+                                        alt="{{ $image->alt_text ?: $image->original_name }}"
+                                        loading="lazy">
+                                    <span class="announcement-image-zoom">View image ↗</span>
+                                </span>
 
-                                <span>{{ $image->original_name }}</span>
-                            </a>
+                                <span class="announcement-image-name">
+                                    {{ $image->original_name }}
+                                </span>
+                            </button>
                         @endforeach
                     </div>
                 </section>
@@ -102,58 +187,133 @@
 
             @if($otherMedia->isNotEmpty())
                 <section class="announcement-detail-section">
-                    <h2>Additional Media</h2>
+                    <div class="announcement-section-heading">
+                        <div>
+                            <h2>Additional Media</h2>
+                            <p>Related files and media for this announcement.</p>
+                        </div>
+                    </div>
 
                     <div class="announcement-attachment-list">
                         @foreach($otherMedia as $media)
-                            <a
-                                href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($media->file_path) }}"
-                                class="announcement-attachment"
-                                target="_blank"
-                                rel="noopener noreferrer">
+                            @php
+                                $mediaUrl = Storage::disk('public')->url($media->file_path);
+                                $mediaMime = strtolower((string) $media->mime_type);
+                                $mediaIsPdf = $mediaMime === 'application/pdf'
+                                    || strtolower(pathinfo($media->original_name, PATHINFO_EXTENSION)) === 'pdf';
+                            @endphp
 
-                                <span class="announcement-attachment-icon">▧</span>
+                            <div class="announcement-file-card">
+                                <div class="announcement-file-row">
+                                    <span class="announcement-file-icon">
+                                        {{ $fileIcon($media->mime_type, $media->original_name) }}
+                                    </span>
 
-                                <span class="announcement-attachment-info">
-                                    <strong>{{ $media->original_name }}</strong>
-                                    <small>
-                                        {{ $media->file_size ? number_format($media->file_size / 1024, 1) . ' KB' : 'Media file' }}
-                                    </small>
-                                </span>
+                                    <span class="announcement-attachment-info">
+                                        <strong>{{ $media->original_name }}</strong>
+                                        <small>{{ $formatSize($media->file_size) }}</small>
+                                    </span>
 
-                                <span class="announcement-attachment-download">↗</span>
-                            </a>
+                                    <div class="announcement-file-actions">
+                                        @if($mediaIsPdf)
+                                            <button
+                                                type="button"
+                                                class="btn announcement-preview-button"
+                                                data-pdf-url="{{ $mediaUrl }}"
+                                                data-file-name="{{ $media->original_name }}">
+                                                Preview
+                                            </button>
+                                        @endif
+
+                                        <a
+                                            href="{{ $mediaUrl }}"
+                                            class="btn announcement-open-button"
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            Open ↗
+                                        </a>
+
+                                        <a
+                                            href="{{ $mediaUrl }}"
+                                            class="btn announcement-download-button"
+                                            download="{{ $media->original_name }}">
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         @endforeach
                     </div>
                 </section>
             @endif
 
-            @if($announcement->attachments->isNotEmpty())
+            @if($availableAttachments->isNotEmpty())
                 <section class="announcement-detail-section">
-                    <h2>Attachments</h2>
+                    <div class="announcement-section-heading">
+                        <div>
+                            <h2>Attachments</h2>
+                            <p>{{ $availableAttachments->count() }} file{{ $availableAttachments->count() === 1 ? '' : 's' }} available</p>
+                        </div>
+                    </div>
 
                     <div class="announcement-attachment-list">
-                        @foreach($announcement->attachments as $attachment)
-                            <a
-                                href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($attachment->file_path) }}"
-                                class="announcement-attachment"
-                                target="_blank"
-                                rel="noopener noreferrer">
+                        @foreach($availableAttachments as $attachment)
+                            @php
+                                $attachmentUrl = Storage::disk('public')->url($attachment->file_path);
+                                $attachmentMime = strtolower((string) $attachment->mime_type);
+                                $attachmentExtension = strtolower(pathinfo($attachment->original_name, PATHINFO_EXTENSION));
+                                $attachmentIsPdf = $attachmentMime === 'application/pdf' || $attachmentExtension === 'pdf';
+                            @endphp
 
-                                <span class="announcement-attachment-icon">📎</span>
+                            <div class="announcement-file-card">
+                                <div class="announcement-file-row">
+                                    <span class="announcement-file-icon">
+                                        {{ $fileIcon($attachment->mime_type, $attachment->original_name) }}
+                                    </span>
 
-                                <span class="announcement-attachment-info">
-                                    <strong>{{ $attachment->original_name }}</strong>
-                                    <small>
-                                        {{ $attachment->file_size ? number_format($attachment->file_size / 1024, 1) . ' KB' : 'Attachment' }}
-                                    </small>
-                                </span>
+                                    <span class="announcement-attachment-info">
+                                        <strong>{{ $attachment->original_name }}</strong>
+                                        <small>{{ $formatSize($attachment->file_size) }}</small>
+                                    </span>
 
-                                <span class="announcement-attachment-download">↗</span>
-                            </a>
+                                    <div class="announcement-file-actions">
+                                        @if($attachmentIsPdf)
+                                            <button
+                                                type="button"
+                                                class="btn announcement-preview-button"
+                                                data-pdf-url="{{ $attachmentUrl }}"
+                                                data-file-name="{{ $attachment->original_name }}">
+                                                Preview
+                                            </button>
+                                        @endif
+
+                                        <a
+                                            href="{{ $attachmentUrl }}"
+                                            class="btn announcement-open-button"
+                                            target="_blank"
+                                            rel="noopener noreferrer">
+                                            Open ↗
+                                        </a>
+
+                                        <a
+                                            href="{{ $attachmentUrl }}"
+                                            class="btn announcement-download-button"
+                                            download="{{ $attachment->original_name }}">
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         @endforeach
                     </div>
                 </section>
+            @endif
+
+            @if(!$thumbnailUrl && $images->isEmpty() && $otherMedia->isEmpty() && $availableAttachments->isEmpty())
+                <div class="announcement-no-files">
+                    <span>▤</span>
+                    <p>This announcement has no additional images or attachments.</p>
+                </div>
             @endif
         </div>
     </main>
@@ -174,12 +334,12 @@
 
             <div class="announcement-info-item">
                 <span class="announcement-info-label">Published Date</span>
-                <strong>{{ $announcement->published_at->format('d M Y') }}</strong>
+                <strong>{{ $publishedDate ? $publishedDate->format('d M Y') : 'Not available' }}</strong>
             </div>
 
             <div class="announcement-info-item">
                 <span class="announcement-info-label">Published Time</span>
-                <strong>{{ $announcement->published_at->format('H:i') }}</strong>
+                <strong>{{ $publishedDate ? $publishedDate->format('H:i') : 'Not available' }}</strong>
             </div>
 
             <div class="announcement-info-item">
@@ -195,8 +355,13 @@
             </div>
 
             <div class="announcement-info-item">
+                <span class="announcement-info-label">Additional Media</span>
+                <strong>{{ $otherMedia->count() }}</strong>
+            </div>
+
+            <div class="announcement-info-item">
                 <span class="announcement-info-label">Attachments</span>
-                <strong>{{ $announcement->attachments->count() + $otherMedia->count() }}</strong>
+                <strong>{{ $availableAttachments->count() }}</strong>
             </div>
 
             <a href="{{ route('announcements.index') }}" class="btn announcement-back-button">
@@ -204,6 +369,37 @@
             </a>
         </div>
     </aside>
+</div>
+
+<div class="announcement-preview-modal" id="announcementPreviewModal" aria-hidden="true">
+    <div class="announcement-preview-backdrop" data-preview-close></div>
+
+    <div class="announcement-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="announcementPreviewTitle">
+        <div class="announcement-preview-header">
+            <div>
+                <h2 id="announcementPreviewTitle">File Preview</h2>
+                <p id="announcementPreviewName"></p>
+            </div>
+
+            <button type="button" class="announcement-preview-close" data-preview-close aria-label="Close preview">
+                ×
+            </button>
+        </div>
+
+        <div class="announcement-preview-body" id="announcementPreviewBody"></div>
+
+        <div class="announcement-preview-footer">
+            <a href="#" id="announcementPreviewOpen" target="_blank" rel="noopener noreferrer" class="btn">
+                Open in new tab ↗
+            </a>
+
+            <a href="#" id="announcementPreviewDownload" class="btn primary" download>
+                Download
+            </a>
+
+            <button type="button" class="btn" data-preview-close>Close</button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -317,16 +513,71 @@
         word-break: break-word;
     }
 
+    .announcement-detail-content > :first-child {
+        margin-top: 0;
+    }
+
+    .announcement-detail-content > :last-child {
+        margin-bottom: 0;
+    }
+
+    .announcement-detail-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .announcement-detail-content table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+    }
+
+    .announcement-detail-content td,
+    .announcement-detail-content th {
+        padding: 8px;
+        border: 1px solid #d9dee8;
+    }
+
+    .announcement-detail-content pre {
+        max-width: 100%;
+        padding: 12px;
+        overflow-x: auto;
+        border-radius: 8px;
+        background: #f3f6fa;
+    }
+
+    .announcement-detail-content a {
+        color: #238c85;
+        text-decoration: underline;
+        overflow-wrap: anywhere;
+    }
+
     .announcement-detail-section {
         margin-top: 32px;
         padding-top: 24px;
         border-top: 1px solid #edf0f5;
     }
 
-    .announcement-detail-section h2 {
-        margin: 0 0 16px;
+    .announcement-section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .announcement-section-heading h2 {
+        margin: 0 0 5px;
         color: #17284f;
         font-size: 16px;
+    }
+
+    .announcement-section-heading p {
+        margin: 0;
+        color: #8a94a6;
+        font-size: 12px;
     }
 
     .announcement-image-grid {
@@ -340,9 +591,21 @@
         flex-direction: column;
         gap: 9px;
         min-width: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
         color: #34415c;
-        font-size: 12px;
-        text-decoration: none;
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .announcement-image-preview {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        border-radius: 9px;
+        background: #f5f7fb;
     }
 
     .announcement-image-item img {
@@ -351,12 +614,28 @@
         height: 170px;
         border: 1px solid #edf0f5;
         border-radius: 9px;
-        background: #f5f7fb;
         object-fit: cover;
+        transition: transform .2s ease;
     }
 
-    .announcement-image-item span {
+    .announcement-image-item:hover img {
+        transform: scale(1.03);
+    }
+
+    .announcement-image-zoom {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        padding: 6px 9px;
+        border-radius: 6px;
+        background: rgba(23, 40, 79, .88);
+        color: #fff;
+        font-size: 11px;
+    }
+
+    .announcement-image-name {
         overflow-wrap: anywhere;
+        font-size: 12px;
     }
 
     .announcement-attachment-list {
@@ -365,47 +644,53 @@
         gap: 10px;
     }
 
-    .announcement-attachment {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+    .announcement-file-card {
         min-width: 0;
         padding: 13px;
         border: 1px solid #e6eaf1;
         border-radius: 9px;
-        color: #34415c;
-        text-decoration: none;
         transition: border-color .18s ease, background .18s ease;
     }
 
-    .announcement-attachment:hover {
-        border-color: #a9d8d2;
-        background: #f7fbfa;
+    .announcement-file-card:hover {
+        border-color: #c5e2de;
+        background: #fbfdfd;
     }
 
-    .announcement-attachment-icon {
+    .announcement-file-row {
         display: flex;
-        flex: 0 0 38px;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .announcement-file-icon {
+        display: flex;
+        flex: 0 0 42px;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
         border-radius: 8px;
         background: #edf7f5;
-        font-size: 17px;
+        color: #167d70;
+        font-size: 10px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
     }
 
     .announcement-attachment-info {
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: 4px;
+        gap: 5px;
         min-width: 0;
     }
 
     .announcement-attachment-info strong {
-        overflow-wrap: anywhere;
+        color: #34415c;
         font-size: 12px;
+        overflow-wrap: anywhere;
     }
 
     .announcement-attachment-info small {
@@ -413,9 +698,58 @@
         font-size: 11px;
     }
 
-    .announcement-attachment-download {
-        color: #238c85;
-        font-size: 17px;
+    .announcement-file-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .announcement-file-actions .btn {
+        min-height: 32px;
+        padding: 6px 9px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .announcement-preview-button {
+        border: 1px solid #b9ded9;
+        background: #eff9f7;
+        color: #167d70;
+    }
+
+    .announcement-open-button {
+        border: 1px solid #e0e5ed;
+        background: #fff;
+        color: #34415c;
+    }
+
+    .announcement-download-button {
+        border: 1px solid #223a70;
+        background: #223a70;
+        color: #fff;
+    }
+
+    .announcement-no-files {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 28px;
+        padding: 16px;
+        border-radius: 9px;
+        background: #f6f8fb;
+        color: #7d8797;
+        font-size: 12px;
+    }
+
+    .announcement-no-files > span {
+        color: #2ba7a0;
+        font-size: 23px;
+    }
+
+    .announcement-no-files p {
+        margin: 0;
     }
 
     .announcement-detail-sidebar .card-body {
@@ -453,6 +787,112 @@
         text-align: center;
     }
 
+    .announcement-preview-modal {
+        position: fixed;
+        z-index: 9999;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .announcement-preview-modal.is-open {
+        display: flex;
+    }
+
+    .announcement-preview-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(12, 22, 43, .72);
+    }
+
+    .announcement-preview-dialog {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: min(100%, 1000px);
+        max-height: 90vh;
+        overflow: hidden;
+        border-radius: 13px;
+        background: #fff;
+        box-shadow: 0 20px 70px rgba(0, 0, 0, .25);
+    }
+
+    .announcement-preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .announcement-preview-header h2 {
+        margin: 0 0 4px;
+        color: #17284f;
+        font-size: 16px;
+    }
+
+    .announcement-preview-header p {
+        margin: 0;
+        color: #7d8797;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .announcement-preview-close {
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: #f1f4f8;
+        color: #34415c;
+        font-size: 25px;
+        cursor: pointer;
+    }
+
+    .announcement-preview-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 180px;
+        overflow: auto;
+        padding: 18px;
+        background: #f3f5f9;
+    }
+
+    .announcement-preview-body img {
+        display: block;
+        max-width: 100%;
+        max-height: 65vh;
+        object-fit: contain;
+    }
+
+    .announcement-preview-body iframe {
+        display: block;
+        width: 100%;
+        height: 65vh;
+        border: 0;
+        border-radius: 6px;
+        background: #fff;
+    }
+
+    .announcement-preview-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 14px 20px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    body.announcement-modal-open {
+        overflow: hidden;
+    }
+
     @media (max-width: 1000px) {
         .announcement-detail-layout {
             grid-template-columns: minmax(0, 1fr);
@@ -477,7 +917,7 @@
         }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 650px) {
         .announcement-detail-card > .card-body {
             padding: 19px;
         }
@@ -497,7 +937,143 @@
         .announcement-image-item img {
             height: 200px;
         }
+
+        .announcement-file-row {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .announcement-attachment-info {
+            padding-top: 3px;
+        }
+
+        .announcement-file-actions {
+            flex-basis: 100%;
+            justify-content: flex-start;
+            padding-top: 5px;
+        }
+
+        .announcement-preview-modal {
+            padding: 8px;
+        }
+
+        .announcement-preview-dialog {
+            max-height: 94vh;
+        }
+
+        .announcement-preview-header,
+        .announcement-preview-footer {
+            padding: 12px;
+        }
+
+        .announcement-preview-body {
+            padding: 8px;
+        }
+
+        .announcement-preview-body iframe {
+            height: 60vh;
+        }
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('announcementPreviewModal');
+
+    if (!modal) {
+        return;
+    }
+
+    const title = document.getElementById('announcementPreviewTitle');
+    const name = document.getElementById('announcementPreviewName');
+    const body = document.getElementById('announcementPreviewBody');
+    const openLink = document.getElementById('announcementPreviewOpen');
+    const downloadLink = document.getElementById('announcementPreviewDownload');
+
+    let previousFocus = null;
+
+    function openPreview(url, fileName, type) {
+        if (!url) {
+            return;
+        }
+
+        previousFocus = document.activeElement;
+        title.textContent = type === 'image' ? 'Image Preview' : 'PDF Preview';
+        name.textContent = fileName || 'Preview file';
+        body.replaceChildren();
+
+        if (type === 'image') {
+            const image = document.createElement('img');
+            image.src = url;
+            image.alt = fileName || 'Announcement image';
+            body.appendChild(image);
+        } else {
+            const frame = document.createElement('iframe');
+            frame.src = url;
+            frame.title = fileName || 'PDF preview';
+            frame.setAttribute('loading', 'lazy');
+            body.appendChild(frame);
+        }
+
+        openLink.href = url;
+        downloadLink.href = url;
+        downloadLink.setAttribute('download', fileName || 'download');
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('announcement-modal-open');
+
+        const closeButton = modal.querySelector('.announcement-preview-close');
+
+        if (closeButton) {
+            closeButton.focus();
+        }
+    }
+
+    function closePreview() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('announcement-modal-open');
+        body.replaceChildren();
+
+        openLink.removeAttribute('href');
+        downloadLink.removeAttribute('href');
+
+        if (previousFocus && typeof previousFocus.focus === 'function') {
+            previousFocus.focus();
+        }
+    }
+
+    document.querySelectorAll('[data-image-url]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            openPreview(
+                button.dataset.imageUrl,
+                button.dataset.imageAlt,
+                'image'
+            );
+        });
+    });
+
+    document.querySelectorAll('[data-pdf-url]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            openPreview(
+                button.dataset.pdfUrl,
+                button.dataset.fileName,
+                'pdf'
+            );
+        });
+    });
+
+    modal.querySelectorAll('[data-preview-close]').forEach(function (element) {
+        element.addEventListener('click', closePreview);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+            closePreview();
+        }
+    });
+});
+</script>
 
 @endsection
