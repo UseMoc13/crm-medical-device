@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
-use App\Models\AnnouncementAttachment;
-use App\Models\AnnouncementMedia;
 use DOMDocument;
 use DOMElement;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -25,6 +24,42 @@ class AnnouncementManagementController extends Controller
         'scheduled',
         'published',
         'archived',
+    ];
+
+    private const MAX_THUMBNAIL_SIZE = 4 * 1024 * 1024;
+
+    private const MAX_ATTACHMENT_SIZE = 100 * 1024 * 1024;
+
+    private const MAX_ATTACHMENT_COUNT = 20;
+
+    private const MAX_MEDIA_COUNT = 20;
+
+    private const MAX_MEDIA_FILE_SIZE = 10 * 1024 * 1024;
+
+    private const ATTACHMENT_EXTENSIONS = [
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'ppt',
+        'pptx',
+        'csv',
+        'txt',
+        'jpg',
+        'jpeg',
+        'png',
+        'webp',
+        'gif',
+        'mp4',
+        'webm',
+        'mp3',
+        'wav',
+        'zip',
+        'rar',
+        '7z',
+        'tar',
+        'gz',
     ];
 
     public function index(Request $request): View
@@ -79,7 +114,12 @@ class AnnouncementManagementController extends Controller
 
     public function create(): View
     {
-        return view('announcements-manage.create');
+        $categorySuggestions = $this->getCategorySuggestions();
+
+        return view(
+            'announcements-manage.create',
+            compact('categorySuggestions')
+        );
     }
 
     public function store(Request $request): RedirectResponse
@@ -96,10 +136,14 @@ class AnnouncementManagementController extends Controller
                 $validated,
                 &$storedPaths
             ) {
-                $validated['slug'] = $this->uniqueSlug($validated['title']);
+                $validated['slug'] = $this->uniqueSlug(
+                    $validated['title']
+                );
+
                 $validated['content'] = $this->sanitizeHtml(
                     $validated['content']
                 );
+
                 $validated['is_pinned'] = $request->boolean('is_pinned');
                 $validated['created_by'] = Auth::id();
                 $validated['updated_by'] = Auth::id();
@@ -108,8 +152,10 @@ class AnnouncementManagementController extends Controller
 
                 if ($validated['is_pinned']) {
                     $validated['pin_order'] = $validated['pin_order']
-                        ?? ((int) Announcement::where('is_pinned', true)
-                            ->max('pin_order') + 1);
+                        ?? (
+                            (int) Announcement::where('is_pinned', true)
+                                ->max('pin_order') + 1
+                        );
                 } else {
                     $validated['pin_order'] = null;
                 }
@@ -158,7 +204,10 @@ class AnnouncementManagementController extends Controller
             'media.uploader',
         ]);
 
-        return view('announcements-manage.show', compact('announcement'));
+        return view(
+            'announcements-manage.show',
+            compact('announcement')
+        );
     }
 
     public function edit(Announcement $announcement): View
@@ -168,7 +217,12 @@ class AnnouncementManagementController extends Controller
             'media',
         ]);
 
-        return view('announcements-manage.edit', compact('announcement'));
+        $categorySuggestions = $this->getCategorySuggestions();
+
+        return view(
+            'announcements-manage.edit',
+            compact('announcement', 'categorySuggestions')
+        );
     }
 
     public function update(
@@ -208,6 +262,7 @@ class AnnouncementManagementController extends Controller
                 $validated['content'] = $this->sanitizeHtml(
                     $validated['content']
                 );
+
                 $validated['is_pinned'] = $request->boolean('is_pinned');
                 $validated['updated_by'] = Auth::id();
 
@@ -219,13 +274,15 @@ class AnnouncementManagementController extends Controller
                 if ($validated['is_pinned']) {
                     $validated['pin_order'] = $validated['pin_order']
                         ?? $announcement->pin_order
-                        ?? ((int) Announcement::where('is_pinned', true)
-                            ->where(
-                                'announcement_id',
-                                '!=',
-                                $announcement->announcement_id
-                            )
-                            ->max('pin_order') + 1);
+                        ?? (
+                            (int) Announcement::where('is_pinned', true)
+                                ->where(
+                                    'announcement_id',
+                                    '!=',
+                                    $announcement->announcement_id
+                                )
+                                ->max('pin_order') + 1
+                        );
                 } else {
                     $validated['pin_order'] = null;
                 }
@@ -239,7 +296,14 @@ class AnnouncementManagementController extends Controller
                 }
 
                 if ($request->hasFile('thumbnail')) {
-                    if ($announcement->thumbnail_path) {
+                    if (
+                        $announcement->thumbnail_path
+                        && ! in_array(
+                            $announcement->thumbnail_path,
+                            $oldPaths,
+                            true
+                        )
+                    ) {
                         $oldPaths[] = $announcement->thumbnail_path;
                     }
 
@@ -301,11 +365,16 @@ class AnnouncementManagementController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $announcement->load(['attachments', 'media']);
+            $announcement->load([
+                'attachments',
+                'media',
+            ]);
 
             $filePaths = $announcement->attachments
                 ->pluck('file_path')
-                ->merge($announcement->media->pluck('file_path'));
+                ->merge(
+                    $announcement->media->pluck('file_path')
+                );
 
             if ($announcement->thumbnail_path) {
                 $filePaths->push($announcement->thumbnail_path);
@@ -313,7 +382,11 @@ class AnnouncementManagementController extends Controller
 
             $announcement->delete();
 
-            return $filePaths->filter()->unique()->values()->all();
+            return $filePaths
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
         });
 
         $this->deleteStoredFiles($filePaths);
@@ -354,39 +427,84 @@ class AnnouncementManagementController extends Controller
         ?Announcement $announcement = null
     ): array {
         return [
-            'title' => ['required', 'string', 'max:150'],
-            'category' => ['nullable', 'string', 'max:100'],
-            'summary' => ['nullable', 'string', 'max:5000'],
-            'content' => ['required', 'string', 'max:1000000'],
-            'status' => ['required', Rule::in(self::STATUSES)],
+            'title' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+            'category' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'summary' => [
+                'nullable',
+                'string',
+                'max:5000',
+            ],
+            'content' => [
+                'required',
+                'string',
+                'max:1000000',
+            ],
+            'status' => [
+                'required',
+                Rule::in(self::STATUSES),
+            ],
             'scheduled_at' => [
                 'nullable',
                 'required_if:status,scheduled',
                 'date',
             ],
-            'published_at' => ['nullable', 'date'],
+            'published_at' => [
+                'nullable',
+                'date',
+            ],
             'expires_at' => [
                 'nullable',
                 'date',
                 'after:published_at',
             ],
-            'is_pinned' => ['nullable', 'boolean'],
-            'pin_order' => ['nullable', 'integer', 'min:1'],
-            'remove_thumbnail' => ['nullable', 'boolean'],
-            'remove_media' => ['sometimes', 'array'],
+            'is_pinned' => [
+                'nullable',
+                'boolean',
+            ],
+            'pin_order' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'remove_thumbnail' => [
+                'nullable',
+                'boolean',
+            ],
+            'remove_media' => [
+                'sometimes',
+                'array',
+            ],
             'remove_media.*' => [
+                'required',
                 'uuid',
                 Rule::exists('announcement_media', 'media_id')
-                    ->where('announcement_id', $announcement?->announcement_id),
-            ],
-            'remove_attachments' => ['sometimes', 'array'],
-            'remove_attachments.*' => [
-                'uuid',
-                Rule::exists('announcement_attachments', 'attachment_id')
                     ->where(
                         'announcement_id',
                         $announcement?->announcement_id
                     ),
+            ],
+            'remove_attachments' => [
+                'sometimes',
+                'array',
+            ],
+            'remove_attachments.*' => [
+                'required',
+                'uuid',
+                Rule::exists(
+                    'announcement_attachments',
+                    'attachment_id'
+                )->where(
+                    'announcement_id',
+                    $announcement?->announcement_id
+                ),
             ],
         ];
     }
@@ -400,45 +518,71 @@ class AnnouncementManagementController extends Controller
                 'mimes:jpg,jpeg,png,webp',
                 'max:4096',
             ],
-            'media_files' => ['nullable', 'array', 'max:20'],
+            'media_files' => [
+                'nullable',
+                'array',
+                'max:' . self::MAX_MEDIA_COUNT,
+            ],
             'media_files.*' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp,gif',
                 'max:10240',
             ],
-            'attachment_files' => ['nullable', 'array', 'max:20'],
+            'attachment_files' => [
+                'nullable',
+                'array',
+                'max:' . self::MAX_ATTACHMENT_COUNT,
+            ],
             'attachment_files.*' => [
                 'required',
                 'file',
-                'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,csv,txt,mp4,webm,zip',
-                'max:20480',
+                'mimes:' . implode(',', self::ATTACHMENT_EXTENSIONS),
+                'max:102400',
             ],
         ]);
+
+        $this->validateTotalAttachmentSize($request);
+    }
+
+    private function validateTotalAttachmentSize(
+        Request $request
+    ): void {
+        $files = $request->file('attachment_files', []);
+
+        $totalSize = collect($files)
+            ->filter(fn ($file) => $file instanceof UploadedFile)
+            ->sum(fn (UploadedFile $file) => $file->getSize());
+
+        if ($totalSize > self::MAX_ATTACHMENT_SIZE) {
+            throw ValidationException::withMessages([
+                'attachment_files' => 'The combined attachment size must not exceed 100 MB.',
+            ]);
+        }
     }
 
     private function normalizePublicationFields(
         array &$validated,
         ?Announcement $announcement = null
     ): void {
-        if ($validated['status'] === 'published') {
+        $status = $validated['status'];
+
+        if ($status === 'published') {
             $validated['published_at'] ??=
                 $announcement?->published_at ?? now();
 
             $validated['scheduled_at'] = null;
         }
 
-        if ($validated['status'] === 'scheduled') {
+        if ($status === 'scheduled') {
             $validated['published_at'] = null;
         }
 
-        if (
-            $validated['status'] !== 'scheduled'
-        ) {
+        if ($status !== 'scheduled') {
             $validated['scheduled_at'] = null;
         }
 
-        if (! $validated['is_pinned']) {
+        if (empty($validated['is_pinned'])) {
             $validated['pin_order'] = null;
         }
     }
@@ -448,12 +592,22 @@ class AnnouncementManagementController extends Controller
         Announcement $announcement,
         array &$storedPaths
     ): void {
-        foreach ($request->file('media_files', []) as $index => $file) {
+        $files = $request->file('media_files', []);
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
             $path = $this->storeFile(
                 $file,
                 'announcements/media',
                 $storedPaths
             );
+
+            $sortOrder = (
+                (int) $announcement->media()->max('sort_order')
+            ) + 1;
 
             $announcement->media()->create([
                 'original_name' => $file->getClientOriginalName(),
@@ -461,9 +615,7 @@ class AnnouncementManagementController extends Controller
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'media_type' => 'image',
-                'sort_order' => (
-                    (int) $announcement->media()->max('sort_order')
-                ) + 1 + $index,
+                'sort_order' => $sortOrder,
                 'uploaded_by' => Auth::id(),
             ]);
         }
@@ -474,9 +626,13 @@ class AnnouncementManagementController extends Controller
         Announcement $announcement,
         array &$storedPaths
     ): void {
-        foreach (
-            $request->file('attachment_files', []) as $index => $file
-        ) {
+        $files = $request->file('attachment_files', []);
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
             $path = $this->storeFile(
                 $file,
                 'announcements/attachments',
@@ -487,11 +643,16 @@ class AnnouncementManagementController extends Controller
                 $file->getClientOriginalExtension()
             );
 
-            $mediaType = in_array(
-                $extension,
-                ['mp4', 'webm'],
-                true
-            ) ? 'video' : 'document';
+            $mediaType = match ($extension) {
+                'mp4', 'webm' => 'video',
+                'mp3', 'wav' => 'audio',
+                'jpg', 'jpeg', 'png', 'webp', 'gif' => 'image',
+                default => 'document',
+            };
+
+            $sortOrder = (
+                (int) $announcement->attachments()->max('sort_order')
+            ) + 1;
 
             $announcement->attachments()->create([
                 'original_name' => $file->getClientOriginalName(),
@@ -499,9 +660,7 @@ class AnnouncementManagementController extends Controller
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'media_type' => $mediaType,
-                'sort_order' => (
-                    (int) $announcement->attachments()->max('sort_order')
-                ) + 1 + $index,
+                'sort_order' => $sortOrder,
                 'uploaded_by' => Auth::id(),
             ]);
         }
@@ -514,7 +673,7 @@ class AnnouncementManagementController extends Controller
     ): void {
         $ids = $request->input('remove_media', []);
 
-        if (empty($ids)) {
+        if (! is_array($ids) || empty($ids)) {
             return;
         }
 
@@ -523,7 +682,10 @@ class AnnouncementManagementController extends Controller
             ->get();
 
         foreach ($items as $item) {
-            $oldPaths[] = $item->file_path;
+            if ($item->file_path) {
+                $oldPaths[] = $item->file_path;
+            }
+
             $item->delete();
         }
     }
@@ -535,7 +697,7 @@ class AnnouncementManagementController extends Controller
     ): void {
         $ids = $request->input('remove_attachments', []);
 
-        if (empty($ids)) {
+        if (! is_array($ids) || empty($ids)) {
             return;
         }
 
@@ -544,7 +706,10 @@ class AnnouncementManagementController extends Controller
             ->get();
 
         foreach ($items as $item) {
-            $oldPaths[] = $item->file_path;
+            if ($item->file_path) {
+                $oldPaths[] = $item->file_path;
+            }
+
             $item->delete();
         }
     }
@@ -557,7 +722,9 @@ class AnnouncementManagementController extends Controller
         $path = $file->store($directory, 'public');
 
         if (! $path) {
-            throw new \RuntimeException('Unable to store uploaded file.');
+            throw new \RuntimeException(
+                'Unable to store uploaded file.'
+            );
         }
 
         $storedPaths[] = $path;
@@ -572,14 +739,58 @@ class AnnouncementManagementController extends Controller
         }
     }
 
+    private function getCategorySuggestions(): array
+    {
+        return Announcement::query()
+            ->whereNotNull('category')
+            ->pluck('category')
+            ->flatMap(function ($category) {
+                return explode(',', $category);
+            })
+            ->map(fn ($category) => trim($category))
+            ->filter()
+            ->unique(fn ($category) => Str::lower($category))
+            ->values()
+            ->map(fn ($category) => [
+                'name' => $category,
+            ])
+            ->all();
+    }
+
     private function sanitizeHtml(string $html): string
     {
         $allowedTags = [
-            'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
-            'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li',
-            'blockquote', 'pre', 'code', 'table', 'thead',
-            'tbody', 'tr', 'th', 'td', 'a', 'img', 'figure',
-            'figcaption', 'div', 'span', 'hr',
+            'p',
+            'br',
+            'strong',
+            'b',
+            'em',
+            'i',
+            'u',
+            's',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'ul',
+            'ol',
+            'li',
+            'blockquote',
+            'pre',
+            'code',
+            'table',
+            'thead',
+            'tbody',
+            'tr',
+            'th',
+            'td',
+            'a',
+            'img',
+            'figure',
+            'figcaption',
+            'div',
+            'span',
+            'hr',
         ];
 
         $html = strip_tags(
@@ -588,77 +799,208 @@ class AnnouncementManagementController extends Controller
         );
 
         if (! class_exists(DOMDocument::class)) {
-            $html = preg_replace(
-                '/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i',
-                '',
-                $html
-            );
-
-            $html = preg_replace(
-                '/(href|src)\s*=\s*(["\'])\s*(javascript|data):.*?\2/i',
-                '$1="#"',
-                $html
-            );
-
-            return $html;
+            return $this->sanitizeHtmlFallback($html);
         }
 
         $previous = libxml_use_internal_errors(true);
 
-        $document = new DOMDocument('1.0', 'UTF-8');
+        try {
+            $document = new DOMDocument('1.0', 'UTF-8');
 
-        $document->loadHTML(
-            '<?xml encoding="UTF-8"><div id="announcement-content">'
-                . $html
-                . '</div>',
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-        );
+            $document->loadHTML(
+                '<?xml encoding="UTF-8"><div id="announcement-content">'
+                    . $html
+                    . '</div>',
+                LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+            );
 
-        $container = $document->getElementById('announcement-content');
+            $container = $document->getElementById(
+                'announcement-content'
+            );
 
-        if ($container) {
+            if (! $container) {
+                return '';
+            }
+
             $this->sanitizeNode($container);
+
             $result = '';
 
             foreach ($container->childNodes as $child) {
                 $result .= $document->saveHTML($child);
             }
-        } else {
-            $result = '';
+
+            return $result;
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
         }
+    }
 
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
+    private function sanitizeHtmlFallback(string $html): string
+    {
+        $html = preg_replace(
+            '/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+            '',
+            $html
+        );
 
-        return $result;
+        $html = preg_replace_callback(
+            '/\s(href|src)\s*=\s*(["\'])(.*?)\2/i',
+            function ($matches) {
+                $attribute = strtolower($matches[1]);
+                $value = trim($matches[3]);
+                $compact = preg_replace(
+                    '/[\x00-\x20]+/',
+                    '',
+                    $value
+                );
+
+                if (
+                    preg_match(
+                        '/^(javascript|vbscript|file):/i',
+                        $compact
+                    )
+                ) {
+                    return ' ' . $attribute . '="#"';
+                }
+
+                if (
+                    str_starts_with(strtolower($compact), 'data:')
+                    && ! (
+                        $attribute === 'src'
+                        && preg_match(
+                            '/^data:image\/(png|jpeg|gif|webp);base64,/i',
+                            $compact
+                        )
+                    )
+                ) {
+                    return ' ' . $attribute . '="#"';
+                }
+
+                return ' ' . $attribute . '='
+                    . $matches[2]
+                    . htmlspecialchars(
+                        $value,
+                        ENT_QUOTES | ENT_SUBSTITUTE,
+                        'UTF-8'
+                    )
+                    . $matches[2];
+            },
+            $html
+        );
+
+        return $html;
     }
 
     private function sanitizeNode(DOMElement $element): void
     {
         $allowedAttributes = [
-            'a' => ['href', 'title', 'target', 'rel'],
-            'img' => ['src', 'alt', 'width', 'height'],
-            'td' => ['colspan', 'rowspan'],
-            'th' => ['colspan', 'rowspan'],
+            'a' => [
+                'href',
+                'title',
+                'target',
+                'rel',
+                'style',
+            ],
+            'img' => [
+                'src',
+                'alt',
+                'width',
+                'height',
+                'style',
+            ],
+            'td' => [
+                'colspan',
+                'rowspan',
+                'style',
+            ],
+            'th' => [
+                'colspan',
+                'rowspan',
+                'style',
+            ],
+            'table' => [
+                'style',
+            ],
+            'p' => [
+                'style',
+            ],
+            'div' => [
+                'style',
+            ],
+            'span' => [
+                'style',
+            ],
+            'h1' => [
+                'style',
+            ],
+            'h2' => [
+                'style',
+            ],
+            'h3' => [
+                'style',
+            ],
+            'h4' => [
+                'style',
+            ],
+            'blockquote' => [
+                'style',
+            ],
+            'ul' => [
+                'style',
+            ],
+            'ol' => [
+                'style',
+            ],
+            'li' => [
+                'style',
+            ],
+            'figure' => [
+                'style',
+            ],
+            'figcaption' => [
+                'style',
+            ],
+            'pre' => [
+                'style',
+            ],
+            'code' => [
+                'style',
+            ],
         ];
 
         $remove = [];
 
         foreach ($element->childNodes as $child) {
-            if ($child instanceof DOMElement) {
-                $tag = strtolower($child->tagName);
-
-                if (in_array(
-                    $tag,
-                    ['script', 'style', 'iframe', 'object', 'embed', 'form'],
-                    true
-                )) {
-                    $remove[] = $child;
-                    continue;
-                }
-
-                $this->sanitizeNode($child);
+            if (! $child instanceof DOMElement) {
+                continue;
             }
+
+            $tag = strtolower($child->tagName);
+
+            if (in_array(
+                $tag,
+                [
+                    'script',
+                    'style',
+                    'iframe',
+                    'object',
+                    'embed',
+                    'form',
+                    'svg',
+                    'math',
+                    'video',
+                    'audio',
+                    'source',
+                ],
+                true
+            )) {
+                $remove[] = $child;
+                continue;
+            }
+
+            $this->sanitizeNode($child);
         }
 
         foreach ($remove as $child) {
@@ -673,12 +1015,13 @@ class AnnouncementManagementController extends Controller
 
         foreach ($attributes as $name) {
             $value = trim($element->getAttribute($name));
+            $lowerName = strtolower($name);
             $tag = strtolower($element->tagName);
 
             if (
-                str_starts_with(strtolower($name), 'on')
+                str_starts_with($lowerName, 'on')
                 || ! in_array(
-                    $name,
+                    $lowerName,
                     $allowedAttributes[$tag] ?? [],
                     true
                 )
@@ -687,8 +1030,35 @@ class AnnouncementManagementController extends Controller
                 continue;
             }
 
-            if (in_array($name, ['href', 'src'], true)) {
-                $scheme = parse_url($value, PHP_URL_SCHEME);
+            if ($lowerName === 'style') {
+                $safeStyle = $this->sanitizeInlineStyle($value);
+
+                if ($safeStyle === '') {
+                    $element->removeAttribute($name);
+                } else {
+                    $element->setAttribute('style', $safeStyle);
+                }
+
+                continue;
+            }
+
+            if (in_array($lowerName, ['href', 'src'], true)) {
+                $compact = preg_replace(
+                    '/[\x00-\x20]+/',
+                    '',
+                    $value
+                );
+
+                $scheme = parse_url(
+                    $compact,
+                    PHP_URL_SCHEME
+                );
+
+                $isDataImage = $lowerName === 'src'
+                    && preg_match(
+                        '/^data:image\/(png|jpeg|gif|webp);base64,/i',
+                        $compact
+                    );
 
                 if (
                     $scheme !== null
@@ -697,19 +1067,130 @@ class AnnouncementManagementController extends Controller
                         ['http', 'https'],
                         true
                     )
+                    && ! $isDataImage
                 ) {
                     $element->removeAttribute($name);
+                    continue;
+                }
+
+                if (
+                    str_starts_with(strtolower($compact), 'data:')
+                    && ! $isDataImage
+                ) {
+                    $element->removeAttribute($name);
+                    continue;
+                }
+
+                if (
+                    $lowerName === 'href'
+                    && preg_match(
+                        '/^\s*(javascript|vbscript|file):/i',
+                        $value
+                    )
+                ) {
+                    $element->removeAttribute($name);
+                    continue;
                 }
             }
 
-            if ($tag === 'a' && $name === 'target') {
+            if ($tag === 'a' && $lowerName === 'target') {
                 if (! in_array($value, ['_blank', '_self'], true)) {
                     $element->removeAttribute($name);
                 } elseif ($value === '_blank') {
-                    $element->setAttribute('rel', 'noopener noreferrer');
+                    $element->setAttribute(
+                        'rel',
+                        'noopener noreferrer'
+                    );
                 }
             }
         }
+    }
+
+    private function sanitizeInlineStyle(string $style): string
+    {
+        $allowedProperties = [
+            'color',
+            'background-color',
+            'border',
+            'border-collapse',
+            'padding',
+            'text-align',
+            'font-weight',
+            'font-style',
+            'text-decoration',
+            'width',
+            'max-width',
+            'height',
+            'vertical-align',
+            'white-space',
+            'margin',
+        ];
+
+        $safeDeclarations = [];
+
+        foreach (explode(';', $style) as $declaration) {
+            if (! str_contains($declaration, ':')) {
+                continue;
+            }
+
+            [$property, $value] = array_map(
+                'trim',
+                explode(':', $declaration, 2)
+            );
+
+            $property = strtolower($property);
+            $value = trim($value);
+
+            if (
+                ! in_array($property, $allowedProperties, true)
+                || $value === ''
+                || preg_match(
+                    '/(url\s*\(|expression\s*\(|javascript:|vbscript:|@import|behavior\s*:|[<>])/i',
+                    $value
+                )
+            ) {
+                continue;
+            }
+
+            if (
+                in_array(
+                    $property,
+                    ['color', 'background-color'],
+                    true
+                )
+                && ! preg_match(
+                    '/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%]+\)|[a-z]{1,30}|transparent|currentcolor)$/i',
+                    $value
+                )
+            ) {
+                continue;
+            }
+
+            if (
+                $property === 'font-weight'
+                && ! preg_match(
+                    '/^(normal|bold|bolder|lighter|[1-9]00)$/i',
+                    $value
+                )
+            ) {
+                continue;
+            }
+
+            if (
+                $property === 'text-align'
+                && ! in_array(
+                    strtolower($value),
+                    ['left', 'right', 'center', 'justify', 'start', 'end'],
+                    true
+                )
+            ) {
+                continue;
+            }
+
+            $safeDeclarations[] = $property . ': ' . $value;
+        }
+
+        return implode('; ', $safeDeclarations);
     }
 
     private function uniqueSlug(

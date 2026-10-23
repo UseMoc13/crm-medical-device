@@ -9,7 +9,6 @@
         <h1>Create Announcement</h1>
         <p>Create, format, preview, and configure a company announcement before publishing.</p>
     </div>
-
     <div class="actions">
         <a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
         <button type="button" class="btn primary" id="openPreviewTop">Preview Announcement</button>
@@ -17,21 +16,18 @@
 </div>
 
 @if($errors->any())
-    <div class="alert error">
-        <strong>Please check the following errors:</strong>
-        <ul>
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+<div class="alert error">
+    <strong>Please check the following errors:</strong>
+    <ul>
+        @foreach($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
 @endif
 
 <div class="announcement-create-layout">
-    <form method="POST"
-          action="{{ route('announcement-management.store') }}"
-          enctype="multipart/form-data"
-          id="announcementCreateForm">
+    <form method="POST" action="{{ route('announcement-management.store') }}" enctype="multipart/form-data" id="announcementCreateForm">
         @csrf
 
         <div class="card announcement-form-card">
@@ -49,61 +45,55 @@
                         <span class="section-number">01</span>
                         <div>
                             <h4>Basic Information</h4>
-                            <p>Give your announcement a clear title and category.</p>
+                            <p>Give your announcement a clear title and relevant tags.</p>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="title">Announcement Title <span class="required">*</span></label>
-                        <input type="text"
-                               name="title"
-                               id="title"
-                               maxlength="150"
-                               value="{{ old('title') }}"
-                               placeholder="e.g. Scheduled System Maintenance"
-                               required>
-
+                        <input type="text" name="title" id="title" maxlength="150" value="{{ old('title') }}" placeholder="e.g. Scheduled System Maintenance" required>
                         <div class="field-footer">
                             <span class="form-hint">Use a concise title that communicates the main message.</span>
                             <span class="character-count" id="titleCount">0 / 150</span>
                         </div>
-
                         @error('title')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="category">Category</label>
-                        <input type="text"
-                               name="category"
-                               id="category"
-                               maxlength="100"
-                               value="{{ old('category') }}"
-                               placeholder="Company News, System Update, Important Notice">
+                        <label for="tagSearch">Announcement Tags</label>
+                        <input type="hidden" name="category" id="category" value="{{ old('category') }}">
+                        <div class="tag-input-shell" id="tagInputShell">
+                            <div class="tag-chip-list" id="selectedTags"></div>
+                            <input type="text" id="tagSearch" autocomplete="off" placeholder="Search or create a tag...">
+                            <button type="button" class="tag-add-button" id="addTagButton">Add</button>
+                        </div>
+                        <span class="form-hint">Select an existing tag or type a new tag and press Enter. Multiple tags are supported.</span>
 
-                        <span class="form-hint">A category helps readers identify the type of announcement.</span>
+                        <div class="tag-recommendations">
+                            <div class="tag-recommendation-heading">
+                                <strong>Previously Used Tags</strong>
+                                <span>Recommendations</span>
+                            </div>
+                            <div class="tag-recommendation-list" id="tagRecommendations"></div>
+                            <p class="form-hint" id="tagRecommendationNote">Usage counts are shown when supplied by the controller.</p>
+                        </div>
 
                         @error('category')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
                         <label for="summary">Short Summary</label>
-                        <textarea name="summary"
-                                  id="summary"
-                                  rows="3"
-                                  maxlength="5000"
-                                  placeholder="Write a short introduction that explains why this announcement matters...">{{ old('summary') }}</textarea>
-
+                        <textarea name="summary" id="summary" rows="3" maxlength="5000" placeholder="Write a short introduction that explains why this announcement matters...">{{ old('summary') }}</textarea>
                         <div class="field-footer">
                             <span class="form-hint">A short introduction displayed on announcement cards and above the article.</span>
                             <span class="character-count" id="summaryCount">0 characters</span>
                         </div>
-
                         @error('summary')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
                 </section>
@@ -113,18 +103,13 @@
                         <span class="section-number">02</span>
                         <div>
                             <h4>Announcement Thumbnail</h4>
-                            <p>Choose how the cover image should appear in the announcement card and reader view.</p>
+                            <p>Configure image fit, background appearance, and positioning.</p>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="thumbnail">Cover Image</label>
-
-                        <input type="file"
-                               name="thumbnail"
-                               id="thumbnail"
-                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                               hidden>
+                        <input type="file" name="thumbnail" id="thumbnail" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
 
                         <div class="thumbnail-upload-box" id="thumbnailUploadBox">
                             <div class="thumbnail-placeholder" id="thumbnailPlaceholder">
@@ -136,8 +121,8 @@
 
                             <div class="thumbnail-workspace" id="thumbnailWorkspace" hidden>
                                 <div class="thumbnail-stage mode-cover" id="thumbnailStage">
-                                    <img src="" alt="" class="thumbnail-blur-layer" id="thumbnailBlurLayer">
-                                    <div class="thumbnail-solid-layer" id="thumbnailSolidLayer"></div>
+                                    <img src="" alt="" class="thumbnail-blur-layer" id="thumbnailBlurLayer" hidden>
+                                    <div class="thumbnail-solid-layer" id="thumbnailSolidLayer" hidden></div>
                                     <img src="" alt="Thumbnail preview" class="thumbnail-main-image position-center" id="thumbnailPreview">
                                 </div>
 
@@ -146,7 +131,6 @@
                                         <strong id="thumbnailFileName">Selected image</strong>
                                         <span id="thumbnailFileSize"></span>
                                     </div>
-
                                     <div class="thumbnail-actions">
                                         <button type="button" class="btn" id="replaceThumbnail">Replace</button>
                                         <button type="button" class="btn danger-light" id="removeThumbnail">Remove</button>
@@ -157,20 +141,19 @@
 
                         <div class="thumbnail-settings" id="thumbnailSettings" hidden>
                             <div class="thumbnail-settings-heading">
-                                <strong>Image Display Settings</strong>
-                                <span>Adjust the image without modifying the original file.</span>
+                                <strong>Thumbnail Appearance</strong>
+                                <span>These options update the browser preview. Persisting them requires corresponding controller and database handling.</span>
                             </div>
 
                             <div class="thumbnail-settings-grid">
                                 <div class="form-group">
-                                    <label for="thumbnailFit">Image Fit</label>
+                                    <label for="thumbnailFit">Image Mode</label>
                                     <select id="thumbnailFit" name="thumbnail_fit">
-                                        <option value="cover">Cover — Fill the area</option>
-                                        <option value="contain">Fit — Show the full image</option>
-                                        <option value="blur">Blur Background — Fill empty sides</option>
-                                        <option value="solid">Solid Background — Add a background color</option>
+                                        <option value="cover">Cover — Fill the entire area</option>
+                                        <option value="fit">Fit — Show the full image</option>
+                                        <option value="blur">Blur — Use a blurred image background</option>
                                     </select>
-                                    <span class="form-hint">Fit and Blur Background help avoid cutting off small or portrait images.</span>
+                                    <span class="form-hint">Cover fills the frame, Fit preserves the entire image, and Blur fills empty areas with a blurred version of the image.</span>
                                 </div>
 
                                 <div class="form-group" id="thumbnailPositionGroup">
@@ -184,20 +167,43 @@
                                     </select>
                                 </div>
 
-                                <div class="form-group" id="thumbnailBackgroundGroup" hidden>
-                                    <label for="thumbnailBackground">Background Color</label>
+                                <div class="form-group" id="thumbnailBackgroundStyleGroup" hidden>
+                                    <label for="thumbnailBackgroundStyle">Background Style</label>
+                                    <select id="thumbnailBackgroundStyle" name="thumbnail_background_style">
+                                        <option value="solid">Solid Color</option>
+                                        <option value="gradient">Gradient</option>
+                                        <option value="transparent">Transparent</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="thumbnailSolidColorGroup" hidden>
+                                    <label for="thumbnailBackground">Solid Background Color</label>
                                     <div class="color-control">
                                         <input type="color" id="thumbnailBackground" name="thumbnail_background" value="#17284f">
                                         <span id="thumbnailBackgroundValue">#17284F</span>
                                     </div>
                                 </div>
-                            </div>
 
-                            <p class="form-hint">These settings control the browser preview. The server must be updated later to persist them.</p>
+                                <div class="form-group" id="thumbnailGradientStartGroup" hidden>
+                                    <label for="thumbnailGradientStart">Gradient Start Color</label>
+                                    <div class="color-control">
+                                        <input type="color" id="thumbnailGradientStart" name="thumbnail_gradient_start" value="#17284f">
+                                        <span id="thumbnailGradientStartValue">#17284F</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="thumbnailGradientEndGroup" hidden>
+                                    <label for="thumbnailGradientEnd">Gradient End Color</label>
+                                    <div class="color-control">
+                                        <input type="color" id="thumbnailGradientEnd" name="thumbnail_gradient_end" value="#2ba7a0">
+                                        <span id="thumbnailGradientEndValue">#2BA7A0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         @error('thumbnail')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
                 </section>
@@ -207,13 +213,12 @@
                         <span class="section-number">03</span>
                         <div>
                             <h4>Announcement Content</h4>
-                            <p>Write your announcement like composing an email, with formatting, images, and tables.</p>
+                            <p>Write and format the message with headings, links, images, and styled tables.</p>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="contentEditor">Message Content <span class="required">*</span></label>
-
                         <textarea id="initialContent" hidden>{{ old('content') }}</textarea>
 
                         <div class="rich-editor">
@@ -227,18 +232,14 @@
                                         <option value="blockquote">Quote</option>
                                     </select>
                                 </div>
-
                                 <span class="toolbar-divider"></span>
-
                                 <div class="toolbar-group">
                                     <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
                                     <button type="button" data-command="italic" title="Italic"><em>I</em></button>
                                     <button type="button" data-command="underline" title="Underline"><u>U</u></button>
                                     <button type="button" data-command="strikeThrough" title="Strikethrough"><s>S</s></button>
                                 </div>
-
                                 <span class="toolbar-divider"></span>
-
                                 <div class="toolbar-group">
                                     <button type="button" data-command="insertUnorderedList" title="Bullet list">• List</button>
                                     <button type="button" data-command="insertOrderedList" title="Numbered list">1. List</button>
@@ -246,17 +247,13 @@
                                     <button type="button" id="alignCenter" title="Align center">☰</button>
                                     <button type="button" id="alignRight" title="Align right">≡</button>
                                 </div>
-
                                 <span class="toolbar-divider"></span>
-
                                 <div class="toolbar-group">
                                     <button type="button" id="insertLinkButton" title="Insert link">↗ Link</button>
                                     <button type="button" id="insertImageButton" title="Insert image">▧ Image</button>
                                     <button type="button" id="insertTableButton" title="Insert table">▦ Table</button>
                                 </div>
-
                                 <span class="toolbar-divider"></span>
-
                                 <div class="toolbar-group">
                                     <button type="button" id="undoEditor" title="Undo">↶</button>
                                     <button type="button" id="redoEditor" title="Redo">↷</button>
@@ -272,36 +269,46 @@
                                 <button type="button" id="removeTableColumn">− Column</button>
                                 <button type="button" id="deleteTable" class="table-delete">Delete Table</button>
                                 <span class="table-tools-hint">Click a table cell before using these controls.</span>
+
+                                <div class="table-style-controls">
+                                    <label>
+                                        Header Background
+                                        <input type="color" id="tableHeaderBackground" value="#f5f7fb">
+                                    </label>
+                                    <label>
+                                        Header Text
+                                        <input type="color" id="tableHeaderColor" value="#17284f">
+                                    </label>
+                                    <label>
+                                        Cell Background
+                                        <input type="color" id="tableCellBackground" value="#ffffff">
+                                    </label>
+                                    <label>
+                                        Cell Text
+                                        <input type="color" id="tableCellColor" value="#34415c">
+                                    </label>
+                                </div>
                             </div>
 
-                            <div id="contentEditor"
-                                 class="editor-content"
-                                 contenteditable="true"
-                                 role="textbox"
-                                 aria-multiline="true"
-                                 aria-label="Announcement message content"
-                                 data-placeholder="Write your announcement here. You can format text, insert images, add tables, and edit the content just like an email."></div>
+                            <div id="contentEditor" class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Announcement message content" data-placeholder="Write your announcement here. You can format text, insert images, add tables, and edit the content just like an email."></div>
 
-                            <input type="file"
-                                   id="editorImageInput"
-                                   accept="image/jpeg,image/png,image/webp,image/gif"
-                                   hidden>
+                            <input type="file" id="editorImageInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
                         </div>
 
                         <textarea name="content" id="content" hidden required>{{ old('content') }}</textarea>
 
                         <div class="field-footer">
-                            <span class="form-hint">Images inserted in the editor appear inside the article. Use the table controls to edit the selected table.</span>
+                            <span class="form-hint">Select a table cell to reveal table editing and color controls.</span>
                             <span class="character-count" id="contentCount">0 characters</span>
                         </div>
 
                         @error('content')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
 
                         <div class="editor-notice">
                             <span class="notice-icon">i</span>
-                            <p>Images inserted into the editor are embedded in the content for this browser preview. Persistent image storage and server-side HTML sanitization will be handled in the controller update.</p>
+                            <p>Inserted editor images are embedded in the content for this browser preview. Persistent image storage and server-side HTML sanitization must also be handled by the controller.</p>
                         </div>
                     </div>
                 </section>
@@ -311,18 +318,13 @@
                         <span class="section-number">04</span>
                         <div>
                             <h4>Attachments</h4>
-                            <p>Attach documents, images, videos, spreadsheets, archives, or other supporting files.</p>
+                            <p>Preview and manage files before saving the announcement.</p>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="attachmentFiles">Announcement Attachments</label>
-
-                        <input type="file"
-                               name="attachment_files[]"
-                               id="attachmentFiles"
-                               multiple
-                               hidden>
+                        <input type="file" name="attachment_files[]" id="attachmentFiles" multiple hidden>
 
                         <div class="upload-dropzone attachment-dropzone" id="attachmentDropzone">
                             <div class="upload-icon">↥</div>
@@ -338,17 +340,15 @@
                         </div>
 
                         <div class="selected-files-list" id="attachmentFilesPreview"></div>
-
                         <div class="upload-warning" id="attachmentWarning" hidden></div>
 
-                        <span class="form-hint">File types are not restricted in this interface. Server-side validation and upload limits must also be configured.</span>
+                        <span class="form-hint">Image files display thumbnails, PDFs display a preview, and other files display their file type and size.</span>
 
                         @error('attachment_files')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
-
                         @error('attachment_files.*')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
                 </section>
@@ -365,16 +365,14 @@
                     <div class="form-group">
                         <label for="status">Publication Status <span class="required">*</span></label>
                         <select name="status" id="status" required>
-                            <option value="draft" @selected(old('status', 'draft') === 'draft')>Draft</option>
-                            <option value="scheduled" @selected(old('status') === 'scheduled')>Scheduled</option>
-                            <option value="published" @selected(old('status') === 'published')>Published</option>
-                            <option value="archived" @selected(old('status') === 'archived')>Archived</option>
+                            <option value="draft" @selected(old('status', 'draft' )==='draft' )>Draft</option>
+                            <option value="scheduled" @selected(old('status')==='scheduled' )>Scheduled</option>
+                            <option value="published" @selected(old('status')==='published' )>Published</option>
+                            <option value="archived" @selected(old('status')==='archived' )>Archived</option>
                         </select>
-
                         <span class="form-hint" id="statusDescription">Save the announcement privately and continue editing it later.</span>
-
                         @error('status')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
@@ -386,18 +384,12 @@
                                 <p>Choose the future date and time when the announcement should be published.</p>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label for="scheduled_at">Scheduled Date and Time <span class="required">*</span></label>
-                            <input type="datetime-local"
-                                   name="scheduled_at"
-                                   id="scheduled_at"
-                                   value="{{ old('scheduled_at') ? \Illuminate\Support\Carbon::parse(old('scheduled_at'))->format('Y-m-d\TH:i') : '' }}">
-
-                            <span class="form-hint">Choose a future time. Automatic publishing also requires the Laravel scheduler and publication logic to be configured.</span>
-
+                            <input type="datetime-local" name="scheduled_at" id="scheduled_at" value="{{ old('scheduled_at') ? \Illuminate\Support\Carbon::parse(old('scheduled_at'))->format('Y-m-d\TH:i') : '' }}">
+                            <span class="form-hint">Automatic publishing also requires the Laravel scheduler and publication logic.</span>
                             @error('scheduled_at')
-                                <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
@@ -410,23 +402,16 @@
                                 <p>Choose whether to publish immediately or specify a publication date.</p>
                             </div>
                         </div>
-
                         <div class="publication-instruction">
                             <strong>Want to publish immediately?</strong>
-                            <p>Select <b>Published</b> as the status and leave Publication Date and Time empty. When saved, the current time will be used by the existing controller.</p>
+                            <p>Select <b>Published</b> and leave Publication Date and Time empty. The existing controller can use the current time when saving.</p>
                         </div>
-
                         <div class="form-group">
                             <label for="published_at">Publication Date and Time <span class="optional-label">Optional</span></label>
-                            <input type="datetime-local"
-                                   name="published_at"
-                                   id="published_at"
-                                   value="{{ old('published_at') ? \Illuminate\Support\Carbon::parse(old('published_at'))->format('Y-m-d\TH:i') : '' }}">
-
-                            <span class="form-hint">Enter a date and time to specify the publication timestamp. Leave blank to use the current time when saving as Published.</span>
-
+                            <input type="datetime-local" name="published_at" id="published_at" value="{{ old('published_at') ? \Illuminate\Support\Carbon::parse(old('published_at'))->format('Y-m-d\TH:i') : '' }}">
+                            <span class="form-hint">Leave blank to use the current time when saving as Published, if supported by the controller.</span>
                             @error('published_at')
-                                <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
@@ -443,44 +428,27 @@
 
                     <div class="form-group" id="expirationGroup">
                         <label for="expires_at">Expiration Date and Time <span class="optional-label">Optional</span></label>
-                        <input type="datetime-local"
-                               name="expires_at"
-                               id="expires_at"
-                               value="{{ old('expires_at') ? \Illuminate\Support\Carbon::parse(old('expires_at'))->format('Y-m-d\TH:i') : '' }}">
-
-                        <span class="form-hint">For published announcements, this determines when the announcement should stop appearing publicly, provided the application enforces expiration.</span>
-
+                        <input type="datetime-local" name="expires_at" id="expires_at" value="{{ old('expires_at') ? \Illuminate\Support\Carbon::parse(old('expires_at'))->format('Y-m-d\TH:i') : '' }}">
+                        <span class="form-hint">Expiration only takes effect if the application enforces it.</span>
                         @error('expires_at')
-                            <span class="form-error">{{ $message }}</span>
+                        <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="pin-setting">
                         <label class="pin-checkbox" for="is_pinned">
-                            <input type="checkbox"
-                                   name="is_pinned"
-                                   id="is_pinned"
-                                   value="1"
-                                   @checked(old('is_pinned'))>
-
+                            <input type="checkbox" name="is_pinned" id="is_pinned" value="1" @checked(old('is_pinned'))>
                             <span>
                                 <strong>Pin this announcement</strong>
                                 <small>Prioritize this announcement above other items in supported announcement lists.</small>
                             </span>
                         </label>
-
                         <div class="form-group pin-order-group" id="pinOrderGroup" hidden>
                             <label for="pin_order">Pin Priority</label>
-                            <input type="number"
-                                   name="pin_order"
-                                   id="pin_order"
-                                   min="1"
-                                   value="{{ old('pin_order', 1) }}">
-
+                            <input type="number" name="pin_order" id="pin_order" min="1" value="{{ old('pin_order', 1) }}">
                             <span class="form-hint">Smaller numbers have higher priority.</span>
-
                             @error('pin_order')
-                                <span class="form-error">{{ $message }}</span>
+                            <span class="form-error">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
@@ -508,7 +476,7 @@
             <div class="mini-announcement-card">
                 <div class="mini-thumbnail mode-cover" id="miniThumbnailWrap">
                     <img src="" alt="" class="mini-thumbnail-blur" id="miniThumbnailBlur" hidden>
-                    <div class="mini-thumbnail-solid" id="miniThumbnailSolid"></div>
+                    <div class="mini-thumbnail-solid" id="miniThumbnailSolid" hidden></div>
                     <img src="" alt="Announcement thumbnail" id="miniThumbnail" hidden>
                     <div class="mini-thumbnail-placeholder" id="miniThumbnailPlaceholder">
                         <span>◈</span>
@@ -516,12 +484,10 @@
                     </div>
                     <span class="mini-pin" id="miniPin" hidden>PINNED</span>
                 </div>
-
                 <div class="mini-card-body">
                     <div class="mini-category" id="miniCategory">GENERAL ANNOUNCEMENT</div>
                     <h3 id="miniTitle">Your announcement title</h3>
                     <p id="miniSummary">Your short summary will appear here to help readers understand the announcement.</p>
-
                     <div class="mini-meta">
                         <span id="miniDate">Publication date not set</span>
                         <span class="mini-status" id="miniStatus">DRAFT</span>
@@ -535,31 +501,11 @@
         <div class="side-panel-card checklist-card">
             <h3>Before Publishing</h3>
             <p>Use this checklist to review your announcement.</p>
-
-            <div class="checklist-item" id="checkTitle">
-                <span class="check-icon">○</span>
-                <span>Announcement title added</span>
-            </div>
-
-            <div class="checklist-item" id="checkSummary">
-                <span class="check-icon">○</span>
-                <span>Summary prepared</span>
-            </div>
-
-            <div class="checklist-item" id="checkContent">
-                <span class="check-icon">○</span>
-                <span>Content written</span>
-            </div>
-
-            <div class="checklist-item" id="checkThumbnail">
-                <span class="check-icon">○</span>
-                <span>Thumbnail selected</span>
-            </div>
-
-            <div class="checklist-item" id="checkPublication">
-                <span class="check-icon">○</span>
-                <span>Publication settings reviewed</span>
-            </div>
+            <div class="checklist-item" id="checkTitle"><span class="check-icon">○</span><span>Announcement title added</span></div>
+            <div class="checklist-item" id="checkSummary"><span class="check-icon">○</span><span>Summary prepared</span></div>
+            <div class="checklist-item" id="checkContent"><span class="check-icon">○</span><span>Content written</span></div>
+            <div class="checklist-item" id="checkThumbnail"><span class="check-icon">○</span><span>Thumbnail selected</span></div>
+            <div class="checklist-item" id="checkPublication"><span class="check-icon">○</span><span>Publication settings reviewed</span></div>
         </div>
 
         <div class="side-panel-card visibility-card">
@@ -574,21 +520,16 @@
 
 <div class="reader-preview-modal" id="readerPreviewModal" aria-hidden="true">
     <div class="reader-preview-backdrop" data-close-preview></div>
-
     <div class="reader-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="readerPreviewTitle">
         <div class="reader-preview-toolbar">
             <div class="reader-brand">
-                <img src="{{ asset('assets/logo.png') }}" alt="PT Radja Usada Mandiri" id="readerLogo"
-                     onerror="this.hidden=true; document.getElementById('readerLogoFallback').hidden=false;">
-
+                <img src="{{ asset('assets/logo.png') }}" alt="PT Radja Usada Mandiri" id="readerLogo" onerror="this.hidden=true; document.getElementById('readerLogoFallback').hidden=false;">
                 <div class="reader-logo-fallback" id="readerLogoFallback" hidden>R</div>
-
                 <div>
                     <span class="reader-preview-eyebrow">PT RADJA USADA MANDIRI</span>
                     <h3 id="readerPreviewTitle">Announcement Preview</h3>
                 </div>
             </div>
-
             <button type="button" class="reader-close-button" id="closePreview" aria-label="Close preview">×</button>
         </div>
 
@@ -596,14 +537,12 @@
             <article class="reader-article">
                 <div class="reader-cover mode-cover" id="readerCoverWrap" hidden>
                     <img src="" alt="" class="reader-cover-blur" id="readerCoverBlur" hidden>
-                    <div class="reader-cover-solid" id="readerCoverSolid"></div>
+                    <div class="reader-cover-solid" id="readerCoverSolid" hidden></div>
                     <img src="" alt="Announcement cover" class="reader-cover-main" id="readerCover">
                 </div>
-
                 <div class="reader-article-content">
                     <div class="reader-category" id="readerCategory">General Announcement</div>
                     <h1 id="readerTitle">Your announcement title</h1>
-
                     <div class="reader-byline">
                         <div class="reader-author-avatar">R</div>
                         <div>
@@ -611,13 +550,9 @@
                             <span id="readerPublicationDate">Publication date not set</span>
                         </div>
                     </div>
-
                     <div class="reader-pinned-label" id="readerPinned" hidden>★ Pinned announcement</div>
-
                     <p class="reader-summary" id="readerSummary">Your announcement summary will appear here.</p>
-
                     <div class="reader-body" id="readerContent"></div>
-
                     <section class="reader-attachments-section" id="readerAttachmentsSection" hidden>
                         <h2>Attachments</h2>
                         <div id="readerAttachmentsList"></div>
@@ -625,7 +560,6 @@
                 </div>
             </article>
         </div>
-
         <div class="reader-preview-footer">
             <span>This is a browser preview. Actual visibility depends on publication status, server-side storage, and access rules.</span>
             <button type="button" class="btn primary" data-close-preview>Back to Editor</button>
@@ -638,65 +572,65 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) 310px;
         align-items: start;
-        gap: 22px;
+        gap: 22px
     }
 
-    .announcement-create-layout > form,
+    .announcement-create-layout>form,
     .announcement-form-card,
     .announcement-side-panel {
-        min-width: 0;
+        min-width: 0
     }
 
     .announcement-form-card {
-        overflow: visible;
+        overflow: visible
     }
 
     .announcement-form-card .card-head {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 16px;
+        gap: 16px
     }
 
     .announcement-form-card .card-head h3 {
         margin: 0 0 5px;
         color: #17284f;
-        font-size: 16px;
+        font-size: 16px
     }
 
     .announcement-form-card .card-head p {
         margin: 0;
         color: #8a94a6;
         font-size: 12px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .required-note,
     .optional-label {
         color: #8a94a6;
         font-size: 11px;
-        font-weight: 400;
+        font-weight: 400
     }
 
     .required {
-        color: #d34c4c;
+        color: #d34c4c
     }
 
     .form-section {
         padding: 3px 0 24px;
         margin-bottom: 23px;
-        border-bottom: 1px solid #edf0f5;
+        border-bottom: 1px solid #edf0f5
     }
 
     .form-section:last-of-type {
-        margin-bottom: 0;
+        margin-bottom: 0
     }
 
     .section-heading {
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        margin-bottom: 22px;
+        margin-bottom: 22px
     }
 
     .section-number {
@@ -710,41 +644,41 @@
         background: #eaf7f3;
         color: #15966f;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .section-heading h4 {
         margin: 1px 0 5px;
         color: #17284f;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .section-heading p {
         margin: 0;
         color: #8a94a6;
         font-size: 11px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .form-group {
         min-width: 0;
-        margin-bottom: 20px;
+        margin-bottom: 20px
     }
 
     .form-group:last-child {
-        margin-bottom: 0;
+        margin-bottom: 0
     }
 
-    .form-group > label {
+    .form-group>label {
         display: block;
         margin-bottom: 8px;
         color: #17284f;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 700
     }
 
-    .form-group input:not([type="checkbox"]):not([type="file"]):not([type="color"]),
+    .form-group input:not([type=checkbox]):not([type=file]):not([type=color]),
     .form-group select,
     .form-group textarea {
         display: block;
@@ -757,32 +691,32 @@
         font: inherit;
         font-size: 12px;
         outline: none;
-        transition: border-color .2s, box-shadow .2s;
+        transition: border-color .2s, box-shadow .2s
     }
 
-    .form-group input:not([type="checkbox"]):not([type="file"]):not([type="color"]),
+    .form-group input:not([type=checkbox]):not([type=file]):not([type=color]),
     .form-group select {
         height: 42px;
-        padding: 0 12px;
+        padding: 0 12px
     }
 
     .form-group textarea {
         min-height: 90px;
         padding: 11px 12px;
         line-height: 1.65;
-        resize: vertical;
+        resize: vertical
     }
 
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
         border-color: #2ba7a0;
-        box-shadow: 0 0 0 3px rgba(43,167,160,.09);
+        box-shadow: 0 0 0 3px rgba(43, 167, 160, .09)
     }
 
     .form-group input::placeholder,
     .form-group textarea::placeholder {
-        color: #a3adbc;
+        color: #a3adbc
     }
 
     .field-footer {
@@ -790,20 +724,20 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 12px;
-        margin-top: 6px;
+        margin-top: 6px
     }
 
     .form-hint {
         display: block;
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .character-count {
         flex-shrink: 0;
         color: #98a1af;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .form-error {
@@ -811,11 +745,11 @@
         margin-top: 7px;
         color: #c94a4a;
         font-size: 11px;
-        line-height: 1.5;
+        line-height: 1.5
     }
 
     [hidden] {
-        display: none !important;
+        display: none !important
     }
 
     .upload-icon {
@@ -827,7 +761,7 @@
         border-radius: 10px;
         background: #eaf7f3;
         color: #15966f;
-        font-size: 20px;
+        font-size: 20px
     }
 
     .thumbnail-upload-box,
@@ -835,7 +769,7 @@
         border: 1px dashed #cbd5e1;
         border-radius: 10px;
         background: #fafbfd;
-        overflow: hidden;
+        overflow: hidden
     }
 
     .thumbnail-placeholder {
@@ -846,24 +780,24 @@
         justify-content: center;
         gap: 10px;
         padding: 22px;
-        text-align: center;
+        text-align: center
     }
 
     .thumbnail-placeholder strong,
     .upload-dropzone strong {
         color: #34415c;
-        font-size: 12px;
+        font-size: 12px
     }
 
-    .thumbnail-placeholder > span,
-    .upload-dropzone > span {
+    .thumbnail-placeholder>span,
+    .upload-dropzone>span {
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .thumbnail-workspace {
-        width: 100%;
+        width: 100%
     }
 
     .thumbnail-stage,
@@ -872,12 +806,12 @@
         position: relative;
         isolation: isolate;
         overflow: hidden;
-        background: #17284f;
+        background: #17284f
     }
 
     .thumbnail-stage {
         height: 250px;
-        width: 100%;
+        width: 100%
     }
 
     .thumbnail-blur-layer,
@@ -892,21 +826,23 @@
         position: absolute;
         inset: 0;
         width: 100%;
-        height: 100%;
+        height: 100%
     }
 
     .thumbnail-blur-layer,
     .mini-thumbnail-blur,
     .reader-cover-blur {
+        z-index: 0;
         object-fit: cover;
         filter: blur(22px) brightness(.78);
-        transform: scale(1.13);
+        transform: scale(1.13)
     }
 
     .thumbnail-solid-layer,
     .mini-thumbnail-solid,
     .reader-cover-solid {
-        background: #17284f;
+        z-index: 0;
+        background: #17284f
     }
 
     .thumbnail-main-image,
@@ -914,51 +850,45 @@
     .reader-cover-main {
         z-index: 2;
         display: block;
-        object-fit: cover;
+        object-fit: cover
     }
 
     .mode-cover .thumbnail-main-image,
     .mode-cover #miniThumbnail,
     .mode-cover .reader-cover-main {
-        object-fit: cover;
+        object-fit: cover
     }
 
-    .mode-contain .thumbnail-main-image,
-    .mode-contain #miniThumbnail,
-    .mode-contain .reader-cover-main {
-        object-fit: contain;
+    .mode-fit .thumbnail-main-image,
+    .mode-fit #miniThumbnail,
+    .mode-fit .reader-cover-main {
+        object-fit: contain
     }
 
     .mode-blur .thumbnail-main-image,
     .mode-blur #miniThumbnail,
     .mode-blur .reader-cover-main {
-        object-fit: contain;
-    }
-
-    .mode-solid .thumbnail-main-image,
-    .mode-solid #miniThumbnail,
-    .mode-solid .reader-cover-main {
-        object-fit: contain;
+        object-fit: contain
     }
 
     .position-center {
-        object-position: center;
+        object-position: center
     }
 
     .position-top {
-        object-position: center top;
+        object-position: center top
     }
 
     .position-bottom {
-        object-position: center bottom;
+        object-position: center bottom
     }
 
     .position-left {
-        object-position: left center;
+        object-position: left center
     }
 
     .position-right {
-        object-position: right center;
+        object-position: right center
     }
 
     .thumbnail-file-bar {
@@ -967,40 +897,40 @@
         align-items: center;
         gap: 12px;
         padding: 12px;
-        background: #f4f7fb;
+        background: #f4f7fb
     }
 
     .thumbnail-file-info {
-        min-width: 0;
+        min-width: 0
     }
 
     .thumbnail-file-info strong,
     .thumbnail-file-info span {
         display: block;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .thumbnail-file-info strong {
         color: #34415c;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .thumbnail-file-info span {
         margin-top: 4px;
         color: #8a94a6;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .thumbnail-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 7px;
+        gap: 7px
     }
 
     .danger-light {
         color: #b34b4b !important;
         border-color: #f0d9d9 !important;
-        background: #fff7f7 !important;
+        background: #fff7f7 !important
     }
 
     .thumbnail-settings {
@@ -1008,35 +938,35 @@
         padding: 15px;
         border: 1px solid #e3e9f0;
         border-radius: 9px;
-        background: #fafbfd;
+        background: #fafbfd
     }
 
     .thumbnail-settings-heading {
         display: flex;
         flex-direction: column;
         gap: 5px;
-        margin-bottom: 15px;
+        margin-bottom: 15px
     }
 
     .thumbnail-settings-heading strong {
         color: #17284f;
-        font-size: 12px;
+        font-size: 12px
     }
 
     .thumbnail-settings-heading span {
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .thumbnail-settings-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        gap: 12px
     }
 
     .thumbnail-settings-grid .form-group {
-        margin-bottom: 10px;
+        margin-bottom: 10px
     }
 
     .color-control {
@@ -1047,33 +977,169 @@
         padding: 5px 10px;
         border: 1px solid #dce2eb;
         border-radius: 8px;
-        background: #fff;
+        background: #fff
     }
 
-    .color-control input[type="color"] {
+    .color-control input[type=color] {
         width: 30px;
         height: 30px;
         padding: 0;
         border: 0;
         background: transparent;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .color-control span {
         color: #34415c;
-        font-size: 11px;
+        font-size: 11px
+    }
+
+    .tag-input-shell {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 7px 9px;
+        border: 1px solid #dce2eb;
+        border-radius: 8px;
+        background: #fff
+    }
+
+    .tag-input-shell:focus-within {
+        border-color: #2ba7a0;
+        box-shadow: 0 0 0 3px rgba(43, 167, 160, .09)
+    }
+
+    .tag-chip-list {
+        display: contents
+    }
+
+    .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: #eaf7f3;
+        color: #167d70;
+        font-size: 10px;
+        font-weight: 700
+    }
+
+    .tag-chip span {
+        overflow-wrap: anywhere
+    }
+
+    .tag-chip button {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #167d70;
+        font-size: 14px;
+        cursor: pointer
+    }
+
+    #tagSearch {
+        flex: 1;
+        min-width: 120px;
+        height: 28px;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #17284f;
+        font: inherit;
+        font-size: 12px
+    }
+
+    #tagSearch:focus {
+        border: 0;
+        box-shadow: none
+    }
+
+    .tag-add-button {
+        padding: 6px 10px;
+        border: 1px solid #dce8e4;
+        border-radius: 6px;
+        background: #f3faf7;
+        color: #167d70;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer
+    }
+
+    .tag-recommendations {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid #e6ebf1;
+        border-radius: 8px;
+        background: #fafbfd
+    }
+
+    .tag-recommendation-heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px
+    }
+
+    .tag-recommendation-heading strong {
+        color: #34415c;
+        font-size: 10px
+    }
+
+    .tag-recommendation-heading span {
+        color: #8a94a6;
+        font-size: 9px
+    }
+
+    .tag-recommendation-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px
+    }
+
+    .tag-suggestion {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 9px;
+        border: 1px solid #dce5e9;
+        border-radius: 6px;
+        background: #fff;
+        color: #526176;
+        font-size: 10px;
+        cursor: pointer
+    }
+
+    .tag-suggestion:hover {
+        border-color: #b9dfd2;
+        background: #f1faf6;
+        color: #167d70
+    }
+
+    .tag-suggestion-count {
+        color: #8a94a6;
+        font-size: 9px
+    }
+
+    .tag-empty-message {
+        color: #8a94a6;
+        font-size: 10px
     }
 
     .rich-editor {
         overflow: hidden;
         border: 1px solid #dce2eb;
         border-radius: 9px;
-        background: #fff;
+        background: #fff
     }
 
     .rich-editor:focus-within {
         border-color: #2ba7a0;
-        box-shadow: 0 0 0 3px rgba(43,167,160,.08);
+        box-shadow: 0 0 0 3px rgba(43, 167, 160, .08)
     }
 
     .editor-toolbar {
@@ -1083,14 +1149,14 @@
         gap: 5px;
         padding: 9px;
         border-bottom: 1px solid #e8edf3;
-        background: #f8fafc;
+        background: #f8fafc
     }
 
     .toolbar-group {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 3px;
+        gap: 3px
     }
 
     .editor-toolbar button,
@@ -1104,30 +1170,30 @@
         color: #34415c;
         font-family: inherit;
         font-size: 11px;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .editor-toolbar select {
         border-color: #e0e5ec;
-        background: #fff;
+        background: #fff
     }
 
     .editor-toolbar button:hover,
     .editor-toolbar button.active {
         border-color: #d9e5e2;
         background: #eaf7f3;
-        color: #167d70;
+        color: #167d70
     }
 
     .editor-toolbar .toolbar-clear {
-        color: #b34b4b;
+        color: #b34b4b
     }
 
     .toolbar-divider {
         width: 1px;
         height: 23px;
         margin: 0 3px;
-        background: #dfe5ed;
+        background: #dfe5ed
     }
 
     .editor-content {
@@ -1138,32 +1204,35 @@
         font-size: 13px;
         line-height: 1.8;
         outline: none;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .editor-content:empty::before {
         content: attr(data-placeholder);
         color: #a3adbc;
-        pointer-events: none;
+        pointer-events: none
     }
 
     .editor-content h2,
     .editor-content h3,
-    .editor-content h4 {
+    .editor-content h4,
+    .reader-body h2,
+    .reader-body h3,
+    .reader-body h4 {
         color: #17284f;
-        line-height: 1.4;
+        line-height: 1.4
     }
 
     .editor-content h2 {
-        font-size: 24px;
+        font-size: 24px
     }
 
     .editor-content h3 {
-        font-size: 20px;
+        font-size: 20px
     }
 
     .editor-content h4 {
-        font-size: 16px;
+        font-size: 16px
     }
 
     .editor-content img,
@@ -1172,7 +1241,7 @@
         max-width: 100%;
         height: auto;
         margin: 14px 0;
-        border-radius: 6px;
+        border-radius: 6px
     }
 
     .editor-content table,
@@ -1180,7 +1249,7 @@
         width: 100%;
         margin: 16px 0;
         border-collapse: collapse;
-        table-layout: fixed;
+        table-layout: fixed
     }
 
     .editor-content th,
@@ -1191,14 +1260,14 @@
         padding: 8px;
         border: 1px solid #dce2eb;
         text-align: left;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .editor-content th,
     .reader-body th {
         background: #f5f7fb;
         color: #17284f;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .editor-content blockquote,
@@ -1207,7 +1276,7 @@
         padding: 12px 18px;
         border-left: 3px solid #2ba7a0;
         background: #f5f9f8;
-        color: #59667b;
+        color: #59667b
     }
 
     .editor-table-tools {
@@ -1215,40 +1284,67 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 6px;
-        padding: 9px 12px;
+        padding: 10px 12px;
         border-bottom: 1px solid #e8edf3;
-        background: #f0f7f5;
+        background: #f0f7f5
     }
 
     .table-tools-label {
         margin-right: 4px;
         color: #17284f;
         font-size: 10px;
-        font-weight: 700;
+        font-weight: 700
     }
 
-    .editor-table-tools button {
+    .editor-table-tools>button {
         padding: 6px 9px;
         border: 1px solid #d6e5df;
         border-radius: 5px;
         background: #fff;
         color: #167d70;
         font-size: 10px;
-        cursor: pointer;
+        cursor: pointer
     }
 
-    .editor-table-tools button:hover {
-        background: #eaf7f3;
+    .editor-table-tools>button:hover {
+        background: #eaf7f3
     }
 
     .editor-table-tools .table-delete {
         border-color: #f0d9d9;
-        color: #b34b4b;
+        color: #b34b4b
     }
 
     .table-tools-hint {
         color: #8a94a6;
-        font-size: 10px;
+        font-size: 10px
+    }
+
+    .table-style-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        width: 100%;
+        padding-top: 9px;
+        border-top: 1px solid #dce8e3
+    }
+
+    .table-style-controls label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #566176;
+        font-size: 10px
+    }
+
+    .table-style-controls input[type=color] {
+        width: 25px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #dce2eb;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer
     }
 
     .editor-notice {
@@ -1258,7 +1354,7 @@
         margin-top: 12px;
         padding: 11px 12px;
         border-radius: 7px;
-        background: #f3f7fb;
+        background: #f3f7fb
     }
 
     .notice-icon {
@@ -1272,14 +1368,14 @@
         background: #e0eaf5;
         color: #42628a;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .editor-notice p {
         margin: 0;
         color: #68758a;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .upload-dropzone {
@@ -1291,16 +1387,16 @@
         gap: 9px;
         padding: 22px;
         text-align: center;
-        transition: background .2s, border-color .2s;
+        transition: background .2s, border-color .2s
     }
 
     .upload-dropzone.drag-over {
         border-color: #15966f;
-        background: #effaf6;
+        background: #effaf6
     }
 
     .upload-limit {
-        font-weight: 700;
+        font-weight: 700
     }
 
     .attachment-summary {
@@ -1313,13 +1409,13 @@
         border-radius: 7px;
         background: #f8fafc;
         color: #566176;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .selected-files-list {
         display: grid;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 12px
     }
 
     .selected-file {
@@ -1329,7 +1425,7 @@
         padding: 11px;
         border: 1px solid #e5eaf0;
         border-radius: 8px;
-        background: #fff;
+        background: #fff
     }
 
     .file-type-icon {
@@ -1337,19 +1433,39 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        width: 36px;
-        height: 39px;
+        width: 40px;
+        height: 43px;
         border-radius: 7px;
         background: #edf2f8;
         color: #34415c;
         font-size: 9px;
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: uppercase
+    }
+
+    .file-preview-thumb {
+        display: block;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #e5eaf0;
+        background: #f5f7fb
+    }
+
+    .file-preview-pdf {
+        width: 100px;
+        height: 76px;
+        flex-shrink: 0;
+        border: 1px solid #e5eaf0;
+        border-radius: 5px;
+        background: #f5f7fb
     }
 
     .selected-file-info {
         flex: 1;
-        min-width: 0;
+        min-width: 0
     }
 
     .selected-file-info strong,
@@ -1357,18 +1473,18 @@
         display: block;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: nowrap
     }
 
     .selected-file-info strong {
         color: #34415c;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .selected-file-info span {
         margin-top: 4px;
         color: #8a94a6;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .remove-file-button {
@@ -1377,7 +1493,7 @@
         background: transparent;
         color: #c94a4a;
         font-size: 11px;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .upload-warning {
@@ -1388,7 +1504,7 @@
         background: #fff7f7;
         color: #b34b4b;
         font-size: 11px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .publication-settings-panel {
@@ -1396,14 +1512,14 @@
         padding: 16px;
         border: 1px solid #e1e9ef;
         border-radius: 9px;
-        background: #f9fbfd;
+        background: #f9fbfd
     }
 
     .settings-panel-heading {
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        margin-bottom: 16px;
+        margin-bottom: 16px
     }
 
     .settings-icon {
@@ -1416,21 +1532,21 @@
         border-radius: 8px;
         background: #eaf7f3;
         color: #15966f;
-        font-size: 15px;
+        font-size: 15px
     }
 
     .settings-panel-heading strong {
         display: block;
         margin-bottom: 4px;
         color: #17284f;
-        font-size: 12px;
+        font-size: 12px
     }
 
     .settings-panel-heading p {
         margin: 0;
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .publication-instruction {
@@ -1438,61 +1554,61 @@
         padding: 12px;
         border: 1px solid #cfe9de;
         border-radius: 7px;
-        background: #f0faf5;
+        background: #f0faf5
     }
 
     .publication-instruction strong {
         color: #167d70;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .publication-instruction p {
         margin: 6px 0 0;
         color: #536a63;
         font-size: 11px;
-        line-height: 1.7;
+        line-height: 1.7
     }
 
     .pin-setting {
         padding: 15px;
         border: 1px solid #e3e9f0;
         border-radius: 9px;
-        background: #fafbfd;
+        background: #fafbfd
     }
 
     .pin-checkbox {
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .pin-checkbox input {
         width: 16px;
         height: 16px;
         margin: 2px 0 0;
-        accent-color: #15966f;
+        accent-color: #15966f
     }
 
     .pin-checkbox strong,
     .pin-checkbox small {
-        display: block;
+        display: block
     }
 
     .pin-checkbox strong {
         color: #17284f;
-        font-size: 12px;
+        font-size: 12px
     }
 
     .pin-checkbox small {
         margin-top: 5px;
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
     .pin-order-group {
-        margin-top: 17px;
+        margin-top: 17px
     }
 
     .form-actions {
@@ -1500,28 +1616,28 @@
         justify-content: flex-end;
         flex-wrap: wrap;
         gap: 8px;
-        padding-top: 20px;
+        padding-top: 20px
     }
 
     .announcement-side-panel {
         position: sticky;
         top: 86px;
         display: grid;
-        gap: 15px;
+        gap: 15px
     }
 
     .side-panel-card {
         padding: 17px;
         border: 1px solid #e6eaf0;
         border-radius: 11px;
-        background: #fff;
+        background: #fff
     }
 
     .side-panel-title {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 16px;
+        margin-bottom: 16px
     }
 
     .side-panel-icon {
@@ -1533,29 +1649,29 @@
         border-radius: 9px;
         background: #eaf7f3;
         color: #15966f;
-        font-size: 18px;
+        font-size: 18px
     }
 
     .side-panel-title h3,
     .checklist-card h3 {
         margin: 0 0 4px;
         color: #17284f;
-        font-size: 12px;
+        font-size: 12px
     }
 
     .side-panel-title p,
-    .checklist-card > p {
+    .checklist-card>p {
         margin: 0;
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.5;
+        line-height: 1.5
     }
 
     .mini-announcement-card {
         overflow: hidden;
         border: 1px solid #e7ebf1;
         border-radius: 9px;
-        background: #fff;
+        background: #fff
     }
 
     .mini-thumbnail {
@@ -1563,7 +1679,7 @@
         align-items: center;
         justify-content: center;
         height: 145px;
-        background: #edf2f8;
+        background: #edf2f8
     }
 
     .mini-thumbnail-placeholder {
@@ -1573,15 +1689,15 @@
         flex-direction: column;
         align-items: center;
         gap: 7px;
-        color: #8ba59e;
+        color: #8ba59e
     }
 
     .mini-thumbnail-placeholder span {
-        font-size: 29px;
+        font-size: 29px
     }
 
     .mini-thumbnail-placeholder small {
-        font-size: 10px;
+        font-size: 10px
     }
 
     .mini-pin {
@@ -1594,11 +1710,11 @@
         background: #fff3dc;
         color: #956513;
         font-size: 9px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .mini-card-body {
-        padding: 14px;
+        padding: 14px
     }
 
     .mini-category {
@@ -1607,7 +1723,7 @@
         font-size: 9px;
         font-weight: 700;
         letter-spacing: .5px;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .mini-card-body h3 {
@@ -1615,10 +1731,10 @@
         color: #17284f;
         font-size: 14px;
         line-height: 1.45;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
-    .mini-card-body > p {
+    .mini-card-body>p {
         display: -webkit-box;
         margin: 0;
         overflow: hidden;
@@ -1627,7 +1743,7 @@
         line-height: 1.7;
         overflow-wrap: anywhere;
         -webkit-line-clamp: 4;
-        -webkit-box-orient: vertical;
+        -webkit-box-orient: vertical
     }
 
     .mini-meta {
@@ -1638,12 +1754,12 @@
         gap: 8px;
         margin-top: 14px;
         padding-top: 11px;
-        border-top: 1px solid #edf0f5;
+        border-top: 1px solid #edf0f5
     }
 
-    .mini-meta > span:first-child {
+    .mini-meta>span:first-child {
         color: #8a94a6;
-        font-size: 9px;
+        font-size: 9px
     }
 
     .mini-status {
@@ -1652,36 +1768,36 @@
         background: #f1f5f9;
         color: #52606d;
         font-size: 8px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .mini-status.scheduled {
         background: #fff6df;
-        color: #9a7515;
+        color: #9a7515
     }
 
     .mini-status.published {
         background: #eaf7f3;
-        color: #167d70;
+        color: #167d70
     }
 
     .mini-status.archived {
         background: #fceeee;
-        color: #b34b4b;
+        color: #b34b4b
     }
 
     .preview-full-button {
         width: 100%;
         justify-content: center;
-        margin-top: 12px;
+        margin-top: 12px
     }
 
     .checklist-card h3 {
-        margin-bottom: 5px;
+        margin-bottom: 5px
     }
 
-    .checklist-card > p {
-        margin-bottom: 15px;
+    .checklist-card>p {
+        margin-bottom: 15px
     }
 
     .checklist-item {
@@ -1690,7 +1806,7 @@
         gap: 9px;
         margin: 12px 0;
         color: #667187;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .check-icon {
@@ -1702,59 +1818,59 @@
         border: 1px solid #d7dfe8;
         border-radius: 50%;
         color: #9aa4b3;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .checklist-item.complete .check-icon {
         border-color: #bfe8d8;
         background: #eaf7f3;
-        color: #15966f;
+        color: #15966f
     }
 
     .checklist-item.complete {
-        color: #34415c;
+        color: #34415c
     }
 
     .visibility-card {
-        background: #f9fbfd;
+        background: #f9fbfd
     }
 
     .visibility-heading {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 8px;
+        margin-bottom: 8px
     }
 
     .visibility-heading strong {
         color: #34415c;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .visibility-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #9aa4b3;
+        background: #9aa4b3
     }
 
     .visibility-dot.scheduled {
-        background: #d9a62e;
+        background: #d9a62e
     }
 
     .visibility-dot.published {
-        background: #15966f;
+        background: #15966f
     }
 
     .visibility-dot.archived {
-        background: #c94a4a;
+        background: #c94a4a
     }
 
-    .visibility-card > p {
+    .visibility-card>p {
         margin: 0;
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.7;
+        line-height: 1.7
     }
 
     .reader-preview-modal {
@@ -1764,18 +1880,18 @@
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 24px;
+        padding: 24px
     }
 
     .reader-preview-modal.open {
-        display: flex;
+        display: flex
     }
 
     .reader-preview-backdrop {
         position: absolute;
         inset: 0;
-        background: rgba(13,24,46,.68);
-        backdrop-filter: blur(3px);
+        background: rgba(13, 24, 46, .68);
+        backdrop-filter: blur(3px)
     }
 
     .reader-preview-dialog {
@@ -1787,7 +1903,7 @@
         overflow: hidden;
         border-radius: 13px;
         background: #f5f7fb;
-        box-shadow: 0 24px 90px rgba(0,0,0,.25);
+        box-shadow: 0 24px 90px rgba(0, 0, 0, .25)
     }
 
     .reader-preview-toolbar {
@@ -1797,23 +1913,23 @@
         gap: 20px;
         padding: 16px 22px;
         border-bottom: 1px solid #e5eaf0;
-        background: #fff;
+        background: #fff
     }
 
     .reader-brand {
         display: flex;
         align-items: center;
         gap: 11px;
-        min-width: 0;
+        min-width: 0
     }
 
-    .reader-brand > img,
+    .reader-brand>img,
     .reader-logo-fallback {
         flex-shrink: 0;
         width: 42px;
         height: 42px;
         object-fit: contain;
-        border-radius: 8px;
+        border-radius: 8px
     }
 
     .reader-logo-fallback {
@@ -1823,20 +1939,20 @@
         background: #17284f;
         color: #fff;
         font-size: 17px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .reader-preview-eyebrow {
         color: #15966f;
         font-size: 9px;
         font-weight: 700;
-        letter-spacing: 1px;
+        letter-spacing: 1px
     }
 
     .reader-preview-toolbar h3 {
         margin: 5px 0 0;
         color: #17284f;
-        font-size: 15px;
+        font-size: 15px
     }
 
     .reader-close-button {
@@ -1851,28 +1967,28 @@
         background: #fff;
         color: #34415c;
         font-size: 23px;
-        cursor: pointer;
+        cursor: pointer
     }
 
     .reader-preview-scroll {
         flex: 1;
         min-height: 0;
-        overflow-y: auto;
+        overflow-y: auto
     }
 
     .reader-article {
         width: min(100%, 790px);
         min-height: 100%;
         margin: 0 auto;
-        background: #fff;
+        background: #fff
     }
 
     .reader-cover {
-        height: 270px;
+        height: 270px
     }
 
     .reader-article-content {
-        padding: 40px 50px 55px;
+        padding: 40px 50px 55px
     }
 
     .reader-category {
@@ -1881,7 +1997,7 @@
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .6px;
-        text-transform: uppercase;
+        text-transform: uppercase
     }
 
     .reader-article h1 {
@@ -1890,7 +2006,7 @@
         font-size: clamp(25px, 4vw, 37px);
         line-height: 1.25;
         letter-spacing: -.6px;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .reader-byline {
@@ -1898,7 +2014,7 @@
         align-items: center;
         gap: 11px;
         padding-bottom: 24px;
-        border-bottom: 1px solid #e9edf3;
+        border-bottom: 1px solid #e9edf3
     }
 
     .reader-author-avatar {
@@ -1911,30 +2027,30 @@
         background: #eaf7f3;
         color: #167d70;
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .reader-byline strong,
     .reader-byline span {
-        display: block;
+        display: block
     }
 
     .reader-byline strong {
         color: #34415c;
-        font-size: 11px;
+        font-size: 11px
     }
 
     .reader-byline div span {
         margin-top: 4px;
         color: #8a94a6;
-        font-size: 10px;
+        font-size: 10px
     }
 
     .reader-pinned-label {
         margin-top: 18px;
         color: #a56b16;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .reader-summary {
@@ -1944,49 +2060,47 @@
         font-weight: 500;
         line-height: 1.8;
         white-space: pre-wrap;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .reader-body {
         color: #3e4a60;
         font-size: 14px;
         line-height: 1.9;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .reader-body h2,
     .reader-body h3,
     .reader-body h4 {
-        margin: 28px 0 12px;
-        color: #17284f;
-        line-height: 1.4;
+        margin: 28px 0 12px
     }
 
     .reader-body p {
-        margin: 0 0 17px;
+        margin: 0 0 17px
     }
 
     .reader-body ul,
     .reader-body ol {
         padding-left: 24px;
-        margin: 0 0 20px;
+        margin: 0 0 20px
     }
 
     .reader-body a {
         color: #167d70;
-        text-decoration: underline;
+        text-decoration: underline
     }
 
     .reader-attachments-section {
         margin-top: 36px;
         padding-top: 25px;
-        border-top: 1px solid #e9edf3;
+        border-top: 1px solid #e9edf3
     }
 
     .reader-attachments-section h2 {
         margin: 0 0 16px;
         color: #17284f;
-        font-size: 16px;
+        font-size: 16px
     }
 
     .reader-attachment {
@@ -1996,7 +2110,7 @@
         padding: 12px;
         margin-bottom: 9px;
         border: 1px solid #e5eaf0;
-        border-radius: 8px;
+        border-radius: 8px
     }
 
     .reader-attachment-icon {
@@ -2010,14 +2124,14 @@
         background: #edf2f8;
         color: #34415c;
         font-size: 9px;
-        font-weight: 700;
+        font-weight: 700
     }
 
     .reader-attachment-name {
         min-width: 0;
         color: #34415c;
         font-size: 11px;
-        overflow-wrap: anywhere;
+        overflow-wrap: anywhere
     }
 
     .reader-preview-footer {
@@ -2027,1058 +2141,2022 @@
         gap: 16px;
         padding: 14px 22px;
         border-top: 1px solid #e5eaf0;
-        background: #fff;
+        background: #fff
     }
 
-    .reader-preview-footer > span {
+    .reader-preview-footer>span {
         color: #8a94a6;
         font-size: 10px;
-        line-height: 1.6;
+        line-height: 1.6
     }
 
-    @media (max-width: 1100px) {
+    @media(max-width:1100px) {
         .announcement-create-layout {
             grid-template-columns: minmax(0, 1fr) 270px;
-            gap: 15px;
+            gap: 15px
         }
 
         .announcement-side-panel {
-            top: 75px;
+            top: 75px
         }
     }
 
-    @media (max-width: 900px) {
+    @media(max-width:900px) {
         .announcement-create-layout {
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr)
         }
 
         .announcement-side-panel {
             position: static;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr))
         }
 
         .side-panel-card:first-child {
-            grid-row: span 2;
+            grid-row: span 2
         }
     }
 
-    @media (max-width: 600px) {
+    @media(max-width:600px) {
         .announcement-side-panel {
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr)
         }
 
         .side-panel-card:first-child {
-            grid-row: auto;
+            grid-row: auto
         }
 
         .announcement-form-card .card-head {
-            flex-direction: column;
+            flex-direction: column
         }
 
         .thumbnail-settings-grid {
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr)
         }
 
         .thumbnail-file-bar {
             align-items: flex-start;
-            flex-direction: column;
+            flex-direction: column
         }
 
         .form-actions {
-            flex-direction: column-reverse;
+            flex-direction: column-reverse
         }
 
-        .form-actions > * {
+        .form-actions>* {
             width: 100%;
-            justify-content: center;
+            justify-content: center
         }
 
         .reader-preview-modal {
-            padding: 0;
+            padding: 0
         }
 
         .reader-preview-dialog {
             width: 100%;
             height: 100%;
             max-height: 100%;
-            border-radius: 0;
+            border-radius: 0
         }
 
         .reader-preview-toolbar {
-            padding: 13px 16px;
+            padding: 13px 16px
         }
 
         .reader-article-content {
-            padding: 27px 22px 38px;
+            padding: 27px 22px 38px
         }
 
         .reader-cover {
-            height: 200px;
+            height: 200px
         }
 
         .reader-preview-footer {
             align-items: flex-start;
             flex-direction: column;
-            padding: 13px 16px;
+            padding: 13px 16px
         }
 
         .field-footer {
-            flex-direction: column;
+            flex-direction: column
         }
 
         .table-tools-hint {
+            width: 100%
+        }
+
+        .selected-file {
+            flex-wrap: wrap
+        }
+
+        .file-preview-pdf {
             width: 100%;
+            height: 110px;
+            order: 3
+        }
+
+        .selected-file-info {
+            min-width: calc(100% - 110px)
         }
     }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('announcementCreateForm');
-    const title = document.getElementById('title');
-    const category = document.getElementById('category');
-    const summary = document.getElementById('summary');
-    const contentField = document.getElementById('content');
-    const editor = document.getElementById('contentEditor');
-    const initialContent = document.getElementById('initialContent');
-    const status = document.getElementById('status');
-    const scheduledAt = document.getElementById('scheduled_at');
-    const publishedAt = document.getElementById('published_at');
-    const expiresAt = document.getElementById('expires_at');
-    const pinned = document.getElementById('is_pinned');
-    const pinOrder = document.getElementById('pin_order');
-    const thumbnailInput = document.getElementById('thumbnail');
-    const attachmentInput = document.getElementById('attachmentFiles');
-    const modal = document.getElementById('readerPreviewModal');
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('announcementCreateForm');
+        const title = document.getElementById('title');
+        const category = document.getElementById('category');
+        const tagSearch = document.getElementById('tagSearch');
+        const summary = document.getElementById('summary');
+        const contentField = document.getElementById('content');
+        const editor = document.getElementById('contentEditor');
+        const initialContent = document.getElementById('initialContent');
+        const status = document.getElementById('status');
+        const scheduledAt = document.getElementById('scheduled_at');
+        const publishedAt = document.getElementById('published_at');
+        const expiresAt = document.getElementById('expires_at');
+        const pinned = document.getElementById('is_pinned');
+        const thumbnailInput = document.getElementById('thumbnail');
+        const attachmentInput = document.getElementById('attachmentFiles');
+        const modal = document.getElementById('readerPreviewModal');
 
-    const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
-    const thumbnailWorkspace = document.getElementById('thumbnailWorkspace');
-    const thumbnailPreview = document.getElementById('thumbnailPreview');
-    const thumbnailBlurLayer = document.getElementById('thumbnailBlurLayer');
-    const thumbnailSolidLayer = document.getElementById('thumbnailSolidLayer');
-    const thumbnailFileName = document.getElementById('thumbnailFileName');
-    const thumbnailFileSize = document.getElementById('thumbnailFileSize');
-    const thumbnailSettings = document.getElementById('thumbnailSettings');
-    const thumbnailFit = document.getElementById('thumbnailFit');
-    const thumbnailPosition = document.getElementById('thumbnailPosition');
-    const thumbnailBackground = document.getElementById('thumbnailBackground');
+        const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+        const thumbnailWorkspace = document.getElementById('thumbnailWorkspace');
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const thumbnailBlurLayer = document.getElementById('thumbnailBlurLayer');
+        const thumbnailSolidLayer = document.getElementById('thumbnailSolidLayer');
+        const thumbnailFileName = document.getElementById('thumbnailFileName');
+        const thumbnailFileSize = document.getElementById('thumbnailFileSize');
+        const thumbnailSettings = document.getElementById('thumbnailSettings');
+        const thumbnailFit = document.getElementById('thumbnailFit');
+        const thumbnailPosition = document.getElementById('thumbnailPosition');
+        const thumbnailBackground = document.getElementById('thumbnailBackground');
+        const thumbnailBackgroundStyle = document.getElementById('thumbnailBackgroundStyle');
+        const thumbnailGradientStart = document.getElementById('thumbnailGradientStart');
+        const thumbnailGradientEnd = document.getElementById('thumbnailGradientEnd');
 
-    const miniThumbnailWrap = document.getElementById('miniThumbnailWrap');
-    const miniThumbnail = document.getElementById('miniThumbnail');
-    const miniThumbnailBlur = document.getElementById('miniThumbnailBlur');
-    const miniThumbnailSolid = document.getElementById('miniThumbnailSolid');
-    const miniThumbnailPlaceholder = document.getElementById('miniThumbnailPlaceholder');
+        const miniThumbnailWrap = document.getElementById('miniThumbnailWrap');
+        const miniThumbnail = document.getElementById('miniThumbnail');
+        const miniThumbnailBlur = document.getElementById('miniThumbnailBlur');
+        const miniThumbnailSolid = document.getElementById('miniThumbnailSolid');
+        const miniThumbnailPlaceholder = document.getElementById('miniThumbnailPlaceholder');
 
-    const readerCoverWrap = document.getElementById('readerCoverWrap');
-    const readerCover = document.getElementById('readerCover');
-    const readerCoverBlur = document.getElementById('readerCoverBlur');
-    const readerCoverSolid = document.getElementById('readerCoverSolid');
+        const readerCoverWrap = document.getElementById('readerCoverWrap');
+        const readerCover = document.getElementById('readerCover');
+        const readerCoverBlur = document.getElementById('readerCoverBlur');
+        const readerCoverSolid = document.getElementById('readerCoverSolid');
 
-    const attachmentPreview = document.getElementById('attachmentFilesPreview');
-    const attachmentSummary = document.getElementById('attachmentSummary');
-    const attachmentWarning = document.getElementById('attachmentWarning');
-    const editorImageInput = document.getElementById('editorImageInput');
+        const attachmentPreview = document.getElementById('attachmentFilesPreview');
+        const attachmentSummary = document.getElementById('attachmentSummary');
+        const attachmentWarning = document.getElementById('attachmentWarning');
+        const editorImageInput = document.getElementById('editorImageInput');
 
-    const MAX_THUMBNAIL_SIZE = 4 * 1024 * 1024;
-    const MAX_ATTACHMENT_SIZE = 100 * 1024 * 1024;
+        const MAX_THUMBNAIL_SIZE = 4 * 1024 * 1024;
+        const MAX_ATTACHMENT_SIZE = 100 * 1024 * 1024;
 
-    let thumbnailUrl = null;
-    let thumbnailFile = null;
-    let attachmentFiles = [];
-    let editorSelection = null;
-    let activeTable = null;
-    let editorImageUrls = [];
-    let previewOpen = false;
+        let thumbnailUrl = null;
+        let thumbnailFile = null;
+        let attachmentFiles = [];
+        let attachmentObjectUrls = new Map();
+        let editorSelection = null;
+        let activeTable = null;
+        let previewOpen = false;
+        let attachmentPreviewOpen = false;
+        let selectedTags = [];
+        let tagSuggestions = [];
+        let activeAttachmentUrl = null;
 
-    const statusDescriptions = {
-        draft: 'Save the announcement privately and continue editing it later.',
-        scheduled: 'Choose a future date and time. Automatic publication requires the scheduler and publication logic to be configured.',
-        published: 'Make the announcement eligible for public display according to its publication date and expiration settings.',
-        archived: 'Save the announcement as archived. It should not appear in the public announcement list.'
-    };
-
-    const visibilityCopy = {
-        draft: ['Private draft', 'This announcement should not be visible in the public announcement list.'],
-        scheduled: ['Scheduled publication', 'This announcement is intended for future publication. Automatic publication requires the scheduler and publication logic to be configured.'],
-        published: ['Published announcement', 'This announcement is intended for public display when its publication time has arrived and it has not expired.'],
-        archived: ['Archived announcement', 'This announcement should remain unavailable in the public announcement list.']
-    };
-
-    function escapeHtml(value) {
-        return String(value).replace(/[&<>"']/g, function (character) {
-            return {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            }[character];
-        });
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    }
-
-    function formatDate(value) {
-        if (!value) return '';
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) return '';
-
-        return date.toLocaleString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    }
-
-    function safePreviewHtml(html) {
-        const parsed = new DOMParser().parseFromString(html || '', 'text/html');
-
-        parsed.querySelectorAll('script,style,iframe,object,embed,form,svg,math,meta,link').forEach(function (node) {
-            node.remove();
-        });
-
-        parsed.querySelectorAll('*').forEach(function (element) {
-            Array.from(element.attributes).forEach(function (attribute) {
-                const name = attribute.name.toLowerCase();
-                const value = attribute.value.trim();
-
-                if (name.startsWith('on') || name === 'srcdoc') {
-                    element.removeAttribute(attribute.name);
-                    return;
-                }
-
-                if (['href', 'src', 'xlink:href', 'formaction'].includes(name)) {
-                    const compact = value.replace(/[\u0000-\u0020]+/g, '').toLowerCase();
-
-                    if (
-                        compact.startsWith('javascript:') ||
-                        compact.startsWith('vbscript:') ||
-                        compact.startsWith('file:')
-                    ) {
-                        element.removeAttribute(attribute.name);
-                    }
-
-                    if (compact.startsWith('data:') && !compact.startsWith('data:image/')) {
-                        element.removeAttribute(attribute.name);
-                    }
-                }
-            });
-        });
-
-        return parsed.body.innerHTML;
-    }
-
-    function syncContent() {
-        contentField.value = editor.innerHTML.trim();
-        document.getElementById('contentCount').textContent =
-            editor.innerText.trim().length.toLocaleString('en-US') + ' characters';
-    }
-
-    function updateCount(input, counterId, max) {
-        const counter = document.getElementById(counterId);
-        if (!counter) return;
-
-        counter.textContent = max
-            ? input.value.length + ' / ' + max
-            : input.value.length + ' characters';
-    }
-
-    function updateChecklist(id, complete) {
-        const item = document.getElementById(id);
-        item.classList.toggle('complete', complete);
-        item.querySelector('.check-icon').textContent = complete ? '✓' : '○';
-    }
-
-    function applyThumbnailSettings() {
-        const mode = thumbnailFit.value;
-        const position = thumbnailPosition.value;
-        const color = thumbnailBackground.value;
-
-        const classMap = {
-            cover: 'mode-cover',
-            contain: 'mode-contain',
-            blur: 'mode-blur',
-            solid: 'mode-solid'
+        const statusDescriptions = {
+            draft: 'Save the announcement privately and continue editing it later.',
+            scheduled: 'Choose a future date and time. Automatic publication requires the scheduler and publication logic.',
+            published: 'Make the announcement eligible for public display according to its publication date and expiration settings.',
+            archived: 'Save the announcement as archived. It should not appear in the public announcement list.'
         };
 
-        [document.getElementById('thumbnailStage'), miniThumbnailWrap, readerCoverWrap].forEach(function (element) {
-            if (!element) return;
-
-            element.classList.remove('mode-cover', 'mode-contain', 'mode-blur', 'mode-solid');
-            element.classList.add(classMap[mode] || 'mode-cover');
-        });
-
-        [thumbnailPreview, miniThumbnail, readerCover].forEach(function (element) {
-            if (!element) return;
-
-            element.classList.remove('position-center', 'position-top', 'position-bottom', 'position-left', 'position-right');
-            element.classList.add('position-' + position);
-        });
-
-        [thumbnailBlurLayer, miniThumbnailBlur, readerCoverBlur].forEach(function (element) {
-            if (element) element.hidden = mode !== 'blur';
-        });
-
-        [thumbnailSolidLayer, miniThumbnailSolid, readerCoverSolid].forEach(function (element) {
-            if (!element) return;
-
-            element.hidden = mode !== 'solid';
-            element.style.background = color;
-        });
-
-        document.getElementById('thumbnailPositionGroup').hidden = mode === 'blur' || mode === 'solid';
-        document.getElementById('thumbnailBackgroundGroup').hidden = mode !== 'solid';
-
-        document.getElementById('thumbnailBackgroundValue').textContent = color.toUpperCase();
-    }
-
-    function revokeThumbnailUrl() {
-        if (thumbnailUrl) {
-            URL.revokeObjectURL(thumbnailUrl);
-            thumbnailUrl = null;
-        }
-    }
-
-    function updateThumbnailPreview(file) {
-        revokeThumbnailUrl();
-        thumbnailFile = file || null;
-
-        if (!file) {
-            thumbnailWorkspace.hidden = true;
-            thumbnailPlaceholder.hidden = false;
-            thumbnailSettings.hidden = true;
-            miniThumbnail.hidden = true;
-            miniThumbnailBlur.hidden = true;
-            miniThumbnailPlaceholder.hidden = false;
-            readerCoverWrap.hidden = true;
-            return;
-        }
-
-        thumbnailUrl = URL.createObjectURL(file);
-
-        thumbnailPreview.src = thumbnailUrl;
-        thumbnailBlurLayer.src = thumbnailUrl;
-        thumbnailFileName.textContent = file.name;
-        thumbnailFileSize.textContent = formatFileSize(file.size);
-
-        miniThumbnail.src = thumbnailUrl;
-        miniThumbnailBlur.src = thumbnailUrl;
-
-        readerCover.src = thumbnailUrl;
-        readerCoverBlur.src = thumbnailUrl;
-
-        thumbnailWorkspace.hidden = false;
-        thumbnailPlaceholder.hidden = true;
-        thumbnailSettings.hidden = false;
-
-        miniThumbnail.hidden = false;
-        miniThumbnailPlaceholder.hidden = true;
-        readerCoverWrap.hidden = false;
-
-        applyThumbnailSettings();
-    }
-
-    function updatePinSettings() {
-        document.getElementById('pinOrderGroup').hidden = !pinned.checked;
-        document.getElementById('miniPin').hidden = !pinned.checked;
-        document.getElementById('readerPinned').hidden = !pinned.checked;
-    }
-
-    function updateStatusFields() {
-        const value = status.value;
-
-        document.getElementById('scheduledSettings').hidden = value !== 'scheduled';
-        document.getElementById('publishedSettings').hidden = value !== 'published';
-        document.getElementById('archivedSettings').hidden = value !== 'archived';
-
-        scheduledAt.required = value === 'scheduled';
-
-        document.getElementById('expirationGroup').hidden = value === 'draft' || value === 'archived';
-
-        document.getElementById('statusDescription').textContent =
-            statusDescriptions[value] || statusDescriptions.draft;
-
-        const labels = {
-            draft: 'Save as Draft',
-            scheduled: 'Schedule Announcement',
-            published: 'Publish Announcement',
-            archived: 'Save to Archive'
+        const visibilityCopy = {
+            draft: ['Private draft', 'This announcement should not be visible in the public announcement list.'],
+            scheduled: ['Scheduled publication', 'This announcement is intended for future publication. Automatic publication requires the scheduler and publication logic.'],
+            published: ['Published announcement', 'This announcement is intended for public display when its publication time has arrived and it has not expired.'],
+            archived: ['Archived announcement', 'This announcement should remain unavailable in the public announcement list.']
         };
 
-        document.getElementById('submitAnnouncementButton').textContent =
-            labels[value] || labels.draft;
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function(character) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[character];
+            });
+        }
 
-        const visibility = visibilityCopy[value] || visibilityCopy.draft;
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
 
-        document.getElementById('visibilityTitle').textContent = visibility[0];
-        document.getElementById('visibilityDescription').textContent = visibility[1];
-        document.getElementById('visibilityDot').className = 'visibility-dot ' + value;
+        function formatDate(value) {
+            if (!value) return '';
 
-        const miniStatus = document.getElementById('miniStatus');
-        miniStatus.textContent = value.toUpperCase();
-        miniStatus.className = 'mini-status ' + value;
+            const date = new Date(value);
 
-        updatePreview();
-    }
+            if (Number.isNaN(date.getTime())) return '';
 
-    function updatePreview() {
-        const titleText = title.value.trim();
-        const categoryText = category.value.trim() || 'General Announcement';
-        const summaryText = summary.value.trim();
-        const dateValue = status.value === 'scheduled' ? scheduledAt.value : publishedAt.value;
-        const formattedDate = formatDate(dateValue);
+            return date.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
 
-        document.getElementById('miniTitle').textContent = titleText || 'Your announcement title';
-        document.getElementById('miniCategory').textContent = categoryText.toUpperCase();
-        document.getElementById('miniSummary').textContent =
-            summaryText || 'Your short summary will appear here to help readers understand the announcement.';
-        document.getElementById('miniDate').textContent = formattedDate || 'Publication date not set';
+        function safePreviewHtml(html) {
+            const parsed = new DOMParser().parseFromString(html || '', 'text/html');
 
-        document.getElementById('readerTitle').textContent = titleText || 'Your announcement title';
-        document.getElementById('readerCategory').textContent = categoryText;
-        document.getElementById('readerSummary').textContent =
-            summaryText || 'Your announcement summary will appear here.';
-        document.getElementById('readerPublicationDate').textContent = formattedDate || 'Publication date not set';
-
-        document.getElementById('readerContent').innerHTML = safePreviewHtml(editor.innerHTML);
-
-        updateChecklist('checkTitle', titleText.length > 0);
-        updateChecklist('checkSummary', summaryText.length > 0);
-        updateChecklist('checkContent', editor.innerText.trim().length > 0);
-        updateChecklist('checkThumbnail', Boolean(thumbnailFile));
-        updateChecklist('checkPublication', Boolean(status.value));
-
-        updatePinSettings();
-    }
-
-    function fileExtension(file) {
-        const parts = file.name.split('.');
-        return parts.length > 1 ? parts.pop().slice(0, 8).toUpperCase() : 'FILE';
-    }
-
-    function syncAttachmentInput() {
-        const transfer = new DataTransfer();
-
-        attachmentFiles.forEach(function (file) {
-            transfer.items.add(file);
-        });
-
-        attachmentInput.files = transfer.files;
-    }
-
-    function showAttachmentWarning(message) {
-        attachmentWarning.textContent = message;
-        attachmentWarning.hidden = !message;
-    }
-
-    function renderAttachments() {
-        attachmentPreview.replaceChildren();
-
-        let totalSize = 0;
-        attachmentFiles.forEach(function (file, index) {
-            totalSize += file.size;
-
-            const row = document.createElement('div');
-            row.className = 'selected-file';
-
-            const icon = document.createElement('div');
-            icon.className = 'file-type-icon';
-            icon.textContent = fileExtension(file);
-
-            const info = document.createElement('div');
-            info.className = 'selected-file-info';
-
-            const name = document.createElement('strong');
-            name.textContent = file.name;
-            name.title = file.name;
-
-            const size = document.createElement('span');
-            size.textContent = formatFileSize(file.size);
-
-            info.append(name, size);
-
-            const remove = document.createElement('button');
-            remove.type = 'button';
-            remove.className = 'remove-file-button';
-            remove.textContent = 'Remove';
-            remove.addEventListener('click', function () {
-                attachmentFiles.splice(index, 1);
-                syncAttachmentInput();
-                renderAttachments();
+            parsed.querySelectorAll('script,style,iframe,object,embed,form,svg,math,meta,link').forEach(function(node) {
+                node.remove();
             });
 
-            row.append(icon, info, remove);
-            attachmentPreview.appendChild(row);
-        });
+            parsed.querySelectorAll('*').forEach(function(element) {
+                Array.from(element.attributes).forEach(function(attribute) {
+                    const name = attribute.name.toLowerCase();
+                    const value = attribute.value.trim();
 
-        attachmentSummary.hidden = attachmentFiles.length === 0;
-        document.getElementById('attachmentCount').textContent =
-            attachmentFiles.length + (attachmentFiles.length === 1 ? ' file' : ' files');
-        document.getElementById('attachmentTotalSize').textContent =
-            formatFileSize(totalSize) + ' / 100 MB';
-    }
+                    if (name.startsWith('on') || name === 'srcdoc') {
+                        element.removeAttribute(attribute.name);
+                        return;
+                    }
 
-    function addAttachments(files) {
-        const existing = new Set(attachmentFiles.map(function (file) {
-            return file.name + ':' + file.size + ':' + file.lastModified;
-        }));
+                    if (['href', 'src', 'xlink:href', 'formaction'].includes(name)) {
+                        const compact = value.replace(/[\u0000-\u0020]+/g, '').toLowerCase();
 
-        let currentSize = attachmentFiles.reduce(function (total, file) {
-            return total + file.size;
-        }, 0);
+                        if (
+                            compact.startsWith('javascript:') ||
+                            compact.startsWith('vbscript:') ||
+                            compact.startsWith('file:')
+                        ) {
+                            element.removeAttribute(attribute.name);
+                        }
 
-        const errors = [];
+                        if (compact.startsWith('data:') && !compact.startsWith('data:image/')) {
+                            element.removeAttribute(attribute.name);
+                        }
+                    }
+                });
+            });
 
-        Array.from(files).forEach(function (file) {
-            const key = file.name + ':' + file.size + ':' + file.lastModified;
+            return parsed.body.innerHTML;
+        }
 
-            if (existing.has(key)) return;
+        function syncContent() {
+            contentField.value = editor.innerHTML.trim();
 
-            if (currentSize + file.size > MAX_ATTACHMENT_SIZE) {
-                errors.push(file.name + ': adding this file would exceed the 100 MB total limit.');
+            document.getElementById('contentCount').textContent =
+                editor.innerText.trim().length.toLocaleString('en-US') + ' characters';
+        }
+
+        function updateCount(input, counterId, max) {
+            const counter = document.getElementById(counterId);
+
+            if (!counter) return;
+
+            counter.textContent = max
+                ? input.value.length + ' / ' + max
+                : input.value.length + ' characters';
+        }
+
+        function updateChecklist(id, complete) {
+            const item = document.getElementById(id);
+
+            if (!item) return;
+
+            item.classList.toggle('complete', complete);
+
+            const icon = item.querySelector('.check-icon');
+
+            if (icon) {
+                icon.textContent = complete ? '✓' : '○';
+            }
+        }
+
+        function updateTagHiddenField() {
+            category.value = selectedTags.join(', ');
+        }
+
+        function renderSelectedTags() {
+            const container = document.getElementById('selectedTags');
+
+            if (!container) return;
+
+            container.replaceChildren();
+
+            selectedTags.forEach(function(tag) {
+                const chip = document.createElement('span');
+                chip.className = 'tag-chip';
+
+                const text = document.createElement('span');
+                text.textContent = tag;
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.setAttribute('aria-label', 'Remove ' + tag);
+                remove.textContent = '×';
+
+                remove.addEventListener('click', function() {
+                    selectedTags = selectedTags.filter(function(item) {
+                        return item.toLowerCase() !== tag.toLowerCase();
+                    });
+
+                    updateTagHiddenField();
+                    renderSelectedTags();
+                    renderTagRecommendations();
+                    updatePreview();
+                });
+
+                chip.append(text, remove);
+                container.appendChild(chip);
+            });
+
+            updateTagHiddenField();
+        }
+
+        function addTag(value) {
+            const tag = String(value || '').trim().replace(/,/g, '');
+
+            if (!tag) return;
+
+            if (selectedTags.some(function(item) {
+                return item.toLowerCase() === tag.toLowerCase();
+            })) {
+                tagSearch.value = '';
+                renderTagRecommendations();
                 return;
             }
 
-            attachmentFiles.push(file);
-            existing.add(key);
-            currentSize += file.size;
-        });
+            selectedTags.push(tag);
+            tagSearch.value = '';
 
-        syncAttachmentInput();
-        renderAttachments();
-        showAttachmentWarning(errors.join(' '));
-    }
-
-    function saveEditorSelection() {
-        const selection = window.getSelection();
-
-        if (selection && selection.rangeCount && editor.contains(selection.anchorNode)) {
-            editorSelection = selection.getRangeAt(0).cloneRange();
-        }
-    }
-
-    function restoreEditorSelection() {
-        editor.focus();
-
-        const selection = window.getSelection();
-
-        if (!selection) return;
-
-        selection.removeAllRanges();
-
-        if (editorSelection) {
-            selection.addRange(editorSelection);
-        }
-    }
-
-    function execEditorCommand(command, value) {
-        restoreEditorSelection();
-        document.execCommand(command, false, value || null);
-        saveEditorSelection();
-        syncContent();
-        updatePreview();
-    }
-
-    function insertHtmlAtCursor(html) {
-        restoreEditorSelection();
-        document.execCommand('insertHTML', false, html);
-        saveEditorSelection();
-        syncContent();
-        updatePreview();
-    }
-
-    function getCurrentTable() {
-        const selection = window.getSelection();
-
-        if (!selection || !selection.rangeCount) return null;
-
-        let node = selection.anchorNode;
-
-        if (node && node.nodeType === Node.TEXT_NODE) {
-            node = node.parentElement;
+            updateTagHiddenField();
+            renderSelectedTags();
+            renderTagRecommendations();
+            updatePreview();
         }
 
-        if (!node || !editor.contains(node)) return null;
+        function renderTagRecommendations() {
+            const container = document.getElementById('tagRecommendations');
 
-        return node.closest('table');
-    }
+            if (!container || !tagSearch) return;
 
-    function updateTableTools() {
-        activeTable = getCurrentTable();
-        document.getElementById('editorTableTools').hidden = !activeTable;
-    }
+            const search = tagSearch.value.trim().toLowerCase();
 
-    function tableCellCount(table) {
-        if (!table || !table.rows.length) return 0;
-        return Math.max.apply(null, Array.from(table.rows).map(function (row) {
-            return row.cells.length;
-        }));
-    }
+            container.replaceChildren();
 
-    function addTableRow() {
-        const table = activeTable || getCurrentTable();
+            const filtered = tagSuggestions.filter(function(item) {
+                const name = typeof item === 'string'
+                    ? item
+                    : (item.name || item.tag || item.category || '');
 
-        if (!table) {
-            alert('Click inside a table first.');
-            return;
+                return name &&
+                    name.toLowerCase().includes(search) &&
+                    !selectedTags.some(function(selected) {
+                        return selected.toLowerCase() === name.toLowerCase();
+                    });
+            });
+
+            if (!filtered.length) {
+                const empty = document.createElement('span');
+                empty.className = 'tag-empty-message';
+                empty.textContent = search
+                    ? 'No matching tags. Press Enter or Add to create this tag.'
+                    : 'No previously used tags were supplied.';
+
+                container.appendChild(empty);
+                return;
+            }
+
+            filtered.forEach(function(item) {
+                const name = typeof item === 'string'
+                    ? item
+                    : (item.name || item.tag || item.category || '');
+
+                const count = typeof item === 'object' && item !== null
+                    ? (item.usage_count ?? item.count ?? item.uses ?? null)
+                    : null;
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'tag-suggestion';
+
+                const label = document.createElement('span');
+                label.textContent = name;
+
+                button.appendChild(label);
+
+                if (count !== null && count !== undefined && count !== '') {
+                    const usage = document.createElement('span');
+                    usage.className = 'tag-suggestion-count';
+                    usage.textContent = '· ' + count;
+                    button.appendChild(usage);
+                }
+
+                button.addEventListener('click', function() {
+                    addTag(name);
+                });
+
+                container.appendChild(button);
+            });
         }
 
-        const columns = tableCellCount(table) || 1;
-        const row = table.insertRow(-1);
+        function applyBackgroundStyle() {
+            const style = thumbnailBackgroundStyle.value;
+            const solid = thumbnailBackground.value;
+            const start = thumbnailGradientStart.value;
+            const end = thumbnailGradientEnd.value;
+            const isFit = thumbnailFit.value === 'fit';
 
-        for (let i = 0; i < columns; i++) {
-            const cell = row.insertCell();
-            cell.innerHTML = '&nbsp;';
+            [thumbnailSolidLayer, miniThumbnailSolid, readerCoverSolid].forEach(function(layer) {
+                if (!layer) return;
+
+                layer.hidden = !isFit || style === 'transparent';
+
+                if (style === 'gradient') {
+                    layer.style.background = 'linear-gradient(135deg, ' + start + ', ' + end + ')';
+                } else {
+                    layer.style.background = solid;
+                }
+            });
+
+            const solidGroup = document.getElementById('thumbnailSolidColorGroup');
+            const gradientStartGroup = document.getElementById('thumbnailGradientStartGroup');
+            const gradientEndGroup = document.getElementById('thumbnailGradientEndGroup');
+
+            if (solidGroup) {
+                solidGroup.hidden = !isFit || style !== 'solid';
+            }
+
+            if (gradientStartGroup) {
+                gradientStartGroup.hidden = !isFit || style !== 'gradient';
+            }
+
+            if (gradientEndGroup) {
+                gradientEndGroup.hidden = !isFit || style !== 'gradient';
+            }
+
+            const backgroundValue = document.getElementById('thumbnailBackgroundValue');
+            const gradientStartValue = document.getElementById('thumbnailGradientStartValue');
+            const gradientEndValue = document.getElementById('thumbnailGradientEndValue');
+
+            if (backgroundValue) backgroundValue.textContent = solid.toUpperCase();
+            if (gradientStartValue) gradientStartValue.textContent = start.toUpperCase();
+            if (gradientEndValue) gradientEndValue.textContent = end.toUpperCase();
         }
 
-        activeTable = table;
-        syncContent();
-        updatePreview();
-    }
+        function applyThumbnailSettings() {
+            const mode = thumbnailFit.value;
+            const position = thumbnailPosition.value;
 
-    function removeTableRow() {
-        const table = activeTable || getCurrentTable();
+            const modeClass = {
+                cover: 'mode-cover',
+                fit: 'mode-fit',
+                blur: 'mode-blur'
+            }[mode] || 'mode-cover';
 
-        if (!table) {
-            alert('Click inside a table first.');
-            return;
+            [
+                document.getElementById('thumbnailStage'),
+                miniThumbnailWrap,
+                readerCoverWrap
+            ].forEach(function(element) {
+                if (!element) return;
+
+                element.classList.remove('mode-cover', 'mode-fit', 'mode-blur');
+                element.classList.add(modeClass);
+            });
+
+            [thumbnailPreview, miniThumbnail, readerCover].forEach(function(element) {
+                if (!element) return;
+
+                element.classList.remove(
+                    'position-center',
+                    'position-top',
+                    'position-bottom',
+                    'position-left',
+                    'position-right'
+                );
+
+                element.classList.add('position-' + position);
+            });
+
+            const isBlur = mode === 'blur';
+            const isFit = mode === 'fit';
+
+            [thumbnailBlurLayer, miniThumbnailBlur, readerCoverBlur].forEach(function(element) {
+                if (element) {
+                    element.hidden = !isBlur;
+                }
+            });
+
+            const positionGroup = document.getElementById('thumbnailPositionGroup');
+            const backgroundStyleGroup = document.getElementById('thumbnailBackgroundStyleGroup');
+
+            if (positionGroup) {
+                positionGroup.hidden = false;
+            }
+
+            if (backgroundStyleGroup) {
+                backgroundStyleGroup.hidden = !isFit;
+            }
+
+            if (!isFit) {
+                [
+                    'thumbnailSolidColorGroup',
+                    'thumbnailGradientStartGroup',
+                    'thumbnailGradientEndGroup'
+                ].forEach(function(id) {
+                    const element = document.getElementById(id);
+
+                    if (element) {
+                        element.hidden = true;
+                    }
+                });
+
+                [thumbnailSolidLayer, miniThumbnailSolid, readerCoverSolid].forEach(function(element) {
+                    if (element) {
+                        element.hidden = true;
+                    }
+                });
+            } else {
+                applyBackgroundStyle();
+            }
         }
 
-        if (table.rows.length <= 1) {
-            alert('A table must have at least one row. Use Delete Table to remove the whole table.');
-            return;
+        function revokeThumbnailUrl() {
+            if (thumbnailUrl) {
+                URL.revokeObjectURL(thumbnailUrl);
+                thumbnailUrl = null;
+            }
         }
 
-        const selection = window.getSelection();
-        let node = selection && selection.anchorNode;
+        function updateThumbnailPreview(file) {
+            revokeThumbnailUrl();
 
-        if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+            thumbnailFile = file || null;
 
-        const row = node && node.closest ? node.closest('tr') : null;
-        table.deleteRow(row && row.closest('table') === table ? row.rowIndex : table.rows.length - 1);
+            if (!file) {
+                thumbnailWorkspace.hidden = true;
+                thumbnailPlaceholder.hidden = false;
+                thumbnailSettings.hidden = true;
+                miniThumbnail.hidden = true;
+                miniThumbnailBlur.hidden = true;
+                miniThumbnailSolid.hidden = true;
+                miniThumbnailPlaceholder.hidden = false;
+                readerCoverWrap.hidden = true;
 
-        activeTable = table;
-        syncContent();
-        updatePreview();
-    }
+                updateChecklist('checkThumbnail', false);
 
-    function addTableColumn() {
-        const table = activeTable || getCurrentTable();
+                return;
+            }
 
-        if (!table) {
-            alert('Click inside a table first.');
-            return;
+            thumbnailUrl = URL.createObjectURL(file);
+
+            thumbnailPreview.src = thumbnailUrl;
+            thumbnailBlurLayer.src = thumbnailUrl;
+
+            thumbnailFileName.textContent = file.name;
+            thumbnailFileSize.textContent = formatFileSize(file.size);
+
+            miniThumbnail.src = thumbnailUrl;
+            miniThumbnailBlur.src = thumbnailUrl;
+
+            readerCover.src = thumbnailUrl;
+            readerCoverBlur.src = thumbnailUrl;
+
+            thumbnailWorkspace.hidden = false;
+            thumbnailPlaceholder.hidden = true;
+            thumbnailSettings.hidden = false;
+            miniThumbnail.hidden = false;
+            miniThumbnailPlaceholder.hidden = true;
+            readerCoverWrap.hidden = false;
+
+            applyThumbnailSettings();
+            updateChecklist('checkThumbnail', true);
         }
 
-        Array.from(table.rows).forEach(function (row) {
-            const cell = row.insertCell(-1);
-            cell.innerHTML = '&nbsp;';
-        });
-
-        activeTable = table;
-        syncContent();
-        updatePreview();
-    }
-
-    function removeTableColumn() {
-        const table = activeTable || getCurrentTable();
-
-        if (!table) {
-            alert('Click inside a table first.');
-            return;
+        function updatePinSettings() {
+            document.getElementById('pinOrderGroup').hidden = !pinned.checked;
+            document.getElementById('miniPin').hidden = !pinned.checked;
+            document.getElementById('readerPinned').hidden = !pinned.checked;
         }
 
-        const columns = tableCellCount(table);
+        function updateStatusFields() {
+            const value = status.value;
 
-        if (columns <= 1) {
-            alert('A table must have at least one column. Use Delete Table to remove the whole table.');
-            return;
+            document.getElementById('scheduledSettings').hidden = value !== 'scheduled';
+            document.getElementById('publishedSettings').hidden = value !== 'published';
+            document.getElementById('archivedSettings').hidden = value !== 'archived';
+
+            scheduledAt.required = value === 'scheduled';
+
+            document.getElementById('expirationGroup').hidden =
+                value === 'draft' || value === 'archived';
+
+            document.getElementById('statusDescription').textContent =
+                statusDescriptions[value] || statusDescriptions.draft;
+
+            const labels = {
+                draft: 'Save as Draft',
+                scheduled: 'Schedule Announcement',
+                published: 'Publish Announcement',
+                archived: 'Save to Archive'
+            };
+
+            document.getElementById('submitAnnouncementButton').textContent =
+                labels[value] || labels.draft;
+
+            const visibility = visibilityCopy[value] || visibilityCopy.draft;
+
+            document.getElementById('visibilityTitle').textContent = visibility[0];
+            document.getElementById('visibilityDescription').textContent = visibility[1];
+            document.getElementById('visibilityDot').className = 'visibility-dot ' + value;
+
+            const miniStatus = document.getElementById('miniStatus');
+
+            miniStatus.textContent = value.toUpperCase();
+            miniStatus.className = 'mini-status ' + value;
+
+            updatePreview();
         }
 
-        const selection = window.getSelection();
-        let node = selection && selection.anchorNode;
+        function updatePreview() {
+            const titleText = title.value.trim();
+            const categoryText = selectedTags.length
+                ? selectedTags.join(', ')
+                : 'General Announcement';
 
-        if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+            const summaryText = summary.value.trim();
 
-        const cell = node && node.closest ? node.closest('td, th') : null;
-        const columnIndex = cell && cell.closest('table') === table
-            ? cell.cellIndex
-            : columns - 1;
+            const dateValue = status.value === 'scheduled'
+                ? scheduledAt.value
+                : publishedAt.value;
 
-        Array.from(table.rows).forEach(function (row) {
-            if (row.cells[columnIndex]) row.deleteCell(columnIndex);
-        });
+            const formattedDate = formatDate(dateValue);
 
-        activeTable = table;
-        syncContent();
-        updatePreview();
-    }
+            document.getElementById('miniTitle').textContent =
+                titleText || 'Your announcement title';
 
-    function deleteTable() {
-        const table = activeTable || getCurrentTable();
+            document.getElementById('miniCategory').textContent =
+                categoryText.toUpperCase();
 
-        if (!table) {
-            alert('Click inside a table first.');
-            return;
+            document.getElementById('miniSummary').textContent =
+                summaryText || 'Your short summary will appear here to help readers understand the announcement.';
+
+            document.getElementById('miniDate').textContent =
+                formattedDate || 'Publication date not set';
+
+            document.getElementById('readerTitle').textContent =
+                titleText || 'Your announcement title';
+
+            document.getElementById('readerCategory').textContent = categoryText;
+
+            document.getElementById('readerSummary').textContent =
+                summaryText || 'Your announcement summary will appear here.';
+
+            document.getElementById('readerPublicationDate').textContent =
+                formattedDate || 'Publication date not set';
+
+            document.getElementById('readerContent').innerHTML =
+                safePreviewHtml(editor.innerHTML);
+
+            updateChecklist('checkTitle', titleText.length > 0);
+            updateChecklist('checkSummary', summaryText.length > 0);
+            updateChecklist('checkContent', editor.innerText.trim().length > 0);
+            updateChecklist('checkThumbnail', Boolean(thumbnailFile));
+            updateChecklist('checkPublication', Boolean(status.value));
+
+            updatePinSettings();
         }
 
-        table.remove();
-        activeTable = null;
-        document.getElementById('editorTableTools').hidden = true;
-        syncContent();
-        updatePreview();
-    }
+        function fileExtension(file) {
+            const parts = file.name.split('.');
 
-    function updateReaderAttachments() {
-        const section = document.getElementById('readerAttachmentsSection');
-        const list = document.getElementById('readerAttachmentsList');
-
-        list.replaceChildren();
-        section.hidden = attachmentFiles.length === 0;
-
-        attachmentFiles.forEach(function (file) {
-            const row = document.createElement('div');
-            row.className = 'reader-attachment';
-
-            const icon = document.createElement('div');
-            icon.className = 'reader-attachment-icon';
-            icon.textContent = fileExtension(file);
-
-            const name = document.createElement('div');
-            name.className = 'reader-attachment-name';
-            name.textContent = file.name;
-
-            row.append(icon, name);
-            list.appendChild(row);
-        });
-    }
-
-    function openPreview() {
-        syncContent();
-        updatePreview();
-        updateReaderAttachments();
-
-        modal.classList.add('open');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-        previewOpen = true;
-    }
-
-    function closePreview() {
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-        previewOpen = false;
-    }
-
-    document.getElementById('chooseThumbnail').addEventListener('click', function () {
-        thumbnailInput.click();
-    });
-
-    document.getElementById('replaceThumbnail').addEventListener('click', function () {
-        thumbnailInput.click();
-    });
-
-    document.getElementById('removeThumbnail').addEventListener('click', function () {
-        thumbnailInput.value = '';
-        updateThumbnailPreview(null);
-        updatePreview();
-    });
-
-    thumbnailInput.addEventListener('change', function () {
-        const file = thumbnailInput.files[0];
-
-        if (!file) return;
-
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-            alert('Please select a JPG, PNG, or WebP image.');
-            thumbnailInput.value = '';
-            return;
+            return parts.length > 1
+                ? parts.pop().slice(0, 8).toUpperCase()
+                : 'FILE';
         }
 
-        if (file.size > MAX_THUMBNAIL_SIZE) {
-            alert('The thumbnail must not exceed 4 MB.');
-            thumbnailInput.value = '';
-            return;
+        function fileKind(file) {
+            if (file.type.startsWith('image/')) return 'image';
+
+            if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+                return 'pdf';
+            }
+
+            if (file.type.startsWith('video/')) return 'video';
+            if (file.type.startsWith('audio/')) return 'audio';
+
+            if (/\.xlsx?$/i.test(file.name)) return 'excel';
+            if (/\.docx?$/i.test(file.name)) return 'word';
+            if (/\.pptx?$/i.test(file.name)) return 'powerpoint';
+
+            if (/\.(zip|rar|7z|tar|gz)$/i.test(file.name)) {
+                return 'archive';
+            }
+
+            return 'file';
         }
 
-        updateThumbnailPreview(file);
-        updatePreview();
-    });
+        function getAttachmentUrl(file) {
+            if (!attachmentObjectUrls.has(file)) {
+                attachmentObjectUrls.set(file, URL.createObjectURL(file));
+            }
 
-    thumbnailFit.addEventListener('change', function () {
-        applyThumbnailSettings();
-    });
-
-    thumbnailPosition.addEventListener('change', applyThumbnailSettings);
-    thumbnailBackground.addEventListener('input', applyThumbnailSettings);
-
-    document.getElementById('chooseAttachments').addEventListener('click', function () {
-        attachmentInput.click();
-    });
-
-    attachmentInput.addEventListener('change', function () {
-        addAttachments(attachmentInput.files);
-    });
-
-    const attachmentDropzone = document.getElementById('attachmentDropzone');
-
-    attachmentDropzone.addEventListener('dragover', function (event) {
-        event.preventDefault();
-        attachmentDropzone.classList.add('drag-over');
-    });
-
-    attachmentDropzone.addEventListener('dragleave', function () {
-        attachmentDropzone.classList.remove('drag-over');
-    });
-
-    attachmentDropzone.addEventListener('drop', function (event) {
-        event.preventDefault();
-        attachmentDropzone.classList.remove('drag-over');
-
-        if (event.dataTransfer && event.dataTransfer.files.length) {
-            addAttachments(event.dataTransfer.files);
-        }
-    });
-
-    document.querySelectorAll('[data-command]').forEach(function (button) {
-        button.addEventListener('mousedown', saveEditorSelection);
-
-        button.addEventListener('click', function () {
-            execEditorCommand(button.dataset.command);
-        });
-    });
-
-    document.getElementById('editorBlock').addEventListener('change', function () {
-        execEditorCommand('formatBlock', this.value);
-    });
-
-    document.getElementById('alignLeft').addEventListener('click', function () {
-        execEditorCommand('justifyLeft');
-    });
-
-    document.getElementById('alignCenter').addEventListener('click', function () {
-        execEditorCommand('justifyCenter');
-    });
-
-    document.getElementById('alignRight').addEventListener('click', function () {
-        execEditorCommand('justifyRight');
-    });
-
-    document.getElementById('insertLinkButton').addEventListener('mousedown', saveEditorSelection);
-
-    document.getElementById('insertLinkButton').addEventListener('click', function () {
-        const url = prompt('Enter the link URL, including https://');
-
-        if (!url) return;
-
-        if (!/^https?:\/\//i.test(url)) {
-            alert('Please enter a URL starting with http:// or https://.');
-            return;
+            return attachmentObjectUrls.get(file);
         }
 
-        execEditorCommand('createLink', url);
-    });
+        function revokeAttachmentUrl(file) {
+            const url = attachmentObjectUrls.get(file);
 
-    document.getElementById('insertImageButton').addEventListener('mousedown', saveEditorSelection);
-
-    document.getElementById('insertImageButton').addEventListener('click', function () {
-        saveEditorSelection();
-        editorImageInput.click();
-    });
-
-    editorImageInput.addEventListener('change', function () {
-        const file = editorImageInput.files[0];
-
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            alert('Please choose an image file.');
-            editorImageInput.value = '';
-            return;
+            if (url) {
+                URL.revokeObjectURL(url);
+                attachmentObjectUrls.delete(file);
+            }
         }
 
-        const reader = new FileReader();
+        function syncAttachmentInput() {
+            const transfer = new DataTransfer();
 
-        reader.onload = function () {
-            const image = document.createElement('img');
-            image.src = reader.result;
-            image.alt = file.name;
-            image.style.maxWidth = '100%';
+            attachmentFiles.forEach(function(file) {
+                transfer.items.add(file);
+            });
 
-            restoreEditorSelection();
+            attachmentInput.files = transfer.files;
+        }
 
+        function showAttachmentWarning(message) {
+            attachmentWarning.textContent = message;
+            attachmentWarning.hidden = !message;
+        }
+
+        function createAttachmentPreviewModal() {
+            let existing = document.getElementById('attachmentPreviewModal');
+
+            if (existing) {
+                return existing;
+            }
+
+            const modalElement = document.createElement('div');
+
+            modalElement.id = 'attachmentPreviewModal';
+            modalElement.setAttribute('aria-hidden', 'true');
+
+            modalElement.style.cssText = [
+                'display:none',
+                'position:fixed',
+                'inset:0',
+                'z-index:10050',
+                'align-items:center',
+                'justify-content:center',
+                'padding:24px',
+                'background:rgba(15,23,42,.72)'
+            ].join(';');
+
+            modalElement.innerHTML = `
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="attachmentPreviewTitle"
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        width:min(1100px,100%);
+                        max-height:92vh;
+                        overflow:hidden;
+                        background:#fff;
+                        border-radius:16px;
+                        box-shadow:0 24px 80px rgba(0,0,0,.25);
+                    "
+                >
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:space-between;
+                        gap:16px;
+                        padding:18px 22px;
+                        border-bottom:1px solid #e5e7eb;
+                    ">
+                        <div style="min-width:0;">
+                            <h2
+                                id="attachmentPreviewTitle"
+                                style="
+                                    margin:0;
+                                    color:#17284f;
+                                    font-size:17px;
+                                    font-weight:700;
+                                    overflow-wrap:anywhere;
+                                "
+                            >Attachment Preview</h2>
+                            <p
+                                id="attachmentPreviewMeta"
+                                style="
+                                    margin:5px 0 0;
+                                    color:#64748b;
+                                    font-size:12px;
+                                "
+                            ></p>
+                        </div>
+
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            flex-shrink:0;
+                        ">
+                            <a
+                                id="attachmentPreviewDownload"
+                                href="#"
+                                download
+                                style="
+                                    display:inline-flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    padding:9px 13px;
+                                    border:1px solid #dce2eb;
+                                    border-radius:8px;
+                                    color:#17284f;
+                                    background:#fff;
+                                    font-size:12px;
+                                    font-weight:600;
+                                    text-decoration:none;
+                                "
+                            >Download</a>
+
+                            <button
+                                id="closeAttachmentPreview"
+                                type="button"
+                                aria-label="Close attachment preview"
+                                style="
+                                    display:inline-flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    width:36px;
+                                    height:36px;
+                                    border:0;
+                                    border-radius:8px;
+                                    background:#f1f5f9;
+                                    color:#17284f;
+                                    font-size:23px;
+                                    cursor:pointer;
+                                "
+                            >×</button>
+                        </div>
+                    </div>
+
+                    <div
+                        id="attachmentPreviewBody"
+                        style="
+                            flex:1;
+                            min-height:220px;
+                            overflow:auto;
+                            padding:20px;
+                            background:#f5f7fb;
+                        "
+                    ></div>
+                </div>
+            `;
+
+            document.body.appendChild(modalElement);
+
+            modalElement.addEventListener('click', function(event) {
+                if (event.target === modalElement) {
+                    closeAttachmentPreview();
+                }
+            });
+
+            document.getElementById('closeAttachmentPreview').addEventListener('click', function() {
+                closeAttachmentPreview();
+            });
+
+            return modalElement;
+        }
+
+        function openAttachmentPreview(file) {
+            if (!file) return;
+
+            const attachmentModal = createAttachmentPreviewModal();
+            const titleElement = document.getElementById('attachmentPreviewTitle');
+            const metaElement = document.getElementById('attachmentPreviewMeta');
+            const bodyElement = document.getElementById('attachmentPreviewBody');
+            const downloadElement = document.getElementById('attachmentPreviewDownload');
+
+            const kind = fileKind(file);
+            const url = getAttachmentUrl(file);
+
+            activeAttachmentUrl = url;
+
+            titleElement.textContent = file.name;
+            metaElement.textContent =
+                fileExtension(file) + ' · ' + formatFileSize(file.size);
+
+            downloadElement.href = url;
+            downloadElement.download = file.name;
+            downloadElement.hidden = false;
+
+            bodyElement.replaceChildren();
+
+            if (kind === 'image') {
+                const image = document.createElement('img');
+
+                image.src = url;
+                image.alt = file.name;
+
+                image.style.cssText = [
+                    'display:block',
+                    'max-width:100%',
+                    'max-height:70vh',
+                    'width:auto',
+                    'height:auto',
+                    'margin:0 auto',
+                    'object-fit:contain',
+                    'border-radius:8px',
+                    'background:#fff'
+                ].join(';');
+
+                bodyElement.appendChild(image);
+            } else if (kind === 'pdf') {
+                const frame = document.createElement('iframe');
+
+                frame.src = url + '#toolbar=1&navpanes=0&view=FitH';
+                frame.title = 'PDF preview: ' + file.name;
+
+                frame.style.cssText = [
+                    'display:block',
+                    'width:100%',
+                    'height:70vh',
+                    'min-height:420px',
+                    'border:1px solid #dce2eb',
+                    'border-radius:8px',
+                    'background:#fff'
+                ].join(';');
+
+                bodyElement.appendChild(frame);
+            } else if (kind === 'video') {
+                const video = document.createElement('video');
+
+                video.src = url;
+                video.controls = true;
+                video.preload = 'metadata';
+
+                video.style.cssText = [
+                    'display:block',
+                    'max-width:100%',
+                    'max-height:70vh',
+                    'margin:0 auto',
+                    'border-radius:8px',
+                    'background:#111'
+                ].join(';');
+
+                bodyElement.appendChild(video);
+            } else if (kind === 'audio') {
+                const wrapper = document.createElement('div');
+
+                wrapper.style.cssText = [
+                    'display:flex',
+                    'flex-direction:column',
+                    'align-items:center',
+                    'justify-content:center',
+                    'gap:20px',
+                    'min-height:260px',
+                    'padding:30px'
+                ].join(';');
+
+                const icon = document.createElement('div');
+                icon.textContent = '♫';
+                icon.style.cssText = 'font-size:52px;color:#17284f';
+
+                const audio = document.createElement('audio');
+                audio.src = url;
+                audio.controls = true;
+                audio.style.width = 'min(500px,100%)';
+
+                wrapper.append(icon, audio);
+                bodyElement.appendChild(wrapper);
+            } else {
+                const wrapper = document.createElement('div');
+
+                wrapper.style.cssText = [
+                    'display:flex',
+                    'flex-direction:column',
+                    'align-items:center',
+                    'justify-content:center',
+                    'gap:12px',
+                    'min-height:300px',
+                    'padding:32px',
+                    'text-align:center',
+                    'background:#fff',
+                    'border:1px solid #e5e7eb',
+                    'border-radius:12px'
+                ].join(';');
+
+                const icon = document.createElement('div');
+                icon.textContent = fileExtension(file);
+                icon.style.cssText = [
+                    'display:flex',
+                    'align-items:center',
+                    'justify-content:center',
+                    'min-width:72px',
+                    'height:72px',
+                    'padding:0 12px',
+                    'border-radius:12px',
+                    'background:#eef2ff',
+                    'color:#17284f',
+                    'font-size:15px',
+                    'font-weight:800'
+                ].join(';');
+
+                const heading = document.createElement('h3');
+                heading.textContent = 'Preview is not available in this browser';
+                heading.style.cssText = 'margin:8px 0 0;color:#17284f;font-size:16px';
+
+                const description = document.createElement('p');
+                description.textContent =
+                    'This file format cannot be displayed directly here. Download the file to open it with a compatible application.';
+                description.style.cssText = [
+                    'max-width:500px',
+                    'margin:0',
+                    'color:#64748b',
+                    'font-size:13px',
+                    'line-height:1.7'
+                ].join(';');
+
+                const fileInfo = document.createElement('p');
+                fileInfo.textContent = file.name + ' · ' + formatFileSize(file.size);
+                fileInfo.style.cssText = [
+                    'max-width:100%',
+                    'margin:4px 0 0',
+                    'color:#334155',
+                    'font-size:12px',
+                    'overflow-wrap:anywhere'
+                ].join(';');
+
+                const downloadButton = document.createElement('a');
+                downloadButton.href = url;
+                downloadButton.download = file.name;
+                downloadButton.textContent = 'Download File';
+                downloadButton.style.cssText = [
+                    'display:inline-flex',
+                    'align-items:center',
+                    'justify-content:center',
+                    'margin-top:8px',
+                    'padding:11px 18px',
+                    'border-radius:8px',
+                    'background:#17284f',
+                    'color:#fff',
+                    'font-size:13px',
+                    'font-weight:600',
+                    'text-decoration:none'
+                ].join(';');
+
+                wrapper.append(icon, heading, description, fileInfo, downloadButton);
+                bodyElement.appendChild(wrapper);
+            }
+
+            attachmentModal.style.display = 'flex';
+            attachmentModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            attachmentPreviewOpen = true;
+
+            const closeButton = document.getElementById('closeAttachmentPreview');
+
+            if (closeButton) {
+                closeButton.focus();
+            }
+        }
+
+        function closeAttachmentPreview() {
+            const attachmentModal = document.getElementById('attachmentPreviewModal');
+
+            if (!attachmentModal || !attachmentPreviewOpen) return;
+
+            const bodyElement = document.getElementById('attachmentPreviewBody');
+
+            if (bodyElement) {
+                bodyElement.querySelectorAll('video,audio').forEach(function(media) {
+                    media.pause();
+                });
+
+                bodyElement.replaceChildren();
+            }
+
+            attachmentModal.style.display = 'none';
+            attachmentModal.setAttribute('aria-hidden', 'true');
+
+            attachmentPreviewOpen = false;
+            activeAttachmentUrl = null;
+
+            if (!previewOpen) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function renderAttachments() {
+            attachmentPreview.replaceChildren();
+
+            let totalSize = 0;
+
+            attachmentFiles.forEach(function(file, index) {
+                totalSize += file.size;
+
+                const row = document.createElement('div');
+                row.className = 'selected-file';
+
+                const kind = fileKind(file);
+
+                if (kind === 'image') {
+                    const image = document.createElement('img');
+
+                    image.className = 'file-preview-thumb';
+                    image.src = getAttachmentUrl(file);
+                    image.alt = file.name;
+                    image.title = file.name;
+
+                    row.appendChild(image);
+                } else {
+                    const icon = document.createElement('div');
+
+                    icon.className = 'file-type-icon';
+                    icon.textContent = fileExtension(file);
+
+                    row.appendChild(icon);
+                }
+
+                const info = document.createElement('div');
+                info.className = 'selected-file-info';
+
+                const name = document.createElement('strong');
+                name.textContent = file.name;
+                name.title = file.name;
+
+                const type = document.createElement('span');
+                type.textContent =
+                    (file.type || 'Unknown file type') + ' · ' + formatFileSize(file.size);
+
+                info.append(name, type);
+
+                const actions = document.createElement('div');
+
+                actions.style.cssText = [
+                    'display:flex',
+                    'align-items:center',
+                    'gap:8px',
+                    'flex-shrink:0'
+                ].join(';');
+
+                const previewButton = document.createElement('button');
+
+                previewButton.type = 'button';
+                previewButton.className = 'preview-file-button';
+                previewButton.textContent = 'Preview';
+                previewButton.setAttribute('aria-label', 'Preview ' + file.name);
+
+                previewButton.style.cssText = [
+                    'padding:7px 11px',
+                    'border:1px solid #dce2eb',
+                    'border-radius:7px',
+                    'background:#fff',
+                    'color:#17284f',
+                    'font-size:12px',
+                    'font-weight:600',
+                    'cursor:pointer'
+                ].join(';');
+
+                previewButton.addEventListener('click', function() {
+                    openAttachmentPreview(file);
+                });
+
+                const remove = document.createElement('button');
+
+                remove.type = 'button';
+                remove.className = 'remove-file-button';
+                remove.textContent = 'Remove';
+
+                remove.addEventListener('click', function() {
+                    const removed = attachmentFiles.splice(index, 1)[0];
+
+                    if (removed) {
+                        const currentPreview = document.getElementById('attachmentPreviewModal');
+
+                        if (
+                            currentPreview &&
+                            attachmentPreviewOpen &&
+                            attachmentFiles.indexOf(removed) === -1 &&
+                            activeAttachmentUrl === attachmentObjectUrls.get(removed)
+                        ) {
+                            closeAttachmentPreview();
+                        }
+
+                        revokeAttachmentUrl(removed);
+                    }
+
+                    syncAttachmentInput();
+                    renderAttachments();
+                    updateReaderAttachments();
+                });
+
+                actions.append(previewButton, remove);
+                row.append(info, actions);
+                attachmentPreview.appendChild(row);
+            });
+
+            attachmentSummary.hidden = attachmentFiles.length === 0;
+
+            document.getElementById('attachmentCount').textContent =
+                attachmentFiles.length + (attachmentFiles.length === 1 ? ' file' : ' files');
+
+            document.getElementById('attachmentTotalSize').textContent =
+                formatFileSize(totalSize) + ' / 100 MB';
+        }
+
+        function addAttachments(files) {
+            const existing = new Set(attachmentFiles.map(function(file) {
+                return file.name + ':' + file.size + ':' + file.lastModified;
+            }));
+
+            let currentSize = attachmentFiles.reduce(function(total, file) {
+                return total + file.size;
+            }, 0);
+
+            const errors = [];
+
+            Array.from(files).forEach(function(file) {
+                const key = file.name + ':' + file.size + ':' + file.lastModified;
+
+                if (existing.has(key)) return;
+
+                if (currentSize + file.size > MAX_ATTACHMENT_SIZE) {
+                    errors.push(file.name + ': adding this file would exceed the 100 MB total limit.');
+                    return;
+                }
+
+                attachmentFiles.push(file);
+                existing.add(key);
+                currentSize += file.size;
+            });
+
+            syncAttachmentInput();
+            renderAttachments();
+            updateReaderAttachments();
+
+            showAttachmentWarning(errors.join(' '));
+        }
+
+        function saveEditorSelection() {
             const selection = window.getSelection();
 
             if (selection && selection.rangeCount && editor.contains(selection.anchorNode)) {
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(image);
-                range.setStartAfter(image);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            } else {
-                editor.appendChild(image);
+                editorSelection = selection.getRangeAt(0).cloneRange();
             }
+        }
+
+        function restoreEditorSelection() {
+            editor.focus();
+
+            const selection = window.getSelection();
+
+            if (!selection) return;
+
+            selection.removeAllRanges();
+
+            if (editorSelection) {
+                try {
+                    selection.addRange(editorSelection);
+                } catch (error) {
+                    editorSelection = null;
+                }
+            }
+        }
+
+        function execEditorCommand(command, value) {
+            restoreEditorSelection();
+
+            document.execCommand(command, false, value || null);
 
             saveEditorSelection();
             syncContent();
             updatePreview();
-            editorImageInput.value = '';
-        };
-
-        reader.readAsDataURL(file);
-    });
-
-    editor.addEventListener('paste', function (event) {
-        const items = event.clipboardData && event.clipboardData.items
-            ? Array.from(event.clipboardData.items)
-            : [];
-
-        const imageItem = items.find(function (item) {
-            return item.type && item.type.startsWith('image/');
-        });
-
-        if (!imageItem) return;
-
-        const file = imageItem.getAsFile();
-
-        if (!file) return;
-
-        event.preventDefault();
-
-        const reader = new FileReader();
-
-        reader.onload = function () {
-            insertHtmlAtCursor(
-                '<p><img src="' + reader.result + '" alt="Pasted image" style="max-width:100%;height:auto"></p>'
-            );
-        };
-
-        reader.readAsDataURL(file);
-    });
-
-    editor.addEventListener('drop', function (event) {
-        const files = Array.from(event.dataTransfer.files || []);
-        const image = files.find(function (file) {
-            return file.type.startsWith('image/');
-        });
-
-        if (!image) return;
-
-        event.preventDefault();
-
-        const reader = new FileReader();
-
-        reader.onload = function () {
-            insertHtmlAtCursor(
-                '<p><img src="' + reader.result + '" alt="' + escapeHtml(image.name) + '" style="max-width:100%;height:auto"></p>'
-            );
-        };
-
-        reader.readAsDataURL(image);
-    });
-
-    document.getElementById('insertTableButton').addEventListener('mousedown', saveEditorSelection);
-
-    document.getElementById('insertTableButton').addEventListener('click', function () {
-        const rowsValue = prompt('How many rows? (1–20)', '3');
-
-        if (rowsValue === null) return;
-
-        const columnsValue = prompt('How many columns? (1–10)', '3');
-
-        if (columnsValue === null) return;
-
-        const rows = Number.parseInt(rowsValue, 10);
-        const columns = Number.parseInt(columnsValue, 10);
-
-        if (!Number.isInteger(rows) || !Number.isInteger(columns) || rows < 1 || rows > 20 || columns < 1 || columns > 10) {
-            alert('Enter 1–20 rows and 1–10 columns.');
-            return;
         }
 
-        let html = '<table><tbody>';
+        function insertHtmlAtCursor(html) {
+            restoreEditorSelection();
 
-        for (let r = 0; r < rows; r++) {
-            html += '<tr>';
+            document.execCommand('insertHTML', false, html);
 
-            for (let c = 0; c < columns; c++) {
-                html += r === 0
-                    ? '<th>Header ' + (c + 1) + '</th>'
-                    : '<td>&nbsp;</td>';
+            saveEditorSelection();
+            syncContent();
+            updatePreview();
+        }
+
+        function getCurrentTable() {
+            const selection = window.getSelection();
+
+            if (!selection || !selection.rangeCount) return null;
+
+            let node = selection.anchorNode;
+
+            if (node && node.nodeType === Node.TEXT_NODE) {
+                node = node.parentElement;
             }
 
-            html += '</tr>';
+            if (!node || !editor.contains(node)) return null;
+
+            return node.closest('table');
         }
 
-        html += '</tbody></table><p><br></p>';
+        function getSelectedCell(table) {
+            const selection = window.getSelection();
+            let node = selection && selection.anchorNode;
 
-        insertHtmlAtCursor(html);
-        updateTableTools();
-    });
+            if (node && node.nodeType === Node.TEXT_NODE) {
+                node = node.parentElement;
+            }
 
-    document.getElementById('addTableRow').addEventListener('click', addTableRow);
-    document.getElementById('removeTableRow').addEventListener('click', removeTableRow);
-    document.getElementById('addTableColumn').addEventListener('click', addTableColumn);
-    document.getElementById('removeTableColumn').addEventListener('click', removeTableColumn);
-    document.getElementById('deleteTable').addEventListener('click', deleteTable);
+            const cell = node && node.closest
+                ? node.closest('td, th')
+                : null;
 
-    document.getElementById('clearEditor').addEventListener('click', function () {
-        if (!editor.innerHTML.trim()) return;
+            return cell && cell.closest('table') === table ? cell : null;
+        }
 
-        if (!confirm('Clear all text, formatting, images, and tables in the content editor?')) return;
+        function tableCellCount(table) {
+            if (!table || !table.rows.length) return 0;
 
-        editor.innerHTML = '';
-        activeTable = null;
-        editorSelection = null;
-        document.getElementById('editorTableTools').hidden = true;
-        syncContent();
-        updatePreview();
-    });
+            return Math.max.apply(null, Array.from(table.rows).map(function(row) {
+                return row.cells.length;
+            }));
+        }
 
-    document.getElementById('undoEditor').addEventListener('click', function () {
-        execEditorCommand('undo');
-    });
+        function rgbToHex(color) {
+            if (!color) return '#ffffff';
+            if (color.startsWith('#')) return color;
 
-    document.getElementById('redoEditor').addEventListener('click', function () {
-        execEditorCommand('redo');
-    });
+            const match = color.match(/\d+/g);
 
-    editor.addEventListener('keyup', function () {
-        saveEditorSelection();
-        syncContent();
-        updatePreview();
-        updateTableTools();
-    });
+            if (!match || match.length < 3) return '#ffffff';
 
-    editor.addEventListener('mouseup', function () {
-        saveEditorSelection();
-        updateTableTools();
-    });
+            return '#' + match.slice(0, 3).map(function(number) {
+                return Number(number).toString(16).padStart(2, '0');
+            }).join('');
+        }
 
-    editor.addEventListener('input', function () {
-        syncContent();
-        updatePreview();
-        updateTableTools();
-    });
+        function updateTableTools() {
+            activeTable = getCurrentTable();
 
-    editor.addEventListener('click', function () {
-        updateTableTools();
-    });
+            const tools = document.getElementById('editorTableTools');
 
-    editor.addEventListener('keydown', function (event) {
-        if (event.key === 'Tab') {
+            tools.hidden = !activeTable;
+
+            if (!activeTable) return;
+
+            const header = activeTable.querySelector('th');
+            const cell = activeTable.querySelector('td');
+
+            if (header) {
+                const headerBg = header.style.backgroundColor;
+                const headerColor = header.style.color;
+
+                if (headerBg) {
+                    document.getElementById('tableHeaderBackground').value = rgbToHex(headerBg);
+                }
+
+                if (headerColor) {
+                    document.getElementById('tableHeaderColor').value = rgbToHex(headerColor);
+                }
+            }
+
+            if (cell) {
+                const cellBg = cell.style.backgroundColor;
+                const cellColor = cell.style.color;
+
+                if (cellBg) {
+                    document.getElementById('tableCellBackground').value = rgbToHex(cellBg);
+                }
+
+                if (cellColor) {
+                    document.getElementById('tableCellColor').value = rgbToHex(cellColor);
+                }
+            }
+        }
+
+        function applyTableStyles(table) {
+            if (!table) return;
+
+            const headerBg = document.getElementById('tableHeaderBackground').value;
+            const headerColor = document.getElementById('tableHeaderColor').value;
+            const cellBg = document.getElementById('tableCellBackground').value;
+            const cellColor = document.getElementById('tableCellColor').value;
+
+            table.dataset.headerBackground = headerBg;
+            table.dataset.headerColor = headerColor;
+            table.dataset.cellBackground = cellBg;
+            table.dataset.cellColor = cellColor;
+
+            table.style.width = table.style.width || '100%';
+            table.style.borderCollapse = 'collapse';
+
+            Array.from(table.rows).forEach(function(row, rowIndex) {
+                Array.from(row.cells).forEach(function(cell) {
+                    const isHeader =
+                        cell.tagName.toLowerCase() === 'th' || rowIndex === 0;
+
+                    cell.style.backgroundColor = isHeader ? headerBg : cellBg;
+                    cell.style.color = isHeader ? headerColor : cellColor;
+                    cell.style.border = '1px solid #dce2eb';
+                    cell.style.padding = '8px';
+                    cell.style.textAlign = 'left';
+                    cell.style.fontWeight = isHeader ? '700' : '400';
+                });
+            });
+
+            syncContent();
+            updatePreview();
+        }
+
+        function styleNewTableCell(cell, isHeader, table) {
+            const headerBg =
+                table.dataset.headerBackground ||
+                document.getElementById('tableHeaderBackground').value;
+
+            const headerColor =
+                table.dataset.headerColor ||
+                document.getElementById('tableHeaderColor').value;
+
+            const cellBg =
+                table.dataset.cellBackground ||
+                document.getElementById('tableCellBackground').value;
+
+            const cellColor =
+                table.dataset.cellColor ||
+                document.getElementById('tableCellColor').value;
+
+            cell.style.backgroundColor = isHeader ? headerBg : cellBg;
+            cell.style.color = isHeader ? headerColor : cellColor;
+            cell.style.border = '1px solid #dce2eb';
+            cell.style.padding = '8px';
+            cell.style.textAlign = 'left';
+            cell.style.fontWeight = isHeader ? '700' : '400';
+        }
+
+        function addTableRow() {
+            const table = activeTable || getCurrentTable();
+
+            if (!table) {
+                alert('Click inside a table first.');
+                return;
+            }
+
+            const columns = tableCellCount(table) || 1;
+            const row = table.insertRow(-1);
+
+            for (let i = 0; i < columns; i++) {
+                const cell = document.createElement('td');
+
+                cell.innerHTML = '&nbsp;';
+                row.appendChild(cell);
+
+                styleNewTableCell(cell, false, table);
+            }
+
+            activeTable = table;
+
+            syncContent();
+            updatePreview();
+        }
+
+        function removeTableRow() {
+            const table = activeTable || getCurrentTable();
+
+            if (!table) {
+                alert('Click inside a table first.');
+                return;
+            }
+
+            if (table.rows.length <= 1) {
+                alert('A table must have at least one row. Use Delete Table to remove the whole table.');
+                return;
+            }
+
+            const cell = getSelectedCell(table);
+            const rowIndex = cell ? cell.parentElement.rowIndex : table.rows.length - 1;
+
+            table.deleteRow(rowIndex);
+
+            activeTable = table;
+
+            syncContent();
+            updatePreview();
+        }
+
+        function addTableColumn() {
+            const table = activeTable || getCurrentTable();
+
+            if (!table) {
+                alert('Click inside a table first.');
+                return;
+            }
+
+            Array.from(table.rows).forEach(function(row, rowIndex) {
+                const isHeader = rowIndex === 0;
+                const cell = document.createElement(isHeader ? 'th' : 'td');
+
+                cell.innerHTML = isHeader
+                    ? 'Header ' + (row.cells.length + 1)
+                    : '&nbsp;';
+
+                row.appendChild(cell);
+
+                styleNewTableCell(cell, isHeader, table);
+            });
+
+            activeTable = table;
+
+            syncContent();
+            updatePreview();
+        }
+
+        function removeTableColumn() {
+            const table = activeTable || getCurrentTable();
+
+            if (!table) {
+                alert('Click inside a table first.');
+                return;
+            }
+
+            const columns = tableCellCount(table);
+
+            if (columns <= 1) {
+                alert('A table must have at least one column. Use Delete Table to remove the whole table.');
+                return;
+            }
+
+            const cell = getSelectedCell(table);
+            const columnIndex = cell ? cell.cellIndex : columns - 1;
+
+            Array.from(table.rows).forEach(function(row) {
+                if (row.cells[columnIndex]) {
+                    row.deleteCell(columnIndex);
+                }
+            });
+
+            activeTable = table;
+
+            syncContent();
+            updatePreview();
+        }
+
+        function deleteTable() {
+            const table = activeTable || getCurrentTable();
+
+            if (!table) {
+                alert('Click inside a table first.');
+                return;
+            }
+
+            table.remove();
+
+            activeTable = null;
+            document.getElementById('editorTableTools').hidden = true;
+
+            syncContent();
+            updatePreview();
+        }
+
+        function updateReaderAttachments() {
+            const section = document.getElementById('readerAttachmentsSection');
+            const list = document.getElementById('readerAttachmentsList');
+
+            list.replaceChildren();
+            section.hidden = attachmentFiles.length === 0;
+
+            attachmentFiles.forEach(function(file) {
+                const row = document.createElement('div');
+                row.className = 'reader-attachment';
+
+                const icon = document.createElement('div');
+                icon.className = 'reader-attachment-icon';
+                icon.textContent = fileExtension(file);
+
+                const name = document.createElement('div');
+                name.className = 'reader-attachment-name';
+                name.textContent = file.name + ' · ' + formatFileSize(file.size);
+
+                row.append(icon, name);
+                list.appendChild(row);
+            });
+        }
+
+        function openPreview() {
+            syncContent();
+            updatePreview();
+            updateReaderAttachments();
+
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+
+            document.body.style.overflow = 'hidden';
+
+            previewOpen = true;
+        }
+
+        function closePreview() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+
+            previewOpen = false;
+
+            if (!attachmentPreviewOpen) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.getElementById('chooseThumbnail').addEventListener('click', function() {
+            thumbnailInput.click();
+        });
+
+        document.getElementById('replaceThumbnail').addEventListener('click', function() {
+            thumbnailInput.click();
+        });
+
+        document.getElementById('removeThumbnail').addEventListener('click', function() {
+            thumbnailInput.value = '';
+
+            updateThumbnailPreview(null);
+            updatePreview();
+        });
+
+        thumbnailInput.addEventListener('change', function() {
+            const file = thumbnailInput.files[0];
+
+            if (!file) return;
+
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                alert('Please select a JPG, PNG, or WebP image.');
+                thumbnailInput.value = '';
+                return;
+            }
+
+            if (file.size > MAX_THUMBNAIL_SIZE) {
+                alert('The thumbnail must not exceed 4 MB.');
+                thumbnailInput.value = '';
+                return;
+            }
+
+            updateThumbnailPreview(file);
+            updatePreview();
+        });
+
+        thumbnailFit.addEventListener('change', applyThumbnailSettings);
+        thumbnailPosition.addEventListener('change', applyThumbnailSettings);
+        thumbnailBackgroundStyle.addEventListener('change', applyBackgroundStyle);
+        thumbnailBackground.addEventListener('input', applyBackgroundStyle);
+        thumbnailGradientStart.addEventListener('input', applyBackgroundStyle);
+        thumbnailGradientEnd.addEventListener('input', applyBackgroundStyle);
+
+        document.getElementById('chooseAttachments').addEventListener('click', function() {
+            attachmentInput.click();
+        });
+
+        attachmentInput.addEventListener('change', function() {
+            addAttachments(attachmentInput.files);
+            attachmentInput.value = '';
+        });
+
+        const attachmentDropzone = document.getElementById('attachmentDropzone');
+
+        attachmentDropzone.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            attachmentDropzone.classList.add('drag-over');
+        });
+
+        attachmentDropzone.addEventListener('dragleave', function() {
+            attachmentDropzone.classList.remove('drag-over');
+        });
+
+        attachmentDropzone.addEventListener('drop', function(event) {
+            event.preventDefault();
+            attachmentDropzone.classList.remove('drag-over');
+
+            if (event.dataTransfer && event.dataTransfer.files.length) {
+                addAttachments(event.dataTransfer.files);
+            }
+        });
+
+        document.getElementById('addTagButton').addEventListener('click', function() {
+            addTag(tagSearch.value);
+        });
+
+        tagSearch.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ',') {
+                event.preventDefault();
+                addTag(tagSearch.value);
+            }
+
+            if (event.key === 'Backspace' && !tagSearch.value && selectedTags.length) {
+                selectedTags.pop();
+
+                updateTagHiddenField();
+                renderSelectedTags();
+                renderTagRecommendations();
+                updatePreview();
+            }
+        });
+
+        tagSearch.addEventListener('input', renderTagRecommendations);
+
+        document.querySelectorAll('[data-command]').forEach(function(button) {
+            button.addEventListener('mousedown', saveEditorSelection);
+
+            button.addEventListener('click', function() {
+                execEditorCommand(button.dataset.command);
+            });
+        });
+
+        document.getElementById('editorBlock').addEventListener('change', function() {
+            execEditorCommand('formatBlock', this.value);
+        });
+
+        document.getElementById('alignLeft').addEventListener('click', function() {
+            execEditorCommand('justifyLeft');
+        });
+
+        document.getElementById('alignCenter').addEventListener('click', function() {
+            execEditorCommand('justifyCenter');
+        });
+
+        document.getElementById('alignRight').addEventListener('click', function() {
+            execEditorCommand('justifyRight');
+        });
+
+        document.getElementById('insertLinkButton').addEventListener('mousedown', saveEditorSelection);
+
+        document.getElementById('insertLinkButton').addEventListener('click', function() {
+            const url = prompt('Enter the link URL, including https://');
+
+            if (!url) return;
+
+            if (!/^https?:\/\//i.test(url)) {
+                alert('Please enter a URL starting with http:// or https://.');
+                return;
+            }
+
+            execEditorCommand('createLink', url);
+        });
+
+        document.getElementById('insertImageButton').addEventListener('mousedown', saveEditorSelection);
+
+        document.getElementById('insertImageButton').addEventListener('click', function() {
+            saveEditorSelection();
+            editorImageInput.click();
+        });
+
+        editorImageInput.addEventListener('change', function() {
+            const file = editorImageInput.files[0];
+
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please choose an image file.');
+                editorImageInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                const image = document.createElement('img');
+
+                image.src = reader.result;
+                image.alt = file.name;
+                image.style.maxWidth = '100%';
+
+                restoreEditorSelection();
+
+                const selection = window.getSelection();
+
+                if (selection && selection.rangeCount && editor.contains(selection.anchorNode)) {
+                    const range = selection.getRangeAt(0);
+
+                    range.deleteContents();
+                    range.insertNode(image);
+                    range.setStartAfter(image);
+                    range.collapse(true);
+
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                } else {
+                    editor.appendChild(image);
+                }
+
+                saveEditorSelection();
+                syncContent();
+                updatePreview();
+
+                editorImageInput.value = '';
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        editor.addEventListener('paste', function(event) {
+            const items = event.clipboardData && event.clipboardData.items
+                ? Array.from(event.clipboardData.items)
+                : [];
+
+            const imageItem = items.find(function(item) {
+                return item.type && item.type.startsWith('image/');
+            });
+
+            if (!imageItem) return;
+
+            const file = imageItem.getAsFile();
+
+            if (!file) return;
+
+            event.preventDefault();
+
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                insertHtmlAtCursor(
+                    '<p><img src="' + reader.result + '" alt="Pasted image" style="max-width:100%;height:auto"></p>'
+                );
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        editor.addEventListener('drop', function(event) {
+            const files = Array.from(event.dataTransfer.files || []);
+
+            const image = files.find(function(file) {
+                return file.type.startsWith('image/');
+            });
+
+            if (!image) return;
+
+            event.preventDefault();
+
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                insertHtmlAtCursor(
+                    '<p><img src="' + reader.result + '" alt="' +
+                    escapeHtml(image.name) +
+                    '" style="max-width:100%;height:auto"></p>'
+                );
+            };
+
+            reader.readAsDataURL(image);
+        });
+
+        document.getElementById('insertTableButton').addEventListener('mousedown', saveEditorSelection);
+
+        document.getElementById('insertTableButton').addEventListener('click', function() {
+            const rowsValue = prompt('How many rows? (1–20)', '3');
+
+            if (rowsValue === null) return;
+
+            const columnsValue = prompt('How many columns? (1–10)', '3');
+
+            if (columnsValue === null) return;
+
+            const rows = Number.parseInt(rowsValue, 10);
+            const columns = Number.parseInt(columnsValue, 10);
+
+            if (
+                !Number.isInteger(rows) ||
+                !Number.isInteger(columns) ||
+                rows < 1 ||
+                rows > 20 ||
+                columns < 1 ||
+                columns > 10
+            ) {
+                alert('Enter 1–20 rows and 1–10 columns.');
+                return;
+            }
+
+            const headerBackground = document.getElementById('tableHeaderBackground').value;
+            const headerColor = document.getElementById('tableHeaderColor').value;
+            const cellBackground = document.getElementById('tableCellBackground').value;
+            const cellColor = document.getElementById('tableCellColor').value;
+
+            let html =
+                '<table style="width:100%;border-collapse:collapse" ' +
+                'data-header-background="' + headerBackground + '" ' +
+                'data-header-color="' + headerColor + '" ' +
+                'data-cell-background="' + cellBackground + '" ' +
+                'data-cell-color="' + cellColor + '">' +
+                '<tbody>';
+
+            for (let r = 0; r < rows; r++) {
+                html += '<tr>';
+
+                for (let c = 0; c < columns; c++) {
+                    const isHeader = r === 0;
+                    const tag = isHeader ? 'th' : 'td';
+                    const bg = isHeader ? headerBackground : cellBackground;
+                    const color = isHeader ? headerColor : cellColor;
+                    const text = isHeader ? 'Header ' + (c + 1) : '&nbsp;';
+
+                    html += '<' + tag +
+                        ' style="background-color:' + bg +
+                        ';color:' + color +
+                        ';border:1px solid #dce2eb' +
+                        ';padding:8px' +
+                        ';text-align:left' +
+                        ';font-weight:' + (isHeader ? '700' : '400') +
+                        '">' + text + '</' + tag + '>';
+                }
+
+                html += '</tr>';
+            }
+
+            html += '</tbody></table><p><br></p>';
+
+            insertHtmlAtCursor(html);
+            updateTableTools();
+        });
+
+        document.getElementById('addTableRow').addEventListener('click', addTableRow);
+        document.getElementById('removeTableRow').addEventListener('click', removeTableRow);
+        document.getElementById('addTableColumn').addEventListener('click', addTableColumn);
+        document.getElementById('removeTableColumn').addEventListener('click', removeTableColumn);
+        document.getElementById('deleteTable').addEventListener('click', deleteTable);
+
+        [
+            'tableHeaderBackground',
+            'tableHeaderColor',
+            'tableCellBackground',
+            'tableCellColor'
+        ].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', function() {
+                const table = activeTable || getCurrentTable();
+
+                if (!table) return;
+
+                applyTableStyles(table);
+            });
+        });
+
+        document.getElementById('clearEditor').addEventListener('click', function() {
+            if (!editor.innerHTML.trim()) return;
+
+            if (!confirm('Clear all text, formatting, images, and tables in the content editor?')) {
+                return;
+            }
+
+            editor.innerHTML = '';
+            activeTable = null;
+            editorSelection = null;
+
+            document.getElementById('editorTableTools').hidden = true;
+
+            syncContent();
+            updatePreview();
+        });
+
+        document.getElementById('undoEditor').addEventListener('click', function() {
+            execEditorCommand('undo');
+        });
+
+        document.getElementById('redoEditor').addEventListener('click', function() {
+            execEditorCommand('redo');
+        });
+
+        editor.addEventListener('keyup', function() {
+            saveEditorSelection();
+            syncContent();
+            updatePreview();
+            updateTableTools();
+        });
+
+        editor.addEventListener('mouseup', function() {
+            saveEditorSelection();
+            updateTableTools();
+        });
+
+        editor.addEventListener('input', function() {
+            syncContent();
+            updatePreview();
+            updateTableTools();
+        });
+
+        editor.addEventListener('click', updateTableTools);
+
+        editor.addEventListener('keydown', function(event) {
+            if (event.key !== 'Tab') return;
+
             const table = getCurrentTable();
 
             if (!table) return;
@@ -3086,9 +4164,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const selection = window.getSelection();
             let node = selection && selection.anchorNode;
 
-            if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+            if (node && node.nodeType === Node.TEXT_NODE) {
+                node = node.parentElement;
+            }
 
-            const cell = node && node.closest ? node.closest('td, th') : null;
+            const cell = node && node.closest
+                ? node.closest('td, th')
+                : null;
 
             if (!cell) return;
 
@@ -3100,18 +4182,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (next) {
                 const range = document.createRange();
+
                 range.selectNodeContents(next);
                 range.collapse(false);
+
                 selection.removeAllRanges();
                 selection.addRange(range);
             } else if (!event.shiftKey) {
                 addTableRow();
-                const lastCell = table.querySelector('tr:last-child td:last-child, tr:last-child th:last-child');
+
+                const lastCell = table.querySelector(
+                    'tr:last-child td:last-child, tr:last-child th:last-child'
+                );
 
                 if (lastCell) {
                     const range = document.createRange();
+
                     range.selectNodeContents(lastCell);
                     range.collapse(false);
+
                     selection.removeAllRanges();
                     selection.addRange(range);
                 }
@@ -3119,79 +4208,117 @@ document.addEventListener('DOMContentLoaded', function () {
 
             saveEditorSelection();
             syncContent();
+        });
+
+        [title, summary, scheduledAt, publishedAt, expiresAt].forEach(function(input) {
+            input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        });
+
+        title.addEventListener('input', function() {
+            updateCount(title, 'titleCount', 150);
+        });
+
+        summary.addEventListener('input', function() {
+            updateCount(summary, 'summaryCount');
+        });
+
+        status.addEventListener('change', updateStatusFields);
+        pinned.addEventListener('change', updatePinSettings);
+
+        document.getElementById('openPreviewTop').addEventListener('click', openPreview);
+        document.getElementById('openPreviewBottom').addEventListener('click', openPreview);
+        document.getElementById('openPreviewSide').addEventListener('click', openPreview);
+        document.getElementById('closePreview').addEventListener('click', closePreview);
+
+        document.querySelectorAll('[data-close-preview]').forEach(function(element) {
+            element.addEventListener('click', closePreview);
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (attachmentPreviewOpen) {
+                    closeAttachmentPreview();
+                } else if (previewOpen) {
+                    closePreview();
+                }
+            }
+        });
+
+        form.addEventListener('submit', function(event) {
+            syncContent();
+            updateTagHiddenField();
+
+            if (!editor.innerText.trim()) {
+                event.preventDefault();
+
+                alert('Please enter the announcement content before saving.');
+
+                editor.focus();
+                return;
+            }
+
+            if (status.value === 'scheduled' && !scheduledAt.value) {
+                event.preventDefault();
+
+                alert('Please select the scheduled publication date and time.');
+
+                scheduledAt.focus();
+                return;
+            }
+
+            const totalAttachmentSize = attachmentFiles.reduce(function(total, file) {
+                return total + file.size;
+            }, 0);
+
+            if (totalAttachmentSize > MAX_ATTACHMENT_SIZE) {
+                event.preventDefault();
+
+                alert('The combined attachment size must not exceed 100 MB.');
+            }
+        });
+
+        if (initialContent.value.trim()) {
+            editor.innerHTML = initialContent.value;
         }
-    });
 
-    [title, category, summary, scheduledAt, publishedAt, expiresAt].forEach(function (input) {
-        input.addEventListener('input', updatePreview);
-        input.addEventListener('change', updatePreview);
-    });
+        const initialCategory = (category.value || '')
+            .split(',')
+            .map(function(tag) {
+                return tag.trim();
+            })
+            .filter(Boolean);
 
-    title.addEventListener('input', function () {
+        selectedTags = initialCategory.filter(function(tag, index, all) {
+            return all.findIndex(function(item) {
+                return item.toLowerCase() === tag.toLowerCase();
+            }) === index;
+        });
+
+        try {
+            tagSuggestions = @json($categorySuggestions ?? []);
+
+            if (!Array.isArray(tagSuggestions)) {
+                tagSuggestions = [];
+            }
+        } catch (error) {
+            tagSuggestions = [];
+        }
+
+        renderSelectedTags();
+        renderTagRecommendations();
+
         updateCount(title, 'titleCount', 150);
-    });
-
-    summary.addEventListener('input', function () {
         updateCount(summary, 'summaryCount');
-    });
 
-    status.addEventListener('change', updateStatusFields);
-    pinned.addEventListener('change', updatePinSettings);
-
-    document.getElementById('openPreviewTop').addEventListener('click', openPreview);
-    document.getElementById('openPreviewBottom').addEventListener('click', openPreview);
-    document.getElementById('openPreviewSide').addEventListener('click', openPreview);
-    document.getElementById('closePreview').addEventListener('click', closePreview);
-
-    document.querySelectorAll('[data-close-preview]').forEach(function (element) {
-        element.addEventListener('click', closePreview);
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && previewOpen) closePreview();
-    });
-
-    form.addEventListener('submit', function (event) {
         syncContent();
-
-        if (!editor.innerText.trim()) {
-            event.preventDefault();
-            alert('Please enter the announcement content before saving.');
-            editor.focus();
-            return;
-        }
-
-        if (status.value === 'scheduled' && !scheduledAt.value) {
-            event.preventDefault();
-            alert('Please select the scheduled publication date and time.');
-            scheduledAt.focus();
-            return;
-        }
-
-        const totalAttachmentSize = attachmentFiles.reduce(function (total, file) {
-            return total + file.size;
-        }, 0);
-
-        if (totalAttachmentSize > MAX_ATTACHMENT_SIZE) {
-            event.preventDefault();
-            alert('The combined attachment size must not exceed 100 MB.');
-            return;
-        }
+        updateStatusFields();
+        updatePinSettings();
+        updatePreview();
+        renderAttachments();
+        updateReaderAttachments();
+        applyThumbnailSettings();
     });
-
-    if (initialContent.value.trim()) {
-        editor.innerHTML = initialContent.value;
-    }
-
-    updateCount(title, 'titleCount', 150);
-    updateCount(summary, 'summaryCount');
-    syncContent();
-    updateStatusFields();
-    updatePinSettings();
-    updatePreview();
-    renderAttachments();
-    updateReaderAttachments();
-});
 </script>
 
 @endsection
