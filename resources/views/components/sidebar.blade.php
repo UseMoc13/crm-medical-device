@@ -181,7 +181,11 @@
         </a>
 
 
-        <a href="#" data-label="Contracts">
+        <a
+            href="{{ route('contracts.index') }}"
+            class="{{ request()->routeIs('contracts.*') ? 'active' : '' }}"
+            data-label="Contracts"
+        >
             <span class="ico">▱</span>
             <span class="nav-text">Contracts</span>
         </a>
@@ -368,6 +372,8 @@
             <span class="ico">◉</span>
             <span class="nav-text">Audit Logs</span>
         </a>
+
+        
 
     </nav>
 

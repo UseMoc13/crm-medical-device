@@ -688,56 +688,34 @@
                             
                             {{-- Sales Order --}}
                             <td>
-                                @php
-                                    $existingSalesOrder = \Illuminate\Support\Facades\DB::table('sales_orders')
-                                        ->where('quotation_id', $quotation->quotation_id)
-                                        ->first();
-                                @endphp
+                            @php
+                                $existingSalesOrder = \Illuminate\Support\Facades\DB::table('sales_orders')
+                                    ->where('quotation_id', $quotation->quotation_id)
+                                    ->first();
+                            @endphp
 
-                                @if ($existingSalesOrder)
-                                    <span class="quotation-status-badge quotation-status-approved">
-                                        {{ $existingSalesOrder->sales_order_number }}
-                                    </span>
-                                @elseif (strtolower(trim($quotation->status ?? '')) === 'approved')
-                                    <form
-                                        method="POST"
-                                        action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
-                                        onsubmit="return confirm('Buat Sales Order dari quotation ini?')"
-                                    >
-                                        @csrf
-                                        <button type="submit" class="btn primary">
-                                            Buat Sales Order
-                                        </button>
-                                    </form>
-                                @else
-                                    <span class="muted">Belum disetujui</span>
-                                @endif
-                            </td>
-
-
-                        <td>
-                            @if (strtolower(trim($quotation->status ?? '')) === 'approved')
-
-                                @if (
-                                    \Illuminate\Support\Facades\DB::table('sales_orders')
-                                        ->where('quotation_id', $quotation->quotation_id)
-                                        ->exists()
-                                )
-                                    <span class="badge green">Sudah dibuat</span>
-                                @else
-                                    <form
-                                        method="POST"
-                                        action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
-                                        onsubmit="return confirm('Konversi quotation ini menjadi Sales Order?')"
-                                    >
-                                        @csrf
-                                    </form>
-                                @endif
-
+                            @if ($existingSalesOrder)
+                                <span class="quotation-status-badge quotation-status-approved">
+                                    {{ $existingSalesOrder->sales_order_number }}
+                                </span>
+                            @elseif (strtolower(trim($quotation->status ?? '')) === 'approved')
+                                <form
+                                    method="POST"
+                                    action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
+                                    onsubmit="return confirm('Buat Sales Order dari quotation ini?')"
+                                >
+                                    @csrf
+                                    <button type="submit" class="btn primary">
+                                        Buat Sales Order
+                                    </button>
+                                </form>
                             @else
                                 <span class="muted">Menunggu Approved</span>
                             @endif
                         </td>
+
+
+                        
 
                     </tr>
 
@@ -746,7 +724,7 @@
 
                     <tr>
 
-                        <td colspan="8">
+                        <td colspan="9">
 
                             <div class="empty">
 
@@ -1356,6 +1334,72 @@
     }
 
 }
+.table-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: none;
+}
+
+.table-wrap table thead th {
+    padding: 14px 12px;
+    background: #f3f4f6;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #d1d5db;
+}
+
+.table-wrap table tbody td {
+    padding: 13px 12px;
+    font-size: 12px;
+    color: #17284f;
+    vertical-align: middle;
+    border: 1px solid #d1d5db;
+}
+
+.table-wrap table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.table-wrap table th:nth-child(8),
+.table-wrap table td:nth-child(8) {
+    text-align: center;
+    min-width: 120px;
+}
+
+.table-wrap table th:nth-child(9),
+.table-wrap table td:nth-child(9) {
+    min-width: 170px;
+}
+
+.table-wrap table tbody td[colspan] {
+    text-align: center;
+    padding: 28px 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-wrap table {
+        min-width: 1250px;
+    }
+}
+
+
 
 </style>
 

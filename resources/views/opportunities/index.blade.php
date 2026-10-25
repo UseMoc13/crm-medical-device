@@ -14,6 +14,26 @@
             Manage sales opportunities and potential business deals.
         </p>
 
+        
+            {{-- Success Alert --}}
+            @if (session('success'))
+                <div class="alert alert-success" role="alert">
+                    <span class="alert-icon">✓</span>
+                    <span>{{ session('success') }}</span>
+                    <button type="button" class="alert-close"
+                            onclick="this.parentElement.remove()">&times;</button>
+                </div>
+            @endif
+
+            {{-- Error Alert --}}
+            @if (session('error'))
+                <div class="alert alert-error" role="alert">
+                    <span class="alert-icon">!</span>
+                    <span>{{ session('error') }}</span>
+                    <button type="button" class="alert-close"
+                            onclick="this.parentElement.remove()">&times;</button>
+                </div>
+            @endif
     </div>
 
 
@@ -1440,7 +1460,70 @@
             justify-content: center;
         }
 
-    }
+        }
+                .table-wrap {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            border: none;
+        }
+
+        .table-wrap table thead th {
+            padding: 14px 12px;
+            background: #f3f4f6;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            text-align: left;
+            white-space: nowrap;
+            border: 1px solid #d1d5db;
+        }
+
+        .table-wrap table tbody td {
+            padding: 13px 12px;
+            font-size: 12px;
+            color: #17284f;
+            vertical-align: middle;
+            border: 1px solid #d1d5db;
+        }
+
+        /* Hover pada baris */
+        .table-wrap table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Kolom Actions */
+        .table-wrap table th:last-child,
+        .table-wrap table td:last-child {
+            text-align: center;
+            min-width: 150px;
+        }
+
+        /* Baris ketika data kosong */
+        .table-wrap table tbody td[colspan] {
+            text-align: center;
+            padding: 28px 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .table-wrap table {
+                min-width: 1100px;
+            }
+
+            }
 </style>
 
 

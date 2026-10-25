@@ -20,6 +20,7 @@ use App\Http\Controllers\SerialNumberController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AnnouncementManagementController;
+use App\Http\Controllers\ContractController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -34,7 +35,11 @@ Route::resource('opportunities', OpportunityController::class);
 Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
+Route::resource('contracts', ContractController::class);
 Route::resource('customers', CustomerController::class);
+
+Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
+    ->name('contracts.download');
 
 Route::get('/sales_orders', [SalesOrderController::class, 'index'])
     ->name('sales_orders.index');
