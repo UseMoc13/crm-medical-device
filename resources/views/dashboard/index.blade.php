@@ -142,164 +142,6 @@
 
 
 {{-- =========================================================
-     ANNOUNCEMENT SLIDER
-========================================================= --}}
-
-<div
-    class="card dash-announcements"
-    style="margin-top: 16px;"
-    id="dashAnnouncementSlider"
-    role="region"
-    aria-roledescription="carousel"
-    aria-label="Latest announcements"
-    tabindex="0"
->
-
-    <div class="card-head dash-announcements-head">
-
-        <h3>
-            Latest Announcements
-        </h3>
-
-        <div class="dash-head-actions">
-
-            @if($latestAnnouncements->count() > 1)
-
-                <div class="dash-slider-controls">
-
-                    <button
-                        type="button"
-                        class="dash-slider-arrow"
-                        id="dashSliderPrev"
-                        aria-label="Previous announcement"
-                    >
-                        ‹
-                    </button>
-
-                    <div class="dash-slider-dots">
-                        @foreach($latestAnnouncements as $announcement)
-                            <button
-                                type="button"
-                                class="dash-slider-dot {{ $loop->first ? 'active' : '' }}"
-                                data-slide="{{ $loop->index }}"
-                                aria-label="Go to announcement {{ $loop->iteration }}"
-                            ></button>
-                        @endforeach
-                    </div>
-
-                    <button
-                        type="button"
-                        class="dash-slider-arrow"
-                        id="dashSliderNext"
-                        aria-label="Next announcement"
-                    >
-                        ›
-                    </button>
-
-                </div>
-
-            @endif
-
-            <a
-                href="{{ route('announcements.index') }}"
-                class="btn"
-            >
-                View All →
-            </a>
-
-        </div>
-
-    </div>
-
-    <div class="card-body dash-announcements-body">
-
-        @if($latestAnnouncements->isEmpty())
-
-            <div class="empty">
-                No announcements have been published yet.
-            </div>
-
-        @else
-
-            <div class="dash-slider-viewport">
-
-                <div class="dash-slider-track" id="dashSliderTrack">
-
-                    @foreach($latestAnnouncements as $announcement)
-
-                        @php
-                            $thumbnailUrl = null;
-
-                            if (
-                                $announcement->thumbnail_path
-                                && Storage::disk('public')->exists($announcement->thumbnail_path)
-                            ) {
-                                $thumbnailUrl = '/storage/' . ltrim($announcement->thumbnail_path, '/');
-                            }
-                        @endphp
-
-                        <a
-                            href="{{ route('announcements.show', $announcement) }}"
-                            class="dash-slide"
-                            role="group"
-                            aria-roledescription="slide"
-                            aria-label="{{ $loop->iteration }} of {{ $loop->count }}: {{ $announcement->title }}"
-                        >
-
-                            <span class="dash-slide-media {{ $thumbnailUrl ? '' : 'is-placeholder' }}">
-                                @if($thumbnailUrl)
-                                    <img
-                                        src="{{ $thumbnailUrl }}"
-                                        alt=""
-                                        loading="lazy"
-                                    >
-                                @else
-                                    ▤
-                                @endif
-                            </span>
-
-                            <span class="dash-slide-content">
-
-                                <span class="dash-slide-meta">
-
-                                    @if($announcement->is_pinned)
-                                        <span class="dash-pinned">📌 Pinned</span>
-                                    @endif
-
-                                    @if($announcement->category)
-                                        <span class="dash-category">{{ $announcement->category }}</span>
-                                    @endif
-
-                                    <span class="dash-date">
-                                        {{ $announcement->published_at?->format('d M Y') ?? '' }}
-                                    </span>
-
-                                </span>
-
-                                <strong class="dash-slide-title">
-                                    {{ $announcement->title }}
-                                </strong>
-
-                            </span>
-
-                            <span class="dash-slide-arrow" aria-hidden="true">→</span>
-
-                        </a>
-
-                    @endforeach
-
-                </div>
-
-            </div>
-
-        @endif
-
-    </div>
-
-</div>
-
-
-{{-- =========================================================
      DASHBOARD CONTENT
 ========================================================= --}}
 
@@ -334,6 +176,159 @@
         </div>
 
     </div>
+
+
+    {{-- =====================================================
+         ANNOUNCEMENT SLIDER
+    ====================================================== --}}
+
+    <div class="dash-side-stack">
+
+        <div
+            class="card dash-announcements"
+            id="dashAnnouncementSlider"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Latest announcements"
+            tabindex="0"
+        >
+
+            <div class="card-head dash-announcements-head">
+
+                <h3>
+                    Latest Announcements
+                </h3>
+
+                <a
+                    href="{{ route('announcements.index') }}"
+                    class="btn"
+                >
+                    View All →
+                </a>
+
+            </div>
+
+            <div class="card-body dash-announcements-body">
+
+                @if($latestAnnouncements->isEmpty())
+
+                    <div class="empty">
+                        No announcements have been published yet.
+                    </div>
+
+                @else
+
+                    <div class="dash-slider-viewport">
+
+                        <div class="dash-slider-track" id="dashSliderTrack">
+
+                            @foreach($latestAnnouncements as $announcement)
+
+                                @php
+                                    $thumbnailUrl = null;
+
+                                    if (
+                                        $announcement->thumbnail_path
+                                        && Storage::disk('public')->exists($announcement->thumbnail_path)
+                                    ) {
+                                        $thumbnailUrl = '/storage/' . ltrim($announcement->thumbnail_path, '/');
+                                    }
+                                @endphp
+
+                                <a
+                                    href="{{ route('announcements.show', $announcement) }}"
+                                    class="dash-slide"
+                                    role="group"
+                                    aria-roledescription="slide"
+                                    aria-label="{{ $loop->iteration }} of {{ $loop->count }}: {{ $announcement->title }}"
+                                >
+
+                                    <span class="dash-slide-media {{ $thumbnailUrl ? '' : 'is-placeholder' }}">
+                                        @if($thumbnailUrl)
+                                            <img
+                                                src="{{ $thumbnailUrl }}"
+                                                alt=""
+                                                loading="lazy"
+                                            >
+                                        @else
+                                            ▤
+                                        @endif
+                                    </span>
+
+                                    <span class="dash-slide-content">
+
+                                        <span class="dash-slide-meta">
+
+                                            @if($announcement->is_pinned)
+                                                <span class="dash-pinned">📌 Pinned</span>
+                                            @endif
+
+                                            @if($announcement->category)
+                                                <span class="dash-category">{{ $announcement->category }}</span>
+                                            @endif
+
+                                            <span class="dash-date">
+                                                {{ $announcement->published_at?->format('d M Y') ?? '' }}
+                                            </span>
+
+                                        </span>
+
+                                        <strong class="dash-slide-title">
+                                            {{ $announcement->title }}
+                                        </strong>
+
+                                    </span>
+
+                                </a>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                    @if($latestAnnouncements->count() > 1)
+
+                        <div class="dash-slider-controls">
+
+                            <button
+                                type="button"
+                                class="dash-slider-arrow"
+                                id="dashSliderPrev"
+                                aria-label="Previous announcement"
+                            >
+                                ‹
+                            </button>
+
+                            <div class="dash-slider-dots">
+                                @foreach($latestAnnouncements as $announcement)
+                                    <button
+                                        type="button"
+                                        class="dash-slider-dot {{ $loop->first ? 'active' : '' }}"
+                                        data-slide="{{ $loop->index }}"
+                                        aria-label="Go to announcement {{ $loop->iteration }}"
+                                    ></button>
+                                @endforeach
+                            </div>
+
+                            <button
+                                type="button"
+                                class="dash-slider-arrow"
+                                id="dashSliderNext"
+                                aria-label="Next announcement"
+                            >
+                                ›
+                            </button>
+
+                        </div>
+
+                    @endif
+
+                @endif
+
+            </div>
+
+        </div>
 
 
     {{-- =====================================================
@@ -390,6 +385,8 @@
 
     </div>
 
+    </div>
+
 </div>
 
 <style>
@@ -409,20 +406,25 @@
         margin: 0;
     }
 
-    .dash-head-actions {
+    .dash-side-stack {
         display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-shrink: 0;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
     }
 
-    .dash-head-actions .btn {
+    .dash-announcements-head .btn {
+        flex-shrink: 0;
         white-space: nowrap;
     }
 
     .dash-announcements-body {
         padding-top: 14px;
         padding-bottom: 14px;
+    }
+
+    .dash-announcements-body .empty {
+        padding: 18px 10px;
     }
 
     .dash-slider-viewport {
@@ -441,11 +443,11 @@
     .dash-slide {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         flex: 0 0 100%;
         min-width: 0;
         box-sizing: border-box;
-        padding: 12px 16px;
+        padding: 12px;
         color: inherit;
         text-decoration: none;
         transition: background .18s ease;
@@ -464,8 +466,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 88px;
-        width: 88px;
+        flex: 0 0 76px;
+        width: 76px;
         height: 56px;
         overflow: hidden;
         border-radius: 8px;
@@ -529,35 +531,26 @@
     }
 
     .dash-slide-title {
-        display: block;
+        display: -webkit-box;
         overflow: hidden;
         color: #17284f;
-        font-size: 14px;
-        line-height: 1.4;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        font-size: 13px;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
     }
 
     .dash-slide:hover .dash-slide-title {
         color: #2ba7a0;
     }
 
-    .dash-slide-arrow {
-        flex-shrink: 0;
-        color: #8a94a6;
-        font-size: 18px;
-        transition: transform .18s ease, color .18s ease;
-    }
-
-    .dash-slide:hover .dash-slide-arrow {
-        color: #2ba7a0;
-        transform: translateX(3px);
-    }
-
     .dash-slider-controls {
         display: flex;
         align-items: center;
-        gap: 10px;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 12px;
     }
 
     .dash-slider-arrow {
@@ -602,31 +595,6 @@
     .dash-slider-dot.active {
         width: 20px;
         background: #2ba7a0;
-    }
-
-    @media (max-width: 640px) {
-        .dash-announcements-head {
-            flex-wrap: wrap;
-        }
-
-        .dash-head-actions {
-            width: 100%;
-            justify-content: space-between;
-        }
-
-        .dash-slide {
-            padding: 10px 12px;
-        }
-
-        .dash-slide-media {
-            flex-basis: 64px;
-            width: 64px;
-            height: 48px;
-        }
-
-        .dash-slide-arrow {
-            display: none;
-        }
     }
 
     @media (prefers-reduced-motion: reduce) {
