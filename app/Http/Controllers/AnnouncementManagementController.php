@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -64,6 +65,8 @@ class AnnouncementManagementController extends Controller
 
     public function index(Request $request): View
     {
+        Announcement::publishDueScheduled();
+
         $query = Announcement::query()
             ->with('creator')
             ->withCount(['attachments', 'media']);
@@ -127,6 +130,8 @@ class AnnouncementManagementController extends Controller
         $validated = $request->validate($this->validationRules());
 
         $this->validateFileInputs($request);
+
+        $this->validatePublicationSchedule($validated);
 
         $storedPaths = [];
 
@@ -197,6 +202,10 @@ class AnnouncementManagementController extends Controller
 
     public function show(Announcement $announcement): View
     {
+        if (Announcement::publishDueScheduled() > 0) {
+            $announcement->refresh();
+        }
+
         $announcement->load([
             'creator',
             'updater',
@@ -212,6 +221,10 @@ class AnnouncementManagementController extends Controller
 
     public function edit(Announcement $announcement): View
     {
+        if (Announcement::publishDueScheduled() > 0) {
+            $announcement->refresh();
+        }
+
         $announcement->load([
             'attachments',
             'media',
@@ -234,6 +247,8 @@ class AnnouncementManagementController extends Controller
         );
 
         $this->validateFileInputs($request);
+
+        $this->validatePublicationSchedule($validated, $announcement);
 
         $storedPaths = [];
         $oldPaths = [];
@@ -456,14 +471,9 @@ class AnnouncementManagementController extends Controller
                 'required_if:status,scheduled',
                 'date',
             ],
-            'published_at' => [
-                'nullable',
-                'date',
-            ],
             'expires_at' => [
                 'nullable',
                 'date',
-                'after:published_at',
             ],
             'is_pinned' => [
                 'nullable',
@@ -561,6 +571,46 @@ class AnnouncementManagementController extends Controller
         }
     }
 
+    private function validatePublicationSchedule(
+        array $validated,
+        ?Announcement $announcement = null
+    ): void {
+        $status = $validated['status'];
+        $now = now();
+        $errors = [];
+        $start = null;
+
+        if ($status === 'scheduled') {
+            $scheduledAt = Carbon::parse($validated['scheduled_at']);
+
+            $unchanged = $announcement?->scheduled_at
+                && $announcement->scheduled_at->format('Y-m-d H:i')
+                    === $scheduledAt->format('Y-m-d H:i');
+
+            if (! $unchanged && $scheduledAt->lte($now)) {
+                $errors['scheduled_at'] = 'The scheduled time must be in the future. To publish right now, choose the Published status.';
+            }
+
+            $start = $scheduledAt;
+        } elseif ($status === 'published') {
+            $start = $announcement?->published_at ?? $now;
+        }
+
+        if (! empty($validated['expires_at']) && $start) {
+            $expiresAt = Carbon::parse($validated['expires_at']);
+
+            if ($expiresAt->lte($start)) {
+                $errors['expires_at'] = $status === 'scheduled'
+                    ? 'The expiration time must be later than the scheduled publication time.'
+                    : 'The expiration time must be later than the publication time.';
+            }
+        }
+
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
     private function normalizePublicationFields(
         array &$validated,
         ?Announcement $announcement = null
@@ -568,7 +618,7 @@ class AnnouncementManagementController extends Controller
         $status = $validated['status'];
 
         if ($status === 'published') {
-            $validated['published_at'] ??=
+            $validated['published_at'] =
                 $announcement?->published_at ?? now();
 
             $validated['scheduled_at'] = null;

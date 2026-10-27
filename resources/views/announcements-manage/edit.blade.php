@@ -447,13 +447,13 @@
                             <span class="settings-icon">◷</span>
                             <div>
                                 <strong>Schedule Publication</strong>
-                                <p>Choose the future date and time when the announcement should be published.</p>
+                                <p>Choose the future date and time when the announcement should go live.</p>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="scheduled_at">Scheduled Date and Time <span class="required">*</span></label>
                             <input type="datetime-local" name="scheduled_at" id="scheduled_at" value="{{ $dateTimeValue('scheduled_at') }}">
-                            <span class="form-hint">Automatic publishing also requires the Laravel scheduler and publication logic.</span>
+                            <span class="form-hint">The announcement is published automatically at this time. It must be in the future.</span>
                             @error('scheduled_at')
                             <span class="form-error">{{ $message }}</span>
                             @enderror
@@ -465,20 +465,16 @@
                             <span class="settings-icon">✓</span>
                             <div>
                                 <strong>Publish Announcement</strong>
-                                <p>Choose whether to publish immediately or specify a publication date.</p>
+                                <p>The announcement becomes visible to readers as soon as you save it.</p>
                             </div>
                         </div>
                         <div class="publication-instruction">
-                            <strong>Want to publish immediately?</strong>
-                            <p>Select <b>Published</b> and leave Publication Date and Time empty. The controller keeps the existing publication time, or uses the current time if none exists.</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="published_at">Publication Date and Time <span class="optional-label">Optional</span></label>
-                            <input type="datetime-local" name="published_at" id="published_at" value="{{ $dateTimeValue('published_at') }}">
-                            <span class="form-hint">Leave blank to keep the existing publication time, or use the current time if none exists.</span>
-                            @error('published_at')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
+                            <strong>Published immediately</strong>
+                            @if($announcement->published_at)
+                            <p>This announcement was published on {{ $announcement->published_at->format('d M Y, H:i') }}. Saving keeps that publication time. If it should go live later, choose <b>Scheduled</b> instead.</p>
+                            @else
+                            <p>The publication time is set automatically when you save. If it should go live later, choose <b>Scheduled</b> instead.</p>
+                            @endif
                         </div>
                     </div>
 
@@ -495,7 +491,7 @@
                     <div class="form-group" id="expirationGroup">
                         <label for="expires_at">Expiration Date and Time <span class="optional-label">Optional</span></label>
                         <input type="datetime-local" name="expires_at" id="expires_at" value="{{ $dateTimeValue('expires_at') }}">
-                        <span class="form-hint">Expiration only takes effect if the application enforces it.</span>
+                        <span class="form-hint">The announcement is hidden from readers automatically after this time. It must be later than the publication time.</span>
                         @error('expires_at')
                         <span class="form-error">{{ $message }}</span>
                         @enderror
@@ -2456,7 +2452,6 @@
         const initialContent = document.getElementById('initialContent');
         const status = document.getElementById('status');
         const scheduledAt = document.getElementById('scheduled_at');
-        const publishedAt = document.getElementById('published_at');
         const expiresAt = document.getElementById('expires_at');
         const pinned = document.getElementById('is_pinned');
         const thumbnailInput = document.getElementById('thumbnail');
@@ -2517,17 +2512,19 @@
         const removedAttachmentIds = new Set(@json(array_values((array) old('remove_attachments', []))));
         const removedMediaIds = new Set(@json(array_values((array) old('remove_media', []))));
 
+        const publishedAtInitial = @json(optional($announcement->published_at)->format('Y-m-d\TH:i'));
+
         const statusDescriptions = {
             draft: 'Save the announcement privately and continue editing it later.',
-            scheduled: 'Choose a future date and time. Automatic publication requires the scheduler and publication logic.',
-            published: 'Make the announcement eligible for public display according to its publication date and expiration settings.',
+            scheduled: 'Choose a future date and time. The announcement is published automatically when that time arrives.',
+            published: 'Publish the announcement immediately. It stays visible until its expiration time, if one is set.',
             archived: 'Save the announcement as archived. It should not appear in the public announcement list.'
         };
 
         const visibilityCopy = {
             draft: ['Private draft', 'This announcement should not be visible in the public announcement list.'],
-            scheduled: ['Scheduled publication', 'This announcement is intended for future publication. Automatic publication requires the scheduler and publication logic.'],
-            published: ['Published announcement', 'This announcement is intended for public display when its publication time has arrived and it has not expired.'],
+            scheduled: ['Scheduled publication', 'This announcement stays hidden and is published automatically at the scheduled time.'],
+            published: ['Published announcement', 'This announcement is visible to readers as soon as it is saved, until it expires.'],
             archived: ['Archived announcement', 'This announcement should remain unavailable in the public announcement list.']
         };
 
@@ -3018,11 +3015,15 @@
 
             const summaryText = summary.value.trim();
 
-            const dateValue = status.value === 'scheduled' ?
-                scheduledAt.value :
-                publishedAt.value;
+            let formattedDate = '';
 
-            const formattedDate = formatDate(dateValue);
+            if (status.value === 'scheduled') {
+                formattedDate = formatDate(scheduledAt.value);
+            } else if (status.value === 'published') {
+                formattedDate = publishedAtInitial ?
+                    formatDate(publishedAtInitial) :
+                    'Published when saved';
+            }
 
             document.getElementById('miniTitle').textContent =
                 titleText || 'Your announcement title';
@@ -4632,7 +4633,7 @@
             syncContent();
         });
 
-        [title, summary, scheduledAt, publishedAt, expiresAt].forEach(function(input) {
+        [title, summary, scheduledAt, expiresAt].forEach(function(input) {
             input.addEventListener('input', updatePreview);
             input.addEventListener('change', updatePreview);
         });
@@ -4688,6 +4689,24 @@
 
                 scheduledAt.focus();
                 return;
+            }
+
+            if (
+                expiresAt.value &&
+                (status.value === 'scheduled' || (status.value === 'published' && publishedAtInitial))
+            ) {
+                const startValue = status.value === 'scheduled' ?
+                    scheduledAt.value :
+                    publishedAtInitial;
+
+                if (startValue && expiresAt.value <= startValue) {
+                    event.preventDefault();
+
+                    alert('The expiration time must be later than the publication time.');
+
+                    expiresAt.focus();
+                    return;
+                }
             }
 
             const totalAttachmentSize = attachmentFiles.reduce(function(total, file) {

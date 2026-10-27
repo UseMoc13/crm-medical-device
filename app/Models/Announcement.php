@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Announcement extends Model
 {
@@ -78,6 +79,26 @@ class Announcement extends Model
             'announcement_id',
             'announcement_id'
         )->orderBy('sort_order');
+    }
+
+    /**
+     * Move every scheduled announcement whose time has arrived to "published".
+     *
+     * Called lazily before announcements are listed, so scheduled posts go live
+     * on time without depending on a cron job. The publication time becomes
+     * the time that was scheduled.
+     */
+    public static function publishDueScheduled(): int
+    {
+        return static::query()
+            ->where('status', 'scheduled')
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', now())
+            ->update([
+                'status' => 'published',
+                'published_at' => DB::raw('scheduled_at'),
+                'scheduled_at' => null,
+            ]);
     }
 
     public function scopePublished($query)

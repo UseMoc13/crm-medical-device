@@ -11,6 +11,8 @@ class AnnouncementController extends Controller
 {
     public function index(Request $request): View
     {
+        Announcement::publishDueScheduled();
+
         $now = now();
 
         $query = Announcement::query()
@@ -46,6 +48,10 @@ class AnnouncementController extends Controller
 
     public function show(Announcement $announcement): View
     {
+        if (Announcement::publishDueScheduled() > 0) {
+            $announcement->refresh();
+        }
+
         $now = now();
 
         $isVisible = Announcement::query()
