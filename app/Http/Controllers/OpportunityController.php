@@ -739,17 +739,45 @@ class OpportunityController extends Controller
     /**
      * Remove the specified opportunity.
      */
-    public function destroy(Opportunity $opportunity)
-    {
+
+public function destroy($id)
+{
+    $opportunity = Opportunity::findOrFail($id);
+
+    // Cek apakah Opportunity masih memiliki item produk
+    $hasItems = \Illuminate\Support\Facades\DB::table('opportunity_items')
+        ->where('opportunity_id', $opportunity->opportunity_id)
+        ->exists();
+
+    if ($hasItems) {
+        return redirect()
+            ->route('opportunities.index')
+            ->with(
+                'error',
+                'Opportunity tidak dapat dihapus karena masih memiliki item produk. Hapus atau lepaskan item terkait terlebih dahulu.'
+            );
+    }
+
+    try {
         $opportunity->delete();
 
         return redirect()
             ->route('opportunities.index')
-            ->with(
-                'success',
-                'Opportunity berhasil dihapus.'
-            );
+            ->with('success', 'Opportunity berhasil dihapus.');
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Tangani foreign key constraint dari relasi tabel lainnya
+        if ($e->getCode() === '23503') {
+            return redirect()
+                ->route('opportunities.index')
+                ->with(
+                    'error',
+                    'Opportunity tidak dapat dihapus karena masih digunakan oleh data lain.'
+                );
+        }
+
+        throw $e;
     }
+}
 
 
     /*

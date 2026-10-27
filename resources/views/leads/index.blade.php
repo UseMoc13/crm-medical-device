@@ -1387,7 +1387,86 @@
         width: 100%;
         justify-content: center;
     }
+    
+}
+    .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    }
 
+    .table-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border: none;
+    }
+
+    /* Table Header */
+    .table-wrap table thead th {
+        padding: 14px 12px;
+        background: #f8f9fc;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        white-space: nowrap;
+        border: 1px solid #e1e6ef;
+        border-top: none;
+    }
+
+    /* Table Body */
+    .table-wrap table tbody td {
+        padding: 13px 12px;
+        font-size: 12px;
+        color: #17284f;
+        vertical-align: middle;
+        border: 1px solid #e1e6ef;
+    }
+
+    /* Prevent duplicate outer borders */
+    .table-wrap table thead th:first-child,
+    .table-wrap table tbody td:first-child {
+        border-left: none;
+    }
+
+    .table-wrap table thead th:last-child,
+    .table-wrap table tbody td:last-child {
+        border-right: none;
+    }
+
+    .table-wrap table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Row Hover */
+    .table-wrap table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Actions Column */
+    .table-wrap table th:last-child,
+    .table-wrap table td:last-child {
+        text-align: center;
+        min-width: 130px;
+    }
+
+    /* Empty State */
+    .table-wrap table tbody td[colspan] {
+        text-align: center;
+        padding: 28px 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .table-wrap table {
+            min-width: 950px;
+        }
+    }
+    
 }
 
 </style>

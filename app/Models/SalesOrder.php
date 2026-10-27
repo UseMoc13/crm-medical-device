@@ -57,4 +57,14 @@ class SalesOrder extends Model
             'sales_order_id'
         );
     }
+
+    public function contract()
+{
+    return $this->hasOne(
+        Contract::class,
+        'sales_order_id',
+        'sales_order_id'
+    );
+}
+
 }
