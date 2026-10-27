@@ -5,14 +5,14 @@
 @section('content')
 
 @php
-    use Illuminate\Support\Facades\Storage;
-    use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
-    $fileUrl = fn (?string $path) => $path ? '/storage/' . ltrim($path, '/') : null;
+$fileUrl = fn (?string $path) => $path ? '/storage/' . ltrim($path, '/') : null;
 
-    $formatDate = function ($date, $format = 'd M Y') {
-        return $date ? $date->format($format) : 'Date unavailable';
-    };
+$formatDate = function ($date, $format = 'd M Y') {
+return $date ? $date->format($format) : 'Date unavailable';
+};
 @endphp
 
 <div class="page-head">
@@ -44,11 +44,11 @@
                     aria-label="Search announcements">
 
                 @if(request('search'))
-                    <a
-                        href="{{ route('announcements.index') }}"
-                        class="announcement-search-clear"
-                        title="Clear search"
-                        aria-label="Clear search">×</a>
+                <a
+                    href="{{ route('announcements.index') }}"
+                    class="announcement-search-clear"
+                    title="Clear search"
+                    aria-label="Clear search">×</a>
                 @endif
             </div>
 
@@ -57,134 +57,134 @@
             </button>
 
             @if(request('search'))
-                <a href="{{ route('announcements.index') }}" class="btn announcement-reset-button">
-                    Reset
-                </a>
+            <a href="{{ route('announcements.index') }}" class="btn announcement-reset-button">
+                Reset
+            </a>
             @endif
         </form>
 
         @if(request('search'))
-            <div class="announcement-filter-summary">
-                <span>Search results for</span>
-                <span class="announcement-filter-chip">{{ request('search') }}</span>
-            </div>
+        <div class="announcement-filter-summary">
+            <span>Search results for</span>
+            <span class="announcement-filter-chip">{{ request('search') }}</span>
+        </div>
         @endif
 
         @if($announcements->isNotEmpty())
-            <div class="announcement-list">
-                @foreach($announcements as $announcement)
-                    @php
-                        $thumbnailUrl = null;
+        <div class="announcement-list">
+            @foreach($announcements as $announcement)
+            @php
+            $thumbnailUrl = null;
 
-                        if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
-                            $thumbnailUrl = $fileUrl($announcement->thumbnail_path);
-                        }
+            if ($announcement->thumbnail_path && Storage::disk('public')->exists($announcement->thumbnail_path)) {
+            $thumbnailUrl = $fileUrl($announcement->thumbnail_path);
+            }
 
-                        $publishedDate = $announcement->published_at;
-                        $summary = trim((string) $announcement->summary);
+            $publishedDate = $announcement->published_at;
+            $summary = trim((string) $announcement->summary);
 
-                        if ($summary === '') {
-                            $summary = Str::limit(
-                                trim(preg_replace('/\s+/', ' ', strip_tags((string) $announcement->content))),
-                                180
-                            );
-                        }
-                    @endphp
+            if ($summary === '') {
+            $summary = Str::limit(
+            trim(preg_replace('/\s+/', ' ', strip_tags((string) $announcement->content))),
+            180
+            );
+            }
+            @endphp
 
-                    <article class="announcement-item {{ $announcement->is_pinned ? 'is-pinned' : '' }}">
+            <article class="announcement-item {{ $announcement->is_pinned ? 'is-pinned' : '' }}">
+                <a
+                    href="{{ route('announcements.show', $announcement) }}"
+                    class="announcement-thumbnail {{ $thumbnailUrl ? '' : 'announcement-thumbnail-placeholder' }}"
+                    aria-label="View {{ $announcement->title }}">
+
+                    @if($thumbnailUrl)
+                    <img
+                        src="{{ $thumbnailUrl }}"
+                        alt="{{ $announcement->title }}"
+                        loading="lazy">
+                    @else
+                    <span class="announcement-placeholder-icon">▤</span>
+                    @endif
+                </a>
+
+                <div class="announcement-item-content">
+                    <div class="announcement-meta">
+                        @if($announcement->is_pinned)
+                        <span class="announcement-pinned">
+                            <span>📌</span> Pinned
+                        </span>
+                        @endif
+
+                        @if($announcement->category)
+                        <span class="announcement-category">
+                            {{ $announcement->category }}
+                        </span>
+                        @endif
+
+                        <span class="announcement-date">
+                            {{ $formatDate($publishedDate) }}
+                        </span>
+                    </div>
+
+                    <h3>
+                        <a href="{{ route('announcements.show', $announcement) }}">
+                            {{ $announcement->title }}
+                        </a>
+                    </h3>
+
+                    @if($summary !== '')
+                    <p class="announcement-summary">{{ $summary }}</p>
+                    @endif
+
+                    <div class="announcement-item-footer">
                         <a
                             href="{{ route('announcements.show', $announcement) }}"
-                            class="announcement-thumbnail {{ $thumbnailUrl ? '' : 'announcement-thumbnail-placeholder' }}"
-                            aria-label="View {{ $announcement->title }}">
-
-                            @if($thumbnailUrl)
-                                <img
-                                    src="{{ $thumbnailUrl }}"
-                                    alt="{{ $announcement->title }}"
-                                    loading="lazy">
-                            @else
-                                <span class="announcement-placeholder-icon">▤</span>
-                            @endif
+                            class="announcement-read-more">
+                            Read announcement <span>→</span>
                         </a>
 
-                        <div class="announcement-item-content">
-                            <div class="announcement-meta">
-                                @if($announcement->is_pinned)
-                                    <span class="announcement-pinned">
-                                        <span>📌</span> Pinned
-                                    </span>
-                                @endif
-
-                                @if($announcement->category)
-                                    <span class="announcement-category">
-                                        {{ $announcement->category }}
-                                    </span>
-                                @endif
-
-                                <span class="announcement-date">
-                                    {{ $formatDate($publishedDate) }}
-                                </span>
-                            </div>
-
-                            <h3>
-                                <a href="{{ route('announcements.show', $announcement) }}">
-                                    {{ $announcement->title }}
-                                </a>
-                            </h3>
-
-                            @if($summary !== '')
-                                <p class="announcement-summary">{{ $summary }}</p>
+                        <div class="announcement-extra">
+                            @if(($announcement->attachments_count ?? 0) > 0)
+                            <span title="Attachments">
+                                <span>📎</span>
+                                {{ $announcement->attachments_count }}
+                            </span>
                             @endif
 
-                            <div class="announcement-item-footer">
-                                <a
-                                    href="{{ route('announcements.show', $announcement) }}"
-                                    class="announcement-read-more">
-                                    Read announcement <span>→</span>
-                                </a>
-
-                                <div class="announcement-extra">
-                                    @if(($announcement->attachments_count ?? 0) > 0)
-                                        <span title="Attachments">
-                                            <span>📎</span>
-                                            {{ $announcement->attachments_count }}
-                                        </span>
-                                    @endif
-
-                                    @if(($announcement->media_count ?? 0) > 0)
-                                        <span title="Media">
-                                            <span>▧</span>
-                                            {{ $announcement->media_count }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
+                            @if(($announcement->media_count ?? 0) > 0)
+                            <span title="Media">
+                                <span>▧</span>
+                                {{ $announcement->media_count }}
+                            </span>
+                            @endif
                         </div>
-                    </article>
-                @endforeach
-            </div>
-
-            @if($announcements->hasPages())
-                <div class="pagination announcement-pagination">
-                    {{ $announcements->withQueryString()->links() }}
+                    </div>
                 </div>
-            @endif
+            </article>
+            @endforeach
+        </div>
+
+        @if($announcements->hasPages())
+        <div class="pagination announcement-pagination">
+            {{ $announcements->withQueryString()->links() }}
+        </div>
+        @endif
         @else
-            <div class="announcement-empty">
-                <div class="announcement-empty-icon">▤</div>
+        <div class="announcement-empty">
+            <div class="announcement-empty-icon">▤</div>
 
-                <h3>No announcements found</h3>
+            <h3>No announcements found</h3>
 
-                @if(request('search'))
-                    <p>Try a different keyword or clear your search to see all available announcements.</p>
+            @if(request('search'))
+            <p>Try a different keyword or clear your search to see all available announcements.</p>
 
-                    <a href="{{ route('announcements.index') }}" class="btn primary">
-                        Clear Search
-                    </a>
-                @else
-                    <p>There are no published announcements available at the moment. Please check back later.</p>
-                @endif
-            </div>
+            <a href="{{ route('announcements.index') }}" class="btn primary">
+                Clear Search
+            </a>
+            @else
+            <p>There are no published announcements available at the moment. Please check back later.</p>
+            @endif
+        </div>
         @endif
     </div>
 </div>
