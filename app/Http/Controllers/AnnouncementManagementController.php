@@ -20,6 +20,15 @@ use Throwable;
 
 class AnnouncementManagementController extends Controller
 {
+    private const THUMBNAIL_DEFAULTS = [
+        'thumbnail_fit' => 'cover',
+        'thumbnail_position' => 'center',
+        'thumbnail_background_style' => 'solid',
+        'thumbnail_background' => '#17284f',
+        'thumbnail_gradient_start' => '#17284f',
+        'thumbnail_gradient_end' => '#2ba7a0',
+    ];
+
     private const STATUSES = [
         'draft',
         'scheduled',
@@ -154,6 +163,7 @@ class AnnouncementManagementController extends Controller
                 $validated['updated_by'] = Auth::id();
 
                 $this->normalizePublicationFields($validated);
+                $this->normalizeThumbnailSettings($validated);
 
                 if ($validated['is_pinned']) {
                     $validated['pin_order'] = $validated['pin_order']
@@ -284,6 +294,13 @@ class AnnouncementManagementController extends Controller
                 $this->normalizePublicationFields(
                     $validated,
                     $announcement
+                );
+
+                $this->normalizeThumbnailSettings(
+                    $validated,
+                    $announcement,
+                    $request->boolean('remove_thumbnail')
+                        && ! $request->hasFile('thumbnail')
                 );
 
                 if ($validated['is_pinned']) {
@@ -484,6 +501,30 @@ class AnnouncementManagementController extends Controller
                 'integer',
                 'min:1',
             ],
+            'thumbnail_fit' => [
+                'nullable',
+                Rule::in(['cover', 'fit', 'blur']),
+            ],
+            'thumbnail_position' => [
+                'nullable',
+                Rule::in(['center', 'top', 'bottom', 'left', 'right']),
+            ],
+            'thumbnail_background_style' => [
+                'nullable',
+                Rule::in(['solid', 'gradient', 'transparent']),
+            ],
+            'thumbnail_background' => [
+                'nullable',
+                'regex:/^#[0-9a-fA-F]{6}$/',
+            ],
+            'thumbnail_gradient_start' => [
+                'nullable',
+                'regex:/^#[0-9a-fA-F]{6}$/',
+            ],
+            'thumbnail_gradient_end' => [
+                'nullable',
+                'regex:/^#[0-9a-fA-F]{6}$/',
+            ],
             'remove_thumbnail' => [
                 'nullable',
                 'boolean',
@@ -608,6 +649,28 @@ class AnnouncementManagementController extends Controller
 
         if ($errors) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Fill missing thumbnail appearance values: keep what is already stored,
+     * otherwise use the defaults. Resets everything when the thumbnail is removed.
+     */
+    private function normalizeThumbnailSettings(
+        array &$validated,
+        ?Announcement $announcement = null,
+        bool $reset = false
+    ): void {
+        foreach (self::THUMBNAIL_DEFAULTS as $field => $default) {
+            if ($reset) {
+                $validated[$field] = $default;
+
+                continue;
+            }
+
+            $validated[$field] = $validated[$field]
+                ?? $announcement?->{$field}
+                ?? $default;
         }
     }
 

@@ -142,16 +142,16 @@
                         <div class="thumbnail-settings" id="thumbnailSettings" hidden>
                             <div class="thumbnail-settings-heading">
                                 <strong>Thumbnail Appearance</strong>
-                                <span>These options update the browser preview. Persisting them requires corresponding controller and database handling.</span>
+                                <span>Choose how the cover image is displayed. These settings are saved with the announcement.</span>
                             </div>
 
                             <div class="thumbnail-settings-grid">
                                 <div class="form-group">
                                     <label for="thumbnailFit">Image Mode</label>
                                     <select id="thumbnailFit" name="thumbnail_fit">
-                                        <option value="cover">Cover — Fill the entire area</option>
-                                        <option value="fit">Fit — Show the full image</option>
-                                        <option value="blur">Blur — Use a blurred image background</option>
+                                        <option value="cover" @selected(old('thumbnail_fit', 'cover') === 'cover')>Cover — Fill the entire area</option>
+                                        <option value="fit" @selected(old('thumbnail_fit', 'cover') === 'fit')>Fit — Show the full image</option>
+                                        <option value="blur" @selected(old('thumbnail_fit', 'cover') === 'blur')>Blur — Use a blurred image background</option>
                                     </select>
                                     <span class="form-hint">Cover fills the frame, Fit preserves the entire image, and Blur fills empty areas with a blurred version of the image.</span>
                                 </div>
@@ -159,27 +159,27 @@
                                 <div class="form-group" id="thumbnailPositionGroup">
                                     <label for="thumbnailPosition">Image Position</label>
                                     <select id="thumbnailPosition" name="thumbnail_position">
-                                        <option value="center">Center</option>
-                                        <option value="top">Top</option>
-                                        <option value="bottom">Bottom</option>
-                                        <option value="left">Left</option>
-                                        <option value="right">Right</option>
+                                        <option value="center" @selected(old('thumbnail_position', 'center') === 'center')>Center</option>
+                                        <option value="top" @selected(old('thumbnail_position', 'center') === 'top')>Top</option>
+                                        <option value="bottom" @selected(old('thumbnail_position', 'center') === 'bottom')>Bottom</option>
+                                        <option value="left" @selected(old('thumbnail_position', 'center') === 'left')>Left</option>
+                                        <option value="right" @selected(old('thumbnail_position', 'center') === 'right')>Right</option>
                                     </select>
                                 </div>
 
                                 <div class="form-group" id="thumbnailBackgroundStyleGroup" hidden>
                                     <label for="thumbnailBackgroundStyle">Background Style</label>
                                     <select id="thumbnailBackgroundStyle" name="thumbnail_background_style">
-                                        <option value="solid">Solid Color</option>
-                                        <option value="gradient">Gradient</option>
-                                        <option value="transparent">Transparent</option>
+                                        <option value="solid" @selected(old('thumbnail_background_style', 'solid') === 'solid')>Solid Color</option>
+                                        <option value="gradient" @selected(old('thumbnail_background_style', 'solid') === 'gradient')>Gradient</option>
+                                        <option value="transparent" @selected(old('thumbnail_background_style', 'solid') === 'transparent')>Transparent</option>
                                     </select>
                                 </div>
 
                                 <div class="form-group" id="thumbnailSolidColorGroup" hidden>
                                     <label for="thumbnailBackground">Solid Background Color</label>
                                     <div class="color-control">
-                                        <input type="color" id="thumbnailBackground" name="thumbnail_background" value="#17284f">
+                                        <input type="color" id="thumbnailBackground" name="thumbnail_background" value="{{ old('thumbnail_background', '#17284f') }}">
                                         <span id="thumbnailBackgroundValue">#17284F</span>
                                     </div>
                                 </div>
@@ -187,7 +187,7 @@
                                 <div class="form-group" id="thumbnailGradientStartGroup" hidden>
                                     <label for="thumbnailGradientStart">Gradient Start Color</label>
                                     <div class="color-control">
-                                        <input type="color" id="thumbnailGradientStart" name="thumbnail_gradient_start" value="#17284f">
+                                        <input type="color" id="thumbnailGradientStart" name="thumbnail_gradient_start" value="{{ old('thumbnail_gradient_start', '#17284f') }}">
                                         <span id="thumbnailGradientStartValue">#17284F</span>
                                     </div>
                                 </div>
@@ -195,7 +195,7 @@
                                 <div class="form-group" id="thumbnailGradientEndGroup" hidden>
                                     <label for="thumbnailGradientEnd">Gradient End Color</label>
                                     <div class="color-control">
-                                        <input type="color" id="thumbnailGradientEnd" name="thumbnail_gradient_end" value="#2ba7a0">
+                                        <input type="color" id="thumbnailGradientEnd" name="thumbnail_gradient_end" value="{{ old('thumbnail_gradient_end', '#2ba7a0') }}">
                                         <span id="thumbnailGradientEndValue">#2BA7A0</span>
                                     </div>
                                 </div>

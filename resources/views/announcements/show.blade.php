@@ -156,7 +156,7 @@
 
             @if($thumbnailUrl)
                 <div class="announcement-detail-thumbnail">
-                    <img src="{{ $thumbnailUrl }}" alt="{{ $announcement->title }}">
+                    <x-announcement-thumbnail :announcement="$announcement" :url="$thumbnailUrl" />
                 </div>
             @endif
 
@@ -510,12 +510,6 @@
         background: #f3f6fa;
     }
 
-    .announcement-detail-thumbnail img {
-        display: block;
-        width: 100%;
-        max-height: 440px;
-        object-fit: contain;
-    }
 
     .announcement-detail-summary {
         margin: 24px 0;

@@ -21,6 +21,12 @@ return new class extends Migration
                 $table->text('summary')->nullable();
                 $table->longText('content');
                 $table->string('thumbnail_path', 500)->nullable();
+                $table->string('thumbnail_fit', 10)->default('cover');
+                $table->string('thumbnail_position', 10)->default('center');
+                $table->string('thumbnail_background_style', 15)->default('solid');
+                $table->string('thumbnail_background', 7)->default('#17284f');
+                $table->string('thumbnail_gradient_start', 7)->default('#17284f');
+                $table->string('thumbnail_gradient_end', 7)->default('#2ba7a0');
                 $table->string('status', 20)->default('draft');
                 $table->boolean('is_pinned')->default(false);
                 $table->unsignedInteger('pin_order')->nullable();
@@ -88,6 +94,8 @@ return new class extends Migration
                 $table->timestamps();
             });
         }
+
+        $this->addThumbnailAppearanceColumnsIfMissing();
 
         $this->addIndexIfMissing(
             'announcements',
@@ -178,6 +186,26 @@ return new class extends Migration
              REFERENCES users (user_id)
              ON DELETE SET NULL'
         );
+    }
+
+    private function addThumbnailAppearanceColumnsIfMissing(): void
+    {
+        $columns = [
+            'thumbnail_fit' => [10, 'cover'],
+            'thumbnail_position' => [10, 'center'],
+            'thumbnail_background_style' => [15, 'solid'],
+            'thumbnail_background' => [7, '#17284f'],
+            'thumbnail_gradient_start' => [7, '#17284f'],
+            'thumbnail_gradient_end' => [7, '#2ba7a0'],
+        ];
+
+        foreach ($columns as $column => [$length, $default]) {
+            if (!Schema::hasColumn('announcements', $column)) {
+                Schema::table('announcements', function (Blueprint $table) use ($column, $length, $default) {
+                    $table->string($column, $length)->default($default);
+                });
+            }
+        }
     }
 
     private function addIndexIfMissing(

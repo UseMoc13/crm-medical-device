@@ -131,7 +131,7 @@
         <article class="card ann-article-card">
             @if($thumbnailUrl)
             <div class="ann-cover">
-                <img src="{{ $thumbnailUrl }}" alt="{{ $announcement->title }}">
+                <x-announcement-thumbnail :announcement="$announcement" :url="$thumbnailUrl" />
             </div>
             @endif
 
@@ -456,17 +456,10 @@
 
     .ann-cover {
         width: 100%;
-        aspect-ratio: 16 / 7;
         overflow: hidden;
         background: #f1f5f9;
     }
 
-    .ann-cover img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
 
     .ann-article-body {
         padding: 28px 32px 34px;
