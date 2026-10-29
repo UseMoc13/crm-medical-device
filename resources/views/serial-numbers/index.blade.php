@@ -98,7 +98,7 @@
                     title="Clear search"
                     aria-label="Clear search"
                 >
-                ×
+                
                 </a>
                 @endif
 
