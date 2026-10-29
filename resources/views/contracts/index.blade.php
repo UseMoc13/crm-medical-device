@@ -173,6 +173,8 @@
             </table>
         </div>
 
+
+        
         {{-- Pagination --}}
         @if($contracts->hasPages())
             <div class="pagination-wrapper">
