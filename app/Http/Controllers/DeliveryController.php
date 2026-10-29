@@ -7,6 +7,7 @@ use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+
 class DeliveryController extends Controller
 {
     /**
@@ -28,7 +29,12 @@ class DeliveryController extends Controller
     {
         $salesOrders = SalesOrder::orderByDesc('order_date')->get();
 
-        return view('deliveries.create', compact('salesOrders'));
+        $deliveryNumber = Delivery::generateDeliveryNumber();
+
+        return view(
+            'deliveries.create',
+            compact('salesOrders', 'deliveryNumber')
+        );
     }
 
     /**
@@ -42,33 +48,22 @@ class DeliveryController extends Controller
                 'uuid',
                 'exists:sales_orders,sales_order_id',
             ],
-            'delivery_number' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:deliveries,delivery_number',
-            ],
-            'delivery_date' => [
-                'nullable',
-                'date',
-            ],
-            'delivery_address' => [
-                'nullable',
-                'string',
-            ],
+            'delivery_date' => ['nullable', 'date'],
+            'delivery_address' => ['nullable', 'string'],
             'status' => [
                 'required',
-                'string',
-                'max:255',
+                'in:pending,in_transit,delivered,cancelled',
             ],
-            'notes' => [
-                'nullable',
-                'string',
-            ],
+            'notes' => ['nullable', 'string'],
         ]);
 
+        // Generate UUID untuk Delivery ID
         $validated['delivery_id'] = (string) Str::uuid();
 
+        // Generate nomor delivery secara otomatis
+        $validated['delivery_number'] = Delivery::generateDeliveryNumber();
+
+        // Simpan data delivery
         Delivery::create($validated);
 
         return redirect()
@@ -110,33 +105,17 @@ class DeliveryController extends Controller
                 'uuid',
                 'exists:sales_orders,sales_order_id',
             ],
-            'delivery_number' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:deliveries,delivery_number,'
-                    . $delivery->delivery_id
-                    . ',delivery_id',
-            ],
-            'delivery_date' => [
-                'nullable',
-                'date',
-            ],
-            'delivery_address' => [
-                'nullable',
-                'string',
-            ],
+            'delivery_date' => ['nullable', 'date'],
+            'delivery_address' => ['nullable', 'string'],
             'status' => [
                 'required',
-                'string',
-                'max:255',
+                'in:pending,in_transit,delivered,cancelled',
             ],
-            'notes' => [
-                'nullable',
-                'string',
-            ],
+            'notes' => ['nullable', 'string'],
         ]);
 
+        // Update hanya data yang boleh diubah.
+        // delivery_number tetap menggunakan nomor yang sudah tersimpan.
         $delivery->update($validated);
 
         return redirect()

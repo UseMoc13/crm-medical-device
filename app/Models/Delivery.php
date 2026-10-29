@@ -25,6 +25,31 @@ class Delivery extends Model
         'notes',
     ];
 
+    public static function generateDeliveryNumber(): string
+{
+    $year = now()->format('Y');
+    $prefix = 'DEL-' . $year . '-';
+
+    $lastDelivery = self::where(
+        'delivery_number',
+        'like',
+        $prefix . '%'
+    )
+        ->orderByDesc('delivery_number')
+        ->first();
+
+    $nextNumber = $lastDelivery
+        ? ((int) substr($lastDelivery->delivery_number, -3)) + 1
+        : 1;
+
+    return $prefix . str_pad(
+        $nextNumber,
+        3,
+        '0',
+        STR_PAD_LEFT
+    );
+}
+
     protected $casts = [
         'delivery_date' => 'date',
     ];

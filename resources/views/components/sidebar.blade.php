@@ -272,10 +272,17 @@
             Installation & Warranty
         </div>
 
-        <a href="#" data-label="Deliveries">
+        
+        <a
+            href="{{ route('deliveries.index') }}"
+            class="{{ request()->routeIs('deliveries.*') ? 'active' : '' }}"
+            data-label="Deliveries">
+
             <span class="ico">➜</span>
             <span class="nav-text">Deliveries</span>
+
         </a>
+
 
         <a href="#" data-label="Installations">
             <span class="ico">⚙</span>
