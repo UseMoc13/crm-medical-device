@@ -92,16 +92,14 @@
                 >
 
                 @if(request('search'))
-                    <a
-                        href="{{ url('/serial-numbers?' . http_build_query(
-                            request()->except('search', 'page')
-                        )) }}"
-                        class="serial-search-clear"
-                        title="Clear search"
-                        aria-label="Clear search"
-                    >
-                        ×
-                    </a>
+                <a
+                    href="{{ route('serial-numbers.index', request()->except('search', 'page')) }}"
+                    class="serial-search-clear"
+                    title="Clear search"
+                    aria-label="Clear search"
+                >
+                ×
+                </a>
                 @endif
 
             </div>
@@ -323,9 +321,8 @@
              SERIAL NUMBER TABLE
         ================================================== --}}
 
-        <div class="table-wrap">
-
-            <table>
+        <div class="table-wrap serial-table-wrap">
+            <table class="serial-table">
 
                 <thead>
                     <tr>
@@ -1052,6 +1049,53 @@
         width: 100%;
         justify-content: center;
     }
+
+}
+.table-wrap.serial-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+}
+
+.table-wrap.serial-table-wrap table.serial-table {
+    width: 100% !important;
+    min-width: 1050px;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.table-wrap.serial-table-wrap table.serial-table thead th {
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f3f5f9 !important;
+}
+
+.table-wrap.serial-table-wrap table.serial-table tbody td {
+    border: 1px solid #d5dce6 !important;
+}
+
+/* Garis horizontal antarbaris */
+.table-wrap.serial-table-wrap table.serial-table tbody tr {
+    border-bottom: 1px solid #d5dce6 !important;
+}
+
+/* Garis vertikal antar kolom */
+.table-wrap.serial-table-wrap table.serial-table th,
+.table-wrap.serial-table-wrap table.serial-table td {
+    border-right: 1px solid #d5dce6 !important;
+    border-bottom: 1px solid #d5dce6 !important;
+}
+
+/* Hover baris */
+.table-wrap.serial-table-wrap table.serial-table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+/* Hilangkan border ganda pada tepi terakhir */
+.table-wrap.serial-table-wrap table.serial-table tr:last-child td {
+    border-bottom: 1px solid #d5dce6 !important;
+
 
 }
 

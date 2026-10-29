@@ -1481,6 +1481,199 @@
             justify-content: center;
         }
 
+        /* =========================================================
+   PRODUCT TABLE - GRID BORDERS
+========================================================= */
+            }
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.table-wrap table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0;
+    background: #fff;
+}
+
+/* Table Header */
+.table-wrap thead th {
+    padding: 14px 12px;
+    background: #f3f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #dce3ed;
+}
+
+/* Table Body */
+.table-wrap tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #e1e6ef;
+}
+
+/* Hover Effect */
+.table-wrap tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table-wrap tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Product Name */
+.table-wrap .product-name-link {
+    color: #223a70;
+    text-decoration: none;
+}
+
+.table-wrap .product-name-link:hover {
+    color: #2ba7a0;
+}
+
+.table-wrap .product-name-link strong {
+    color: #17284f;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Product Code */
+.table-wrap .muted {
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+/* Price */
+.table-wrap .product-price {
+    color: #15966f;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Unit Badge */
+.table-wrap .product-unit-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eef2f6;
+    color: #4d5b70;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Status Badge */
+.table-wrap .product-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table-wrap .product-status-active {
+    background: #e8f5f0;
+    color: #16805f;
+}
+
+.table-wrap .product-status-inactive {
+    background: #f1f3f6;
+    color: #667085;
+}
+
+.table-wrap .product-status-discontinued {
+    background: #fff0f0;
+    color: #a14d4d;
+}
+
+/* Actions Column */
+.table-wrap thead th:nth-child(9),
+.table-wrap tbody td:nth-child(9) {
+    text-align: center;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.table-wrap .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* Action Buttons */
+.table-wrap .action-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: #fff;
+    color: #4d5b70;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease;
+}
+
+.table-wrap .action-btn:hover {
+    background: #f4f7f9;
+    border-color: #cbd3df;
+    color: #17284f;
+}
+
+.table-wrap .action-btn.delete:hover {
+    background: #fff0f0;
+    border-color: #e6b7b7;
+    color: #c94a4a;
+}
+
+/* Empty State */
+.table-wrap tbody td[colspan="9"] {
+    padding: 0;
+    text-align: center;
+}
+
+.table-wrap .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-wrap table {
+        min-width: 1180px;
+    }
+}
     }
 </style>
 

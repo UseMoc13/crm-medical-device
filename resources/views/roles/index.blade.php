@@ -242,9 +242,8 @@
              ROLE TABLE
         ====================================================== --}}
 
-        <div class="table-wrap">
-
-            <table>
+        <div class="table-wrap roles-table-wrap">
+            <table class="roles-table">
 
                 <thead>
 
@@ -1053,6 +1052,229 @@
         width: 100%;
 
         justify-content: center;
+    }
+
+        }
+        /* =========================================================
+   ROLES TABLE
+========================================================= */
+
+.table-wrap.roles-table-wrap {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    overflow-x: auto !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.table-wrap.roles-table-wrap table.roles-table {
+    width: 100% !important;
+    min-width: 950px;
+    margin: 0;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff;
+}
+
+/* TABLE HEADER */
+.table-wrap.roles-table-wrap .roles-table thead th {
+    padding: 14px 12px;
+    background: #f3f5f9 !important;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* TABLE BODY */
+.table-wrap.roles-table-wrap .roles-table tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #d5dce6 !important;
+}
+
+.table-wrap.roles-table-wrap .roles-table tbody tr {
+    transition: background-color .15s ease;
+}
+
+.table-wrap.roles-table-wrap .roles-table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+/* ROLE NAME */
+.roles-table .role-name-link {
+    color: #17284f;
+    text-decoration: none;
+}
+
+.roles-table .role-name-link strong {
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.roles-table .role-name-link:hover {
+    color: #2ba7a0;
+}
+
+/* DESCRIPTION */
+.roles-table .role-description {
+    display: block;
+    max-width: 340px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #34415c;
+}
+
+.roles-table .muted {
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+/* USERS BADGE */
+.roles-table .role-user-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eaf7f3;
+    color: #167d70;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.roles-table .role-user-badge.empty {
+    background: #f1f3f6;
+    color: #7d8797;
+}
+
+/* CREATED AND UPDATED DATES */
+.roles-table tbody td:nth-child(4),
+.roles-table tbody td:nth-child(5) {
+    min-width: 115px;
+    white-space: nowrap;
+}
+
+/* ACTIONS */
+.roles-table thead th:last-child,
+.roles-table tbody td:last-child {
+    min-width: 130px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.roles-table .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.roles-table .table-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.roles-table .table-actions .action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: #fff;
+    color: #4d5b70;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease;
+}
+
+.roles-table .table-actions .action-btn.view:hover {
+    background: #eef7f7;
+    border-color: #b8deda;
+    color: #167d70;
+}
+
+.roles-table .table-actions .action-btn.edit:hover {
+    background: #f2f5fa;
+    border-color: #cbd5e4;
+    color: #223a70;
+}
+
+.roles-table .table-actions .action-btn.delete:hover {
+    background: #fff0f0;
+    border-color: #e6b7b7;
+    color: #c94a4a;
+}
+
+/* EMPTY STATE */
+.roles-table tbody td[colspan="6"] {
+    padding: 0;
+    text-align: center;
+}
+
+.roles-table .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+}
+
+/* COLUMN WIDTHS */
+.roles-table thead th:nth-child(1),
+.roles-table tbody td:nth-child(1) {
+    min-width: 160px;
+}
+
+.roles-table thead th:nth-child(2),
+.roles-table tbody td:nth-child(2) {
+    min-width: 220px;
+}
+
+.roles-table thead th:nth-child(3),
+.roles-table tbody td:nth-child(3) {
+    min-width: 100px;
+}
+
+.roles-table thead th:nth-child(4),
+.roles-table tbody td:nth-child(4) {
+    min-width: 115px;
+}
+
+.roles-table thead th:nth-child(5),
+.roles-table tbody td:nth-child(5) {
+    min-width: 115px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .table-wrap.roles-table-wrap table.roles-table {
+        min-width: 950px;
+    }
+
+    .roles-table .role-description {
+        max-width: 220px;
     }
 
 }
