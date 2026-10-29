@@ -481,9 +481,9 @@
              INVENTORY TABLE
         ============================================== --}}
 
-        <div class="table-wrap">
+        <div class="table-wrap inventory-table-wrap">
 
-            <table>
+            <table class="inventory-table">
 
                 <thead>
                     <tr>
@@ -1106,6 +1106,261 @@
 
     .inventory-product-name {
         max-width: 200px;
+    }
+
+}
+/* =====================================================
+   INVENTORY TABLE
+===================================================== */
+
+.inventory-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.inventory-table {
+    width: 100%;
+    min-width: 1050px;
+    margin: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: #fff;
+}
+
+/* TABLE HEADER */
+
+.inventory-table thead th {
+    padding: 14px 12px;
+    background: #f3f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #dce3ed;
+}
+
+/* TABLE BODY */
+
+.inventory-table tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #e1e6ef;
+}
+
+.inventory-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.inventory-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* PRODUCT INFORMATION */
+
+.inventory-table .inventory-product-code {
+    margin-bottom: 4px;
+    color: #223a70;
+    font-size: 12px;
+}
+
+.inventory-table .inventory-product-code strong {
+    font-weight: 600;
+}
+
+.inventory-table .inventory-product-name {
+    max-width: 260px;
+    color: #17284f;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* WAREHOUSE INFORMATION */
+
+.inventory-table .inventory-warehouse-code {
+    margin-bottom: 4px;
+    color: #223a70;
+    font-size: 12px;
+}
+
+.inventory-table .inventory-warehouse-code strong {
+    font-weight: 600;
+}
+
+.inventory-table .inventory-warehouse-name {
+    color: #596780;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* MUTED TEXT */
+
+.inventory-table .muted {
+    margin-top: 4px;
+    color: #8a94a6;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* QUANTITY */
+
+.inventory-table .inventory-quantity {
+    display: inline-block;
+    color: #17284f;
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.inventory-table .inventory-quantity-empty {
+    color: #c94a4a;
+}
+
+.inventory-table .inventory-unit {
+    display: inline-block;
+    margin-left: 3px;
+    color: #8a94a6;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* MINIMUM STOCK */
+
+.inventory-table .inventory-minimum-stock {
+    color: #596780;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* STOCK STATUS */
+
+.inventory-table .inventory-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.inventory-table .inventory-status-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.inventory-table .inventory-status-in_stock {
+    background: #e8f5f0;
+    color: #16805f;
+}
+
+.inventory-table .inventory-status-low_stock {
+    background: #fff4e6;
+    color: #b97719;
+}
+
+.inventory-table .inventory-status-out_of_stock {
+    background: #fff0f0;
+    color: #b94040;
+}
+
+.inventory-table .inventory-status-no_minimum {
+    background: #eef2f6;
+    color: #657186;
+}
+
+/* LAST UPDATED */
+
+.inventory-table .inventory-updated-date {
+    display: inline-block;
+    color: #34415c;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* EMPTY STATE */
+
+.inventory-table tbody td[colspan="6"] {
+    padding: 0;
+    text-align: center;
+}
+
+.inventory-table .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+}
+
+.inventory-table .empty strong {
+    color: #34415c;
+    font-size: 14px;
+}
+
+.inventory-table .empty p {
+    margin: 8px 0 0;
+    color: #8a94a6;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* COLUMN WIDTHS */
+
+.inventory-table thead th:nth-child(1),
+.inventory-table tbody td:nth-child(1) {
+    min-width: 190px;
+}
+
+.inventory-table thead th:nth-child(2),
+.inventory-table tbody td:nth-child(2) {
+    min-width: 165px;
+}
+
+.inventory-table thead th:nth-child(3),
+.inventory-table tbody td:nth-child(3) {
+    min-width: 115px;
+}
+
+.inventory-table thead th:nth-child(4),
+.inventory-table tbody td:nth-child(4) {
+    min-width: 125px;
+}
+
+.inventory-table thead th:nth-child(5),
+.inventory-table tbody td:nth-child(5) {
+    min-width: 145px;
+}
+
+.inventory-table thead th:nth-child(6),
+.inventory-table tbody td:nth-child(6) {
+    min-width: 135px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .inventory-table {
+        min-width: 1050px;
     }
 
 }

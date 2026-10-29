@@ -271,9 +271,9 @@
              WAREHOUSE TABLE
         ============================================== --}}
 
-        <div class="table-wrap">
+        <div class="table-wrap warehouse-table-wrap">
 
-            <table>
+            <table class="warehouse-table">
 
                 <thead>
                     <tr>
@@ -943,6 +943,233 @@
     .delete-modal-actions .btn {
         width: 100%;
         justify-content: center;
+    }
+
+}
+
+/* =====================================================
+   WAREHOUSE TABLE
+===================================================== */
+
+.warehouse-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.warehouse-table {
+    width: 100%;
+    min-width: 1050px;
+    margin: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: #fff;
+}
+
+/* TABLE HEADER */
+
+.warehouse-table thead th {
+    padding: 14px 12px;
+    background: #f3f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #dce3ed;
+}
+
+/* TABLE BODY */
+
+.warehouse-table tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #e1e6ef;
+}
+
+.warehouse-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.warehouse-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* WAREHOUSE CODE AND NAME */
+
+.warehouse-table .warehouse-code-link {
+    color: #223a70;
+    text-decoration: none;
+}
+
+.warehouse-table .warehouse-code-link strong {
+    color: #17284f;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.warehouse-table .warehouse-code-link:hover {
+    color: #2ba7a0;
+}
+
+.warehouse-table .muted {
+    margin-top: 4px;
+    color: #8a94a6;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* ADDRESS */
+
+.warehouse-table .warehouse-address {
+    display: block;
+    min-width: 140px;
+    max-width: 260px;
+    color: #4d5b70;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+/* INVENTORY AND STOCK MOVEMENT COUNTS */
+
+.warehouse-table .warehouse-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eef2f8;
+    color: #34415c;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* STATUS BADGES */
+
+.warehouse-table .warehouse-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.warehouse-table .warehouse-status-active {
+    background: #e8f5f0;
+    color: #16805f;
+}
+
+.warehouse-table .warehouse-status-inactive {
+    background: #fff0f0;
+    color: #a14d4d;
+}
+
+/* EMPTY STATE */
+
+.warehouse-table tbody td[colspan="6"] {
+    padding: 0;
+    text-align: center;
+}
+
+.warehouse-table .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+}
+
+.warehouse-table .empty strong {
+    color: #34415c;
+    font-size: 14px;
+}
+
+.warehouse-table .empty p {
+    margin: 8px 0 0;
+    color: #8a94a6;
+    font-size: 12px;
+}
+
+/* ACTION BUTTONS */
+
+.warehouse-table thead th:last-child,
+.warehouse-table tbody td:last-child {
+    min-width: 120px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.warehouse-table .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.warehouse-table .action-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: #fff;
+    color: #4d5b70;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+.warehouse-table .action-btn:hover {
+    background: #f4f7f9;
+    border-color: #cbd3df;
+    color: #17284f;
+}
+
+.warehouse-table .action-btn.view:hover {
+    background: #eef7f7;
+    border-color: #b8deda;
+    color: #167d70;
+}
+
+.warehouse-table .action-btn.edit:hover {
+    background: #f2f5fa;
+    border-color: #cbd5e4;
+    color: #223a70;
+}
+
+.warehouse-table .action-btn.delete:hover {
+    background: #fff0f0;
+    border-color: #e6b7b7;
+    color: #c94a4a;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .warehouse-table {
+        min-width: 1050px;
     }
 
 }

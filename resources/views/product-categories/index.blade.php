@@ -1416,6 +1416,215 @@ DELETE CONFIRMATION MODAL
 
         }
 
+            }
+/* =========================================================
+   PRODUCT CATEGORY TABLE
+========================================================= */
+
+.category-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.category-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0;
+    background: #fff;
+}
+
+.category-table thead th {
+    padding: 14px 12px;
+    background: #f3f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #dce3ed;
+}
+
+.category-table tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #e1e6ef;
+}
+
+.category-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.category-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Category Name */
+
+.category-table .category-name-link {
+    color: #223a70;
+    text-decoration: none;
+}
+
+.category-table .category-name-link:hover {
+    color: #2ba7a0;
+}
+
+.category-table .category-name-link strong {
+    color: #17284f;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.category-table .category-id {
+    margin-top: 4px;
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+/* Description */
+
+.category-table .category-description {
+    max-width: 330px;
+    color: #4d5b70;
+    font-size: 12px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+/* Product Count Badge */
+
+.category-table .category-product-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #e8f5f0;
+    color: #16805f;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.category-table .category-product-badge.empty {
+    background: #f1f3f6;
+    color: #667085;
+}
+
+/* Dates */
+
+.category-table .category-date {
+    color: #34415c;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.category-table .category-time {
+    margin-top: 3px;
+    color: #8a94a6;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Empty State */
+
+.category-table tbody td[colspan="6"] {
+    padding: 0;
+    text-align: center;
+}
+
+.category-table .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Actions Column */
+
+.category-table thead th:last-child,
+.category-table tbody td:last-child {
+    min-width: 120px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.category-table .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.category-table .action-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: #fff;
+    color: #4d5b70;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+.category-table .action-btn:hover {
+    background: #f4f7f9;
+    border-color: #cbd3df;
+    color: #17284f;
+}
+
+.category-table .action-btn.view:hover {
+    background: #eef7f7;
+    border-color: #b8deda;
+    color: #167d70;
+}
+
+.category-table .action-btn.edit:hover {
+    background: #f2f5fa;
+    border-color: #cbd5e4;
+    color: #223a70;
+}
+
+.category-table .action-btn.delete:hover {
+    background: #fff0f0;
+    border-color: #e6b7b7;
+    color: #c94a4a;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .category-table {
+        min-width: 1050px;
+    }
+}
+
     }
 </style>
 

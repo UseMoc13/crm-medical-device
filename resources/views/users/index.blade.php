@@ -365,9 +365,8 @@
              USER TABLE
         ====================================================== --}}
 
-        <div class="table-wrap">
-
-            <table>
+        <div class="table-wrap users-table-wrap">
+            <table class="users-table">
 
                 <thead>
 
@@ -1314,6 +1313,298 @@
         width: 100%;
 
         justify-content: center;
+    }
+
+        }
+
+        /* =========================================================
+   USERS TABLE
+========================================================= */
+
+.table-wrap.users-table-wrap {
+    width: 100% !important;
+    max-width: 100%;
+    overflow-x: auto !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.users-table {
+    width: 100% !important;
+    min-width: 1100px;
+    margin: 0;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    background: #fff;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* TABLE HEADER */
+
+.users-table thead th {
+    padding: 14px 12px;
+    background: #f3f5f9 !important;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* TABLE BODY */
+
+.users-table tbody td {
+    padding: 14px 12px;
+    color: #34415c;
+    font-size: 12px;
+    vertical-align: middle;
+    border: 1px solid #d5dce6 !important;
+}
+
+.users-table tbody tr {
+    transition: background-color .15s ease;
+}
+
+.users-table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+/* USER PROFILE */
+
+.users-table .user-table-profile {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 220px;
+}
+
+.users-table .user-avatar {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #eaf7f3;
+    color: #167d70;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.users-table .user-table-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.users-table .user-name-link {
+    color: #17284f;
+    text-decoration: none;
+}
+
+.users-table .user-name-link strong {
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.users-table .user-name-link:hover {
+    color: #2ba7a0;
+}
+
+.users-table .user-table-info > span {
+    color: #7d8797;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+/* ROLE */
+
+.users-table .user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #eef2f8;
+    color: #344d78;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* BRANCH */
+
+.users-table .user-branch {
+    display: inline-block;
+    color: #34415c;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.users-table .muted {
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+/* PHONE */
+
+.users-table tbody td:nth-child(4) {
+    min-width: 125px;
+    white-space: nowrap;
+}
+
+/* STATUS */
+
+.users-table .user-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.users-table .user-status.active {
+    background: #e8f5f0;
+    color: #16805f;
+}
+
+.users-table .user-status.inactive {
+    background: #f0f1f4;
+    color: #737d8d;
+}
+
+/* CREATED DATE */
+
+.users-table tbody td:nth-child(6) {
+    min-width: 115px;
+    white-space: nowrap;
+}
+
+/* ACTIONS */
+
+.users-table thead th:last-child,
+.users-table tbody td:last-child {
+    min-width: 130px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.users-table .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.users-table .table-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.users-table .table-actions .action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: #fff;
+    color: #4d5b70;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease;
+}
+
+.users-table .table-actions .action-btn.view:hover {
+    background: #eef7f7;
+    border-color: #b8deda;
+    color: #167d70;
+}
+
+.users-table .table-actions .action-btn.edit:hover {
+    background: #f2f5fa;
+    border-color: #cbd5e4;
+    color: #223a70;
+}
+
+.users-table .table-actions .action-btn.delete:hover {
+    background: #fff0f0;
+    border-color: #e6b7b7;
+    color: #c94a4a;
+}
+
+/* EMPTY STATE */
+
+.users-table tbody td[colspan="7"] {
+    padding: 0;
+    text-align: center;
+}
+
+.users-table .empty {
+    padding: 45px 20px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* COLUMN WIDTHS */
+
+.users-table thead th:nth-child(1),
+.users-table tbody td:nth-child(1) {
+    min-width: 240px;
+}
+
+.users-table thead th:nth-child(2),
+.users-table tbody td:nth-child(2) {
+    min-width: 120px;
+}
+
+.users-table thead th:nth-child(3),
+.users-table tbody td:nth-child(3) {
+    min-width: 140px;
+}
+
+.users-table thead th:nth-child(4),
+.users-table tbody td:nth-child(4) {
+    min-width: 125px;
+}
+
+.users-table thead th:nth-child(5),
+.users-table tbody td:nth-child(5) {
+    min-width: 110px;
+}
+
+.users-table thead th:nth-child(6),
+.users-table tbody td:nth-child(6) {
+    min-width: 115px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .users-table {
+        min-width: 1100px;
     }
 
 }
