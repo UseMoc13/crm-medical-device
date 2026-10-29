@@ -92,16 +92,14 @@
                 >
 
                 @if(request('search'))
-                    <a
-                        href="{{ url('/serial-numbers?' . http_build_query(
-                            request()->except('search', 'page')
-                        )) }}"
-                        class="serial-search-clear"
-                        title="Clear search"
-                        aria-label="Clear search"
-                    >
-                        ×
-                    </a>
+                <a
+                    href="{{ route('serial-numbers.index', request()->except('search', 'page')) }}"
+                    class="serial-search-clear"
+                    title="Clear search"
+                    aria-label="Clear search"
+                >
+                ×
+                </a>
                 @endif
 
             </div>
