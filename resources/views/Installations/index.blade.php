@@ -201,14 +201,6 @@
             </table>
         </div>
 
-        <div class="table-footer">
-            <span>
-                Showing {{ $installations->count() }} of
-                {{ $installations->total() }} installations
-            </span>
-
-            {{ $installations->links() }}
-        </div>
     </div>
 </div>
 
