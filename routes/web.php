@@ -21,6 +21,8 @@ use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AnnouncementManagementController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DeliveryController;
+
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -36,6 +38,7 @@ Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
+Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])

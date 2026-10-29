@@ -67,4 +67,13 @@ class SalesOrder extends Model
     );
 }
 
+public function deliveries()
+{
+    return $this->hasMany(
+        Delivery::class,
+        'sales_order_id',
+        'sales_order_id'
+    );
+}
+
 }

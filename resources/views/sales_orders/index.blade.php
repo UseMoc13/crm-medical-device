@@ -260,17 +260,6 @@
         min-width: 850px;
     }
 
-    .sales-order-status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #eef2ff;
-    color: #4338ca;
-    white-space: nowrap;
-}
+    
 }
 </style>
