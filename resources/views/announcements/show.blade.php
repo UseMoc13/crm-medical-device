@@ -745,8 +745,8 @@
     }
 
     .announcement-download-button {
-        border: 1px solid #223a70;
-        background: #223a70;
+        border: 1px solid var(--green);
+        background: var(--green);
         color: #fff;
     }
 
