@@ -22,7 +22,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AnnouncementManagementController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DeliveryController;
-
+use App\Http\Controllers\InstallationController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -40,6 +40,10 @@ Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
+Route::resource('installations', InstallationController::class);
+
+
+
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
     ->name('contracts.download');
