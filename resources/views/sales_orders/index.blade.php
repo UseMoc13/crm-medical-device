@@ -74,6 +74,7 @@
                             <th>Tanggal Order</th>
                             <th>Total</th>
                             <th>Status</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
 
@@ -111,10 +112,17 @@
                                         {{ ucfirst($order->status ?? 'draft') }}
                                     </span>
                                 </td>
+
+                                <td>
+                                    <a href="{{ route('sales-orders.show', $order->sales_order_id) }}"
+                                    class="btn btn-sm btn-primary">
+                                        View
+                                    </a>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="empty-state">
+                                <td colspan="7" class="empty-state">
                                     Belum ada Sales Order.
                                 </td>
                             </tr>
@@ -251,5 +259,18 @@
     .sales-orders-table {
         min-width: 850px;
     }
+
+    .sales-order-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #eef2ff;
+    color: #4338ca;
+    white-space: nowrap;
+}
 }
 </style>

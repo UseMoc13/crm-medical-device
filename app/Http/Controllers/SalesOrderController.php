@@ -51,6 +51,16 @@ class SalesOrderController extends Controller
         return view('sales_orders.index', compact('orders'));
     }
 
+        public function show(string $id)
+            {
+                $order = SalesOrder::with([
+                    'quotation.opportunity.customer',
+                    'items.product',
+                    'contract',
+                ])->findOrFail($id);
+
+                return view('sales_orders.show', compact('order'));
+            }
     
         public function storeFromQuotation(string $quotationId)
         {
