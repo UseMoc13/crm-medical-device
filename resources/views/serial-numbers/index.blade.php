@@ -1097,7 +1097,7 @@
 /* Hilangkan border ganda pada tepi terakhir */
 .table-wrap.serial-table-wrap table.serial-table tr:last-child td {
     border-bottom: 1px solid #d5dce6 !important;
-}
+
 
 }
 
