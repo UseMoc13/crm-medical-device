@@ -505,4 +505,34 @@ class SerialNumberController extends Controller
                 'Serial number updated successfully.'
             );
     }
+
+    public function destroy(string $serialNumber)
+    {
+        $existingSerialNumber = DB::table('serial_numbers')
+            ->where('serial_number_id', $serialNumber)
+            ->first();
+
+        abort_if(!$existingSerialNumber, 404);
+
+        try {
+            DB::table('serial_numbers')
+                ->where('serial_number_id', $serialNumber)
+                ->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23503') {
+                return redirect()
+                    ->route('serial-numbers.index')
+                    ->with(
+                        'error',
+                        'Serial number tidak dapat dihapus karena masih dipakai oleh data lain.'
+                    );
+            }
+
+            throw $e;
+        }
+
+        return redirect()
+            ->route('serial-numbers.index')
+            ->with('success', 'Serial number deleted successfully.');
+    }
 }

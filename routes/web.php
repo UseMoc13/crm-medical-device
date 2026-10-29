@@ -96,6 +96,9 @@ Route::get('/serial-numbers/{serialNumber}/edit', [SerialNumberController::class
 Route::put('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'update'])
     ->name('serial-numbers.update');
 
+Route::delete('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'destroy'])
+    ->name('serial-numbers.destroy');
+
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
     'create',
