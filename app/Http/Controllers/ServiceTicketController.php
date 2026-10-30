@@ -6,12 +6,11 @@ use App\Models\Customer;
 use App\Models\SerialNumber;
 use App\Models\ServiceTicket;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class ServiceTicketController extends Controller
 {
@@ -89,12 +88,21 @@ class ServiceTicketController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('service-tickets.index', compact('serviceTickets'));
+        return view('service-tickets.index', [
+            'serviceTickets' => $serviceTickets,
+            'statuses' => self::STATUSES,
+            'priorities' => self::PRIORITIES,
+            'sort' => $sort,
+            'direction' => $direction,
+        ]);
     }
 
     public function create(): View
     {
-        return view('service-tickets.create', $this->formData());
+        return view(
+            'service-tickets.create',
+            $this->formData()
+        );
     }
 
     public function store(Request $request): RedirectResponse
@@ -134,6 +142,17 @@ class ServiceTicketController extends Controller
             ],
         ]);
 
+        if (!$this->deviceBelongsToCustomer(
+            $validated['serial_number_id'],
+            $validated['customer_id']
+        )) {
+            return back()
+                ->withErrors([
+                    'serial_number_id' => 'The selected device is assigned to a different customer.',
+                ])
+                ->withInput();
+        }
+
         $validated['ticket_number'] = $this->generateTicketNumber();
         $validated['opened_at'] = now();
         $validated['closed_at'] = $validated['status'] === 'closed'
@@ -156,15 +175,25 @@ class ServiceTicketController extends Controller
             'parts.product',
         ]);
 
-        return view('service-tickets.show', compact('serviceTicket'));
+        return view('service-tickets.show', [
+            'serviceTicket' => $serviceTicket,
+        ]);
     }
 
     public function edit(ServiceTicket $serviceTicket): View
     {
+        $serviceTicket->load([
+            'customer',
+            'serialNumber.product',
+            'user',
+        ]);
+
         return view(
             'service-tickets.edit',
             array_merge(
-                ['serviceTicket' => $serviceTicket],
+                [
+                    'serviceTicket' => $serviceTicket,
+                ],
                 $this->formData()
             )
         );
@@ -213,6 +242,17 @@ class ServiceTicketController extends Controller
             ],
         ]);
 
+        if (!$this->deviceBelongsToCustomer(
+            $validated['serial_number_id'],
+            $validated['customer_id']
+        )) {
+            return back()
+                ->withErrors([
+                    'serial_number_id' => 'The selected device is assigned to a different customer.',
+                ])
+                ->withInput();
+        }
+
         $validated['closed_at'] = $validated['status'] === 'closed'
             ? ($serviceTicket->closed_at ?? now())
             : null;
@@ -226,19 +266,49 @@ class ServiceTicketController extends Controller
 
     private function formData(): array
     {
+        $customers = Customer::query()
+            ->orderBy('customer_name')
+            ->get();
+
+        $serialNumbers = SerialNumber::query()
+            ->with('product')
+            ->orderBy('serial_number')
+            ->get();
+
+        $users = User::query()
+            ->orderBy('name')
+            ->get();
+
         return [
-            'customers' => Customer::orderBy('customer_name')->get(),
+            'customers' => $customers,
+            'serialNumbers' => $serialNumbers,
 
-            'serialNumbers' => SerialNumber::with('product')
-                ->orderBy('serial_number')
-                ->get(),
+            // $users digunakan oleh halaman Create.
+            'users' => $users,
 
-            'technicians' => User::orderBy('name')->get(),
+            // Alias untuk kompatibilitas dengan halaman lain.
+            'technicians' => $users,
 
             'statuses' => self::STATUSES,
-
             'priorities' => self::PRIORITIES,
         ];
+    }
+
+    private function deviceBelongsToCustomer(
+        string $serialNumberId,
+        string $customerId
+    ): bool {
+        $serialNumber = SerialNumber::query()
+            ->find($serialNumberId);
+
+        if (!$serialNumber) {
+            return false;
+        }
+
+        // Perangkat tanpa customer masih dapat dipilih.
+        // Jika sudah memiliki customer, harus cocok dengan tiket.
+        return empty($serialNumber->customer_id)
+            || $serialNumber->customer_id === $customerId;
     }
 
     private function generateTicketNumber(): string
