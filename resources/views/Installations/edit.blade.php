@@ -339,8 +339,8 @@
     }
 
     .btn.primary {
-        background: #2563eb;
-        border-color: #2563eb;
+        background: #15966f;
+        border-color: #15966f;
         color: #fff;
     }
 

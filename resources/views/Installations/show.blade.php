@@ -52,6 +52,7 @@
 
     <div class="card-body">
         <div class="detail-grid">
+
             <div class="detail-item">
                 <span class="detail-label">Installation ID</span>
                 <span class="detail-value">
@@ -111,6 +112,7 @@
                     {{ $installation->updated_at?->format('d M Y H:i') ?? '—' }}
                 </span>
             </div>
+
         </div>
     </div>
 </div>
@@ -358,8 +360,8 @@
     }
 
     .btn.primary {
-        background: #2563eb;
-        border-color: #2563eb;
+        background: #15966f;
+        border-color: #15966f;
         color: #fff;
     }
 
@@ -396,5 +398,56 @@
             padding: 16px;
         }
     }
+
+    .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid #e5e7eb;
+    border-left: 1px solid #e5e7eb;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 18px 20px;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-label {
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #111827;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+@media (max-width: 700px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-item.full-width {
+        grid-column: auto;
+    }
+
+    .detail-item {
+        padding: 15px 16px;
+    }
+}
 </style>
 @endsection
