@@ -32,14 +32,7 @@
                     ☰
                 </button>
 
-                <div class="search">
-                    <span>🔍</span>
-
-                    <input
-                        type="text"
-                        placeholder="Search customer, lead, product, ticket..."
-                    >
-                </div>
+                
 
                 <div class="top-actions">
 
