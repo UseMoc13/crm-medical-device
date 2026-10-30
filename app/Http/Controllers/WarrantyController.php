@@ -250,52 +250,13 @@ class WarrantyController extends Controller
         ]);
 
         $validated = $request->validate([
-            'warranty_number' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('warranties', 'warranty_number'),
-            ],
-
-            'serial_number_id' => [
-                'required',
-                'uuid',
-                'exists:serial_numbers,serial_number_id',
-            ],
-
-            'customer_id' => [
-                'required',
-                'uuid',
-                'exists:customers,customer_id',
-            ],
-
-            'start_date' => [
-                'required',
-                'date',
-            ],
-
-            'end_date' => [
-                'required',
-                'date',
-                'after_or_equal:start_date',
-            ],
-
-            'warranty_type' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
-
-            'status' => [
-                'required',
-                'string',
-                Rule::in(self::WARRANTY_STATUSES),
-            ],
-
-            'terms' => [
-                'nullable',
-                'string',
-            ],
+            'serial_number_id' => 'required|exists:serial_numbers,serial_number_id',
+            'customer_id' => 'required|exists:customers,customer_id',
+            'warranty_type' => 'required|in:Manufacturer,Extended,Service',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'status' => 'required|string|max:50',
+            'terms' => 'nullable|string',
         ]);
 
     
@@ -311,11 +272,13 @@ class WarrantyController extends Controller
                 ]);
         }
 
+        $warrantyNumber = $this->generateWarrantyNumber();
+
         DB::table('warranties')->insert([
             'warranty_id' => (string) Str::uuid(),
             'serial_number_id' => $validated['serial_number_id'],
             'customer_id' => $validated['customer_id'],
-            'warranty_number' => $validated['warranty_number'],
+            'warranty_number' => $warrantyNumber,
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'warranty_type' => $validated['warranty_type'] ?? null,
@@ -473,9 +436,8 @@ class WarrantyController extends Controller
             ],
 
             'warranty_type' => [
-                'nullable',
-                'string',
-                'max:255',
+            'required',
+            'in:Manufacturer,Extended,Service',
             ],
 
             'status' => [
@@ -530,21 +492,30 @@ class WarrantyController extends Controller
     }
 
     private function generateWarrantyNumber(): string
-{
-    $year = now()->format('Y');
-    $prefix = 'WTY-' . $year . '-';
+    {
+        $year = now()->format('Y');
+        $prefix = 'WTY-' . $year . '-';
 
-    $lastWarranty = DB::table('warranties')
-        ->where('warranty_number', 'like', $prefix . '%')
-        ->orderByRaw('CAST(SUBSTRING(warranty_number FROM ?) AS INTEGER) DESC', [
-            strlen($prefix) + 1,
-        ])
-        ->first();
+        $lastWarranty = DB::table('warranties')
+            ->where('warranty_number', 'like', $prefix . '%')
+            ->orderByRaw(
+                'CAST(SUBSTRING(warranty_number FROM ?) AS INTEGER) DESC',
+                [strlen($prefix) + 1]
+            )
+            ->first();
 
-    $nextNumber = $lastWarranty
-        ? ((int) substr($lastWarranty->warranty_number, strlen($prefix))) + 1
-        : 1;
+        $nextNumber = $lastWarranty
+            ? ((int) substr(
+                $lastWarranty->warranty_number,
+                strlen($prefix)
+            )) + 1
+            : 1;
 
-    return $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
-}
+        return $prefix . str_pad(
+            (string) $nextNumber,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
+    }
 }
