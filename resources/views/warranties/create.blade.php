@@ -128,23 +128,45 @@
                     @enderror
                 </div>
 
-                {{-- Warranty Type --}}
+                {{-- WARRANTY TYPE --}}
                 <div class="form-group">
                     <label for="warranty_type">
                         Warranty Type
+                        <span class="required-mark">*</span>
                     </label>
 
-                    <input
-                        type="text"
-                        id="warranty_type"
+                    <select
                         name="warranty_type"
-                        value="{{ old('warranty_type') }}"
-                        placeholder="Example: Standard, Extended"
-                        maxlength="255"
+                        id="warranty_type"
+                        class="form-control @error('warranty_type') is-invalid @enderror"
+                        required
                     >
+                        <option value="">-- Select Warranty Type --</option>
+
+                        <option
+                            value="Manufacturer"
+                            @selected(old('warranty_type') === 'Manufacturer')
+                        >
+                            Manufacturer Warranty
+                        </option>
+
+                        <option
+                            value="Extended"
+                            @selected(old('warranty_type') === 'Extended')
+                        >
+                            Extended Warranty
+                        </option>
+
+                        <option
+                            value="Service"
+                            @selected(old('warranty_type') === 'Service')
+                        >
+                            Service Warranty
+                        </option>
+                    </select>
 
                     @error('warranty_type')
-                        <small class="error-text">{{ $message }}</small>
+                        <small class="field-error">{{ $message }}</small>
                     @enderror
                 </div>
 

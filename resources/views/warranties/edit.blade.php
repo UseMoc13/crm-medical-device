@@ -66,36 +66,45 @@
                     @enderror
                 </div>
 
-                {{-- Warranty Type --}}
+                {{-- WARRANTY TYPE --}}
                 <div class="form-group">
                     <label for="warranty_type">
-                        Warranty Type <span class="required">*</span>
+                        Warranty Type
+                        <span class="required-mark">*</span>
                     </label>
 
                     <select
-                        id="warranty_type"
                         name="warranty_type"
+                        id="warranty_type"
                         class="form-control @error('warranty_type') is-invalid @enderror"
                         required
                     >
-                        <option value="">Select warranty type</option>
+                        <option value="">-- Select Warranty Type --</option>
 
-                        @foreach ([
-                            'Manufacturer' => 'Manufacturer Warranty',
-                            'Extended' => 'Extended Warranty',
-                            'Service' => 'Service Warranty',
-                        ] as $value => $label)
-                            <option
-                                value="{{ $value }}"
-                                {{ old('warranty_type', $warranty->warranty_type) == $value ? 'selected' : '' }}
-                            >
-                                {{ $label }}
-                            </option>
-                        @endforeach
+                        <option
+                            value="Manufacturer"
+                            @selected(old('warranty_type', $warranty->warranty_type) === 'Manufacturer')
+                        >
+                            Manufacturer Warranty
+                        </option>
+
+                        <option
+                            value="Extended"
+                            @selected(old('warranty_type', $warranty->warranty_type) === 'Extended')
+                        >
+                            Extended Warranty
+                        </option>
+
+                        <option
+                            value="Service"
+                            @selected(old('warranty_type', $warranty->warranty_type) === 'Service')
+                        >
+                            Service Warranty
+                        </option>
                     </select>
 
                     @error('warranty_type')
-                        <small class="error-message">{{ $message }}</small>
+                        <small class="field-error">{{ $message }}</small>
                     @enderror
                 </div>
 
