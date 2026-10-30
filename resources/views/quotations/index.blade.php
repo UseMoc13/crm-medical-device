@@ -395,45 +395,18 @@
             <table>
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Quotation
-                        </th>
-
-                        <th>
-                            Opportunity
-                        </th>
-
-                        <th>
-                            Quotation Date
-                        </th>
-
-                        <th>
-                            Valid Until
-                        </th>
-
-                        <th>
-                            Subtotal
-                        </th>
-
-                        <th>
-                            Total Amount
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-                        <th>
-                            Sales Order
-                        </th>
+                        <th class="col-number">No.</th>
+                        <th class="col-quotation">Quotation</th>
+                        <th class="col-opportunity">Opportunity</th>
+                        <th class="col-date">Quotation Date</th>
+                        <th class="col-valid-until">Valid Until</th>
+                        <th class="col-subtotal">Subtotal</th>
+                        <th class="col-total">Total Amount</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-actions">Actions</th>
+                        <th class="col-sales-order">Sales Order</th>
                     </tr>
-
                 </thead>
 
 
@@ -442,7 +415,9 @@
                     @forelse($quotations as $quotation)
 
                     <tr>
-
+                        <td class="col-number">
+                            {{ $quotations->firstItem() + $loop->index }}
+                        </td>
 
                         {{-- Quotation --}}
 
@@ -724,7 +699,7 @@
 
                     <tr>
 
-                        <td colspan="9">
+                        <td colspan="10">
 
                             <div class="empty">
 
@@ -1397,9 +1372,53 @@
     .table-wrap table {
         min-width: 1250px;
     }
+
+}
+    .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
 }
 
+.col-quotation {
+    min-width: 150px;
+}
 
+.col-opportunity {
+    min-width: 170px;
+}
+
+.col-date {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.col-valid-until {
+    min-width: 130px;
+    white-space: nowrap;
+}
+
+.col-subtotal,
+.col-total {
+    min-width: 150px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.col-status {
+    min-width: 110px;
+}
+
+.col-actions {
+    min-width: 130px;
+    text-align: center !important;
+}
+
+.col-sales-order {
+    min-width: 150px;
+}
 
 </style>
 

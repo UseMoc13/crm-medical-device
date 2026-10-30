@@ -277,12 +277,13 @@
 
                 <thead>
                     <tr>
-                        <th>Warehouse</th>
-                        <th>Address</th>
-                        <th>Inventory Records</th>
-                        <th>Stock Movements</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th class="col-number">No.</th>
+                        <th class="col-warehouse">Warehouse</th>
+                        <th class="col-address">Address</th>
+                        <th class="col-inventory">Inventory Records</th>
+                        <th class="col-movements">Stock Movements</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
 
@@ -292,6 +293,9 @@
                     @forelse($warehouses as $warehouse)
 
                         <tr>
+                            <td class="col-number">
+                                {{ $warehouses->firstItem() + $loop->index }}
+                            </td>
 
                             {{-- Warehouse --}}
 
@@ -1172,6 +1176,37 @@
         min-width: 1050px;
     }
 
+}
+
+.col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-warehouse {
+    min-width: 160px;
+}
+
+.col-address {
+    min-width: 220px;
+}
+
+.col-inventory,
+.col-movements {
+    min-width: 150px;
+    text-align: center;
+}
+
+.col-status {
+    min-width: 100px;
+}
+
+.col-actions {
+    min-width: 120px;
+    text-align: center;
 }
 
 </style>

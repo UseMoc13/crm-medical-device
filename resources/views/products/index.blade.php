@@ -426,49 +426,19 @@
             <table>
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Product
-                        </th>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Brand
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Unit
-                        </th>
-
-                        <th>
-                            Price
-                        </th>
-
-                        <th>
-                            Warranty
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
+                        <th class="col-number">No.</th>
+                        <th class="col-product">Product</th>
+                        <th class="col-category">Category</th>
+                        <th class="col-brand">Brand</th>
+                        <th class="col-type">Type</th>
+                        <th class="col-unit">Unit</th>
+                        <th class="col-price">Price</th>
+                        <th class="col-warranty">Warranty</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
-
                 </thead>
-
 
                 <tbody>
 
@@ -476,6 +446,9 @@
 
                     <tr>
 
+                        <td class="col-number">
+                            {{ $products->firstItem() + $loop->index }}
+                        </td>
 
                         {{-- Product --}}
 
@@ -1674,7 +1647,45 @@
         min-width: 1180px;
     }
 }
-    }
+
+.products-table .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.products-table .col-product {
+    min-width: 180px;
+}
+
+.products-table .col-category,
+.products-table .col-brand {
+    min-width: 130px;
+}
+
+.products-table .col-type,
+.products-table .col-unit {
+    min-width: 100px;
+}
+
+.products-table .col-price {
+    min-width: 130px;
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.products-table .col-warranty,
+.products-table .col-status {
+    min-width: 110px;
+}
+
+.products-table .col-actions {
+    min-width: 120px;
+    text-align: center !important;
+}
+        
 </style>
 
 

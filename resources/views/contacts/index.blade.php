@@ -387,54 +387,27 @@
         <div class="table-wrap">
 
             <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Contact
-                        </th>
-
-                        <th>
-                            Customer
-                        </th>
-
-                        <th>
-                            Position
-                        </th>
-
-                        <th>
-                            Department
-                        </th>
-
-                        <th>
-                            Phone
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Primary
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
+                    <thead>
+                        <tr>
+                            <th class="col-number">No.</th>
+                            <th class="col-contact">Contact</th>
+                            <th class="col-customer">Customer</th>
+                            <th class="col-position">Position</th>
+                            <th class="col-department">Department</th>
+                            <th class="col-phone">Phone</th>
+                            <th class="col-type">Type</th>
+                            <th class="col-primary">Primary</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>                
                 <tbody>
 
                     @forelse($contacts as $contact)
 
                     <tr>
-
+                        <td class="col-number">
+                            {{ $contacts->firstItem() + $loop->index }}
+                        </td>
 
                         {{-- Contact --}}
 
@@ -1229,6 +1202,50 @@
     .table-wrap table {
         min-width: 950px;
     }
+}
+.col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-contact {
+    min-width: 170px;
+}
+
+.col-customer {
+    min-width: 170px;
+}
+
+.col-position {
+    min-width: 140px;
+}
+
+.col-department {
+    min-width: 140px;
+}
+
+.col-phone {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.col-type {
+    min-width: 110px;
+}
+
+.col-primary {
+    min-width: 100px;
+    text-align: center !important;
+}
+
+.col-actions {
+    width: 130px;
+    min-width: 130px;
+    text-align: center !important;
+}
 
 </style>
 

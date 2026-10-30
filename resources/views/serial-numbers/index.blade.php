@@ -326,20 +326,26 @@
 
                 <thead>
                     <tr>
-                        <th>Serial Number</th>
-                        <th>Product</th>
-                        <th>Customer</th>
-                        <th>Purchase Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th class="col-number">No.</th>
+                        <th class="col-serial-number">Serial Number</th>
+                        <th class="col-product">Product</th>
+                        <th class="col-customer">Customer</th>
+                        <th class="col-purchase-date">Purchase Date</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
+
 
                 <tbody>
 
                     @forelse(($serialNumbers ?? []) as $serial)
 
                         <tr>
+
+                            <td class="col-number">
+                                {{ $serialNumbers->firstItem() + $loop->index }}
+                            </td>
 
                             {{-- Serial Number --}}
 
@@ -1096,6 +1102,37 @@
 .table-wrap.serial-table-wrap table.serial-table tr:last-child td {
     border-bottom: 1px solid #d5dce6 !important;
 
+}
+.col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-serial-number {
+    min-width: 160px;
+}
+
+.col-product,
+.col-customer {
+    min-width: 170px;
+}
+
+.col-purchase-date {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.col-status {
+    min-width: 110px;
+}
+
+.col-actions {
+    min-width: 120px;
+    text-align: center;
+}
 
 }
 

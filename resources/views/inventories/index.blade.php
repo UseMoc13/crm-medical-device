@@ -487,12 +487,13 @@
 
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>Warehouse</th>
-                        <th>Quantity</th>
-                        <th>Minimum Stock</th>
-                        <th>Stock Status</th>
-                        <th>Last Updated</th>
+                        <th class="col-number">No.</th>
+                        <th class="col-product">Product</th>
+                        <th class="col-warehouse">Warehouse</th>
+                        <th class="col-quantity">Quantity</th>
+                        <th class="col-minimum-stock">Minimum Stock</th>
+                        <th class="col-stock-status">Stock Status</th>
+                        <th class="col-last-updated">Last Updated</th>
                     </tr>
                 </thead>
 
@@ -521,6 +522,9 @@
                         @endphp
 
                         <tr>
+                            <td class="col-number">
+                                {{ $inventories->firstItem() + $loop->index }}
+                            </td>
 
                             {{-- Product --}}
 
@@ -1365,6 +1369,36 @@
 
 }
 
+.col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-product {
+    min-width: 170px;
+}
+
+.col-warehouse {
+    min-width: 150px;
+}
+
+.col-quantity,
+.col-minimum-stock {
+    min-width: 120px;
+    text-align: center;
+}
+
+.col-stock-status {
+    min-width: 130px;
+}
+
+.col-last-updated {
+    min-width: 160px;
+    white-space: nowrap;
+}
 </style>
 
 @endsection

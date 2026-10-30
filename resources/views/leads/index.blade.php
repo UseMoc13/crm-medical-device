@@ -468,54 +468,28 @@
         <div class="table-wrap">
 
             <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Lead
-                        </th>
-
-                        <th>
-                            Company
-                        </th>
-
-                        <th>
-                            Contact
-                        </th>
-
-                        <th>
-                            Phone
-                        </th>
-
-                        <th>
-                            Source
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Assigned To
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
-
+                    <thead>
+                        <tr>
+                            <th class="col-number">No.</th>
+                            <th class="col-lead">Lead</th>
+                            <th class="col-company">Company</th>
+                            <th class="col-contact">Contact</th>
+                            <th class="col-phone">Phone</th>
+                            <th class="col-source">Source</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-assigned">Assigned To</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
 
                 <tbody>
 
                     @forelse($leads as $lead)
 
                     <tr>
-
+                        <td class="col-number">
+                            {{ $leads->firstItem() + $loop->index }}
+                        </td>
 
                         {{-- Lead --}}
 
@@ -1465,9 +1439,53 @@
         .table-wrap table {
             min-width: 950px;
         }
+
+        .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+    }
+
+    .col-lead {
+        min-width: 170px;
+    }
+
+    .col-company {
+        min-width: 170px;
+    }
+
+    .col-contact {
+        min-width: 150px;
+    }
+
+    .col-phone {
+        min-width: 140px;
+        white-space: nowrap;
+    }
+
+    .col-source {
+        min-width: 120px;
+    }
+
+    .col-status {
+        min-width: 120px;
+    }
+
+    .col-assigned {
+        min-width: 150px;
+    }
+
+    .col-actions {
+        width: 130px;
+        min-width: 130px;
+        text-align: center !important;
     }
     
-}
+    
 
 </style>
 

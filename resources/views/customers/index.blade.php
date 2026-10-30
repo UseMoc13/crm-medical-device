@@ -292,54 +292,28 @@
         <div class="table-wrap">
 
             <table>
-
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Code
-                        </th>
-
-                        <th>
-                            Customer
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Phone
-                        </th>
-
-                        <th>
-                            Location
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Created
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
+                        <th class="col-number">No.</th>
+                        <th class="col-code">Code</th>
+                        <th class="col-customer">Customer</th>
+                        <th class="col-type">Type</th>
+                        <th class="col-phone">Phone</th>
+                        <th class="col-location">Location</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-date">Created</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
-
                 </thead>
-
-
                 <tbody>
 
                     @forelse($customers as $customer)
 
                     <tr>
-
+                        </td>
+                            <td class="col-number">
+                            {{ $customers->firstItem() + $loop->index }}
+                            </td>
                         {{-- Code --}}
 
                         <td>
@@ -348,8 +322,7 @@
                                 {{ $customer->customer_code }}
                             </strong>
 
-                        </td>
-
+                        
 
                         {{-- Customer --}}
 
@@ -509,7 +482,7 @@
 
                     <tr>
 
-                        <td colspan="8">
+                        <td colspan="9">
 
                             <div class="empty">
 
@@ -1136,7 +1109,50 @@
         justify-content: center;
     }
 
-}
+    }
+    .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+    }
+
+    .col-code {
+        min-width: 120px;
+    }
+
+    .col-customer {
+        min-width: 180px;
+    }
+
+    .col-type {
+        min-width: 110px;
+    }
+
+    .col-phone {
+        min-width: 140px;
+        white-space: nowrap;
+    }
+
+    .col-location {
+        min-width: 180px;
+    }
+
+    .col-status {
+        min-width: 110px;
+    }
+
+    .col-date {
+        min-width: 140px;
+        white-space: nowrap;
+    }
+
+    .col-actions {
+        width: 130px;
+        min-width: 130px;
+        text-align: center !important;
+    }
 
 </style>
 

@@ -185,17 +185,20 @@
             </div>
         @endif
 
+        
+
         <div class="table-wrap sm-table-wrap">
             <table class="sm-table">
                 <thead>
                     <tr>
-                        <th>Transaction</th>
-                        <th>Product</th>
-                        <th>Warehouse</th>
-                        <th>Movement Type</th>
-                        <th>Quantity</th>
-                        <th>Reference / Notes</th>
-                        <th>Actions</th>
+                        <th class="col-number">No.</th>
+                        <th class="col-transaction">Transaction</th>
+                        <th class="col-product">Product</th>
+                        <th class="col-warehouse">Warehouse</th>
+                        <th class="col-movement-type">Movement Type</th>
+                        <th class="col-quantity">Quantity</th>
+                        <th class="col-reference-notes">Reference / Notes</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -232,6 +235,10 @@
                         @endphp
 
                         <tr>
+                            <td class="col-number">
+                                {{ $movements->firstItem() + $loop->index }}
+                            </td>
+
                             <td class="sm-transaction-cell">
                                 <strong class="sm-transaction-date">
                                     {{ $movementDate?->format('d M Y') ?? '—' }}
@@ -402,5 +409,144 @@
         .sm-filter-date input { width: 100%; }
         .sm-filter-button, .sm-reset-button { justify-content: center; }
     }
+
+/* Stock Movement List - Table Partition */
+.sm-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: #fff;
+}
+
+/* Header */
+.sm-table thead th {
+    padding: 14px 12px;
+    background: #f3f4f6;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    border: 1px solid #d1d5db;
+}
+
+/* Body */
+.sm-table tbody td {
+    padding: 13px 12px;
+    font-size: 12px;
+    color: #17284f;
+    vertical-align: middle;
+    border: 1px solid #d1d5db;
+}
+
+/* Hover */
+.sm-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* No. */
+.sm-table .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* Transaction */
+.sm-table .col-transaction {
+    min-width: 150px;
+}
+
+/* Product */
+.sm-table .col-product {
+    min-width: 150px;
+}
+
+/* Warehouse */
+.sm-table .col-warehouse {
+    min-width: 150px;
+}
+
+/* Movement Type */
+.sm-table .col-movement-type {
+    min-width: 140px;
+}
+
+/* Quantity */
+.sm-table .col-quantity {
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Reference / Notes */
+.sm-table .col-reference-notes {
+    min-width: 200px;
+}
+
+/* Actions */
+.sm-table .col-actions {
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Empty State */
+.sm-table .sm-empty {
+    padding: 35px 15px;
+    text-align: center;
+}
+
+/* Responsive */
+.sm-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .sm-table {
+        min-width: 1100px;
+    }
+}
+
+    .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-transaction {
+    min-width: 150px;
+}
+
+.col-product,
+.col-warehouse {
+    min-width: 150px;
+}
+
+.col-movement-type {
+    min-width: 140px;
+}
+
+.col-quantity {
+    min-width: 100px;
+    text-align: center;
+}
+
+.col-reference-notes {
+    min-width: 200px;
+}
+
+.col-actions {
+    min-width: 120px;
+    text-align: center;
+}
 </style>
 @endsection

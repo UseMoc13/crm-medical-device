@@ -68,19 +68,26 @@
                 <table class="table table-hover align-middle sales-orders-table">
                     <thead>
                         <tr>
-                            <th>Nomor Sales Order</th>
-                            <th>Quotation</th>
-                            <th>Customer</th>
-                            <th>Tanggal Order</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Details</th>
+                            <th class="col-number">No.</th>
+                            <th class="col-sales-order">Nomor Sales Order</th>
+                            <th class="col-quotation">Quotation</th>
+                            <th class="col-customer">Customer</th>
+                            <th class="col-date">Tanggal Order</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-details">Details</th>
                         </tr>
                     </thead>
 
                     <tbody>
+                        
                         @forelse ($orders as $order)
                             <tr>
+
+                                <td class="col-number">
+                                    {{ $orders->firstItem() + $loop->index }}
+                                </td>
+                            
                                 <td>
                                     <span class="sales-order-number">
                                         {{ $order->sales_order_number }}
@@ -259,7 +266,46 @@
     .sales-orders-table {
         min-width: 850px;
     }
+}
+    .col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
 
+.col-sales-order {
+    min-width: 170px;
+}
+
+.col-quotation {
+    min-width: 150px;
+}
+
+.col-customer {
+    min-width: 170px;
+}
+
+.col-date {
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.col-total {
+    min-width: 130px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.col-status {
+    min-width: 110px;
+}
+
+.col-details {
+    min-width: 100px;
+    text-align: center !important;
+}
     
 }
 </style>

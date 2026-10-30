@@ -218,44 +218,24 @@ CATEGORY LIST
             <table class="category-table">
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Description
-                        </th>
-
-                        <th>
-                            Products
-                        </th>
-
-                        <th>
-                            Created
-                        </th>
-
-                        <th>
-                            Updated
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
+                        <th class="col-number">No.</th>
+                        <th class="col-category">Category</th>
+                        <th class="col-description">Description</th>
+                        <th class="col-products">Products</th>
+                        <th class="col-created">Created</th>
+                        <th class="col-updated">Updated</th>
+                        <th class="col-actions">Actions</th>
                     </tr>
-
                 </thead>
-
-
                 <tbody>
 
                     @forelse($categories as $category)
 
                     <tr>
-
+                        <td class="col-number">
+                            {{ $categories->firstItem() + $loop->index }}
+                        </td>
 
                         {{-- =================================================
                          CATEGORY
@@ -1625,7 +1605,38 @@ DELETE CONFIRMATION MODAL
     }
 }
 
-    }
+.col-number {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.col-category {
+    min-width: 160px;
+}
+
+.col-description {
+    min-width: 220px;
+}
+
+.col-products {
+    min-width: 100px;
+    text-align: center;
+}
+
+.col-created,
+.col-updated {
+    min-width: 150px;
+    white-space: nowrap;
+}
+
+.col-actions {
+    min-width: 120px;
+    text-align: center;
+}
+
 </style>
 
 <script>

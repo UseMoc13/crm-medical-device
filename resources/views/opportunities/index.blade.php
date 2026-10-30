@@ -487,46 +487,19 @@
         <div class="table-wrap">
 
             <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Opportunity
-                        </th>
-
-                        <th>
-                            Customer
-                        </th>
-
-                        <th>
-                            Sales
-                        </th>
-
-                        <th>
-                            Stage
-                        </th>
-
-                        <th>
-                            Estimated Value
-                        </th>
-
-                        <th>
-                            Expected Close
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
+                    <thead>
+                        <tr>
+                            <th class="col-number">No.</th>
+                            <th class="col-opportunity">Opportunity</th>
+                            <th class="col-customer">Customer</th>
+                            <th class="col-sales">Sales</th>
+                            <th class="col-stage">Stage</th>
+                            <th class="col-value">Estimated Value</th>
+                            <th class="col-date">Expected Close</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
 
 
                 <tbody>
@@ -537,7 +510,10 @@
 
 
                         {{-- Opportunity --}}
-
+                        
+                        <td class="col-number">
+                            {{ $opportunities->firstItem() + $loop->index }}
+                        </td>
                         <td>
 
                             <a
@@ -809,7 +785,7 @@
 
                     <tr>
 
-                        <td colspan="8">
+                        <td colspan="9">
 
                             <div class="empty">
 
@@ -1522,8 +1498,52 @@
             .table-wrap table {
                 min-width: 1100px;
             }
+        }
+        .col-number {
+        width: 55px;
+        min-width: 55px;
+        max-width: 55px;
+        text-align: center !important;
+        white-space: nowrap;
+        }
 
-            }
+        .col-opportunity {
+            min-width: 180px;
+        }
+
+        .col-customer {
+            min-width: 160px;
+        }
+
+        .col-sales {
+            min-width: 130px;
+        }
+
+        .col-stage {
+            min-width: 120px;
+        }
+
+        .col-value {
+            min-width: 150px;
+            text-align: right;
+        }
+
+        .col-date {
+            min-width: 140px;
+            white-space: nowrap;
+        }
+
+        .col-status {
+            min-width: 110px;
+        }
+
+        .col-actions {
+            width: 130px;
+            min-width: 130px;
+            text-align: center !important;
+        }
+ }
+        
 </style>
 
 
