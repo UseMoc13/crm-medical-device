@@ -23,6 +23,7 @@ use App\Http\Controllers\AnnouncementManagementController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\InstallationController;
+use App\Http\Controllers\ServiceTicketController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -41,8 +42,6 @@ Route::resource('contracts', ContractController::class);
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
-
-
 
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
@@ -105,6 +104,9 @@ Route::put('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'up
 
 Route::delete('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'destroy'])
     ->name('serial-numbers.destroy');
+
+Route::resource('service-tickets', ServiceTicketController::class)
+    ->except(['destroy']);
 
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
