@@ -23,7 +23,11 @@ use App\Http\Controllers\AnnouncementManagementController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\InstallationController;
+<<<<<<< Updated upstream
 use App\Http\Controllers\ServiceTicketController;
+=======
+use App\Http\Controllers\WarrantyController;
+>>>>>>> Stashed changes
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -42,7 +46,7 @@ Route::resource('contracts', ContractController::class);
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
-
+Route::resource('warranties', WarrantyController::class);
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
     ->name('contracts.download');

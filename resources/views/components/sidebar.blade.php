@@ -290,7 +290,8 @@
             <span>Installation</span>
         </a>
 
-        <a href="#" data-label="Warranty">
+        <a href="{{ route('warranties.index') }}"
+            class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}">
             <span class="ico">✓</span>
             <span class="nav-text">Warranty</span>
         </a>
