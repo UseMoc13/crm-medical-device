@@ -289,7 +289,7 @@
             data-label="installation">
 
             <span class="ico">⚙</span>
-            <span>Installation</span>
+            <span class="nav-text">Installations</span>
         </a>
 
         <a href="{{ route('warranties.index') }}"
