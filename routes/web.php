@@ -28,7 +28,7 @@ use App\Http\Controllers\WarrantyController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
-
+    
 Route::resource('roles', RoleController::class);
 Route::resource('users', UserController::class);
 Route::resource('brands', BrandController::class);
