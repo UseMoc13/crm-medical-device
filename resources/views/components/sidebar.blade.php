@@ -285,13 +285,17 @@
 
 
         <a href="{{ route('installations.index') }}"
-            class="{{ request()->routeIs('installations.*') ? 'active' : '' }}">
+            class="{{ request()->routeIs('installations.*') ? 'active' : '' }}"
+            data-label="installation">
+
             <span class="ico">⚙</span>
             <span>Installation</span>
         </a>
 
         <a href="{{ route('warranties.index') }}"
-            class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}">
+            class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}"
+            data-label="warranty">
+
             <span class="ico">✓</span>
             <span class="nav-text">Warranty</span>
         </a>
@@ -306,7 +310,9 @@
         </div>
 
         <a href="{{ route('service-tickets.index') }}"
-            class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}">
+            class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}"
+            data-label="service-tickets">
+            
             <span class="ico">⚑</span>
             <span class="nav-text">Service Tickets</span>
         </a>

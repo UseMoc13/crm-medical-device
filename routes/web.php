@@ -185,5 +185,3 @@ Route::controller(AnnouncementManagementController::class)
             ->whereUuid('announcement')
             ->name('destroy');
     });
-
-    /**installation
