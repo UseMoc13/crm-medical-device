@@ -1386,23 +1386,41 @@ class QuotationController extends Controller
 
     public function destroy($id)
 {
-    $quotation = Quotation::findOrFail($id);
+    try {
+        DB::transaction(function () use ($id) {
 
-    $hasSalesOrder = \Illuminate\Support\Facades\DB::table('sales_orders')
-        ->where('quotation_id', $quotation->quotation_id)
-        ->exists();
+            $quotation = Quotation::findOrFail($id);
 
-    if ($hasSalesOrder) {
+            // Cek apakah quotation sudah terhubung dengan Sales Order
+            $hasSalesOrder = DB::table('sales_orders')
+                ->where('quotation_id', $quotation->quotation_id)
+                ->exists();
+
+            if ($hasSalesOrder) {
+                throw new \Exception(
+                    'Quotation tidak dapat dihapus karena sudah terhubung dengan Sales Order.'
+                );
+            }
+
+            // Hapus quotation items terlebih dahulu
+            DB::table('quotation_items')
+                ->where('quotation_id', $quotation->quotation_id)
+                ->delete();
+
+            // Hapus quotation utama
+            $quotation->delete();
+        });
+
         return redirect()
             ->route('quotations.index')
-            ->with('error', 'Quotation tidak dapat dihapus karena sudah terhubung dengan Sales Order.');
+            ->with('success', 'Quotation berhasil dihapus.');
+
+    } catch (\Exception $e) {
+
+        return redirect()
+            ->route('quotations.index')
+            ->with('error', $e->getMessage());
     }
-
-    $quotation->delete();
-
-    return redirect()
-        ->route('quotations.index')
-        ->with('success', 'Quotation berhasil dihapus.');
 }
 
 

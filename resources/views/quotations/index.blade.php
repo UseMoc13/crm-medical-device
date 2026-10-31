@@ -591,74 +591,64 @@
                         </td>
 
 
-                        {{-- Actions --}}
-
+                        
+                        {{-- ACTIONS --}}
                         <td>
-
                             <div class="table-actions">
 
-
-                                {{-- View --}}
-
+                                {{-- VIEW --}}
                                 <a
-                                    href="{{ route(
-                                        'quotations.show',
-                                        $quotation
-                                    ) }}"
+                                    href="{{ route('quotations.show', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn view"
-                                    title="View Quotation"
-                                    aria-label="View Quotation"
+                                    title="View"
+                                    aria-label="View quotation"
                                 >
-                                    👁
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
                                 </a>
 
-
-                                {{-- Edit --}}
-
+                                {{-- EDIT --}}
                                 <a
-                                    href="{{ route(
-                                        'quotations.edit',
-                                        $quotation
-                                    ) }}"
+                                    href="{{ route('quotations.edit', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn edit"
-                                    title="Edit Quotation"
-                                    aria-label="Edit Quotation"
+                                    title="Edit"
+                                    aria-label="Edit quotation"
                                 >
-                                    ✎
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 20h9"/>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                                    </svg>
                                 </a>
 
-
-                                {{-- Delete --}}
-
+                                {{-- DELETE --}}
                                 <form
-                                    action="{{ route(
-                                        'quotations.destroy',
-                                        $quotation
-                                    ) }}"
+                                    action="{{ route('quotations.destroy', ['quotation' => $quotation->getRouteKey()]) }}"
                                     method="POST"
-                                    class="delete-form"
-                                    data-quotation-number="{{ $quotation->quotation_number }}"
+                                    onsubmit="return confirm('Are you sure you want to delete this quotation?')"
                                 >
-
                                     @csrf
-
                                     @method('DELETE')
-
 
                                     <button
                                         type="submit"
                                         class="action-btn delete"
-                                        title="Delete Quotation"
-                                        aria-label="Delete Quotation"
+                                        title="Delete"
+                                        aria-label="Delete quotation"
                                     >
-                                        🗑
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M3 6h18"/>
+                                            <path d="M8 6V4h8v2"/>
+                                            <path d="m19 6-1 14H6L5 6"/>
+                                            <path d="M10 11v5M14 11v5"/>
+                                        </svg>
                                     </button>
-
                                 </form>
 
                             </div>
-
                         </td>
+
                          
                             
                             {{-- Sales Order --}}
@@ -1373,6 +1363,42 @@
     text-align: center;
     padding: 28px 12px;
 }
+
+.action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 7px;
+        border: 1px solid #e5e7eb;
+        border-radius: 7px;
+        background: #fff;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .action-btn svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .action-btn.view {
+        color: #2563eb;
+    }
+
+    .action-btn.edit {
+        color: #d97706;
+    }
+
+    .action-btn.delete {
+        color: #dc2626;
+    }
 
 .table-footer {
         display: flex;

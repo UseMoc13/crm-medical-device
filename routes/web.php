@@ -44,6 +44,7 @@ Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
 Route::resource('warranties', WarrantyController::class);
+Route::resource('service-tickets', ServiceTicketController::class);
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
     ->name('contracts.download');
