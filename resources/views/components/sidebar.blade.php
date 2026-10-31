@@ -272,7 +272,6 @@
             Installation & Warranty
         </div>
 
-        
         <a
             href="{{ route('deliveries.index') }}"
             class="{{ request()->routeIs('deliveries.*') ? 'active' : '' }}"
@@ -286,7 +285,7 @@
 
         <a href="{{ route('installations.index') }}"
             class="{{ request()->routeIs('installations.*') ? 'active' : '' }}"
-            data-label="installation">
+            data-label="Installations">
 
             <span class="ico">⚙</span>
             <span class="nav-text">Installations</span>
@@ -294,7 +293,7 @@
 
         <a href="{{ route('warranties.index') }}"
             class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}"
-            data-label="warranty">
+            data-label="Warranty">
 
             <span class="ico">✓</span>
             <span class="nav-text">Warranty</span>
