@@ -504,6 +504,13 @@
 
         @endif
 
+
+            <div class="table-footer">
+            <div>
+                Showing {{ $warehouses->firstItem() ?? 0 }}
+                to {{ $warehouses->lastItem() ?? 0 }}
+                of {{ $warehouses->total() }} Warehouses
+            </div>
     </div>
 
 </div>
@@ -1169,6 +1176,22 @@
     color: #c94a4a;
 }
 
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 /* RESPONSIVE */
 
 @media (max-width: 768px) {

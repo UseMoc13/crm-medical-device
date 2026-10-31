@@ -189,6 +189,14 @@
             </table>
         </div>
 
+        <div class="table-footer">
+            <div>
+                Showing {{ $deliveries->firstItem() ?? 0 }}
+                to {{ $deliveries->lastItem() ?? 0 }}
+                of {{ $deliveries->total() }} deliveries
+            </div>
+
+
     </div>
 </div>
 
@@ -285,6 +293,22 @@
     width: 14%;
     text-align: center;
 }
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
 /* DELIVERY NUMBER */
 .delivery-number {

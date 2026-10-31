@@ -738,6 +738,12 @@
 
         @endif
 
+        <div class="table-footer">
+            <div>
+                Showing {{ $products->firstItem() ?? 0 }}
+                to {{ $products->lastItem() ?? 0 }}
+                of {{ $products->total() }} Products
+            </div>
     </div>
 
 </div>
@@ -1640,6 +1646,22 @@
     font-size: 13px;
     text-align: center;
 }
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -541,6 +541,13 @@ BRAND LIST
         </div>
 
         @endif
+        
+        <div class="table-footer">
+            <div>
+                Showing {{ $brands->firstItem() ?? 0 }}
+                to {{ $brands->lastItem() ?? 0 }}
+                of {{ $brands->total() }} Brands
+            </div>
 
     </div>
 
@@ -1599,6 +1606,22 @@ DELETE CONFIRMATION MODAL
     border-color: #e6b7b7;
     color: #c94a4a;
 }
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
 /* Responsive */
 

@@ -534,7 +534,12 @@
             </div>
 
         @endif
-
+        <div class="table-footer">
+                    <div>
+                        Showing {{ $serialNumbers->firstItem() ?? 0 }}
+                        to {{ $serialNumbers->lastItem() ?? 0 }}
+                        of {{ $serialNumbers->total() }} Serial Numbers
+                    </div>
     </div>
 
 </div>
@@ -601,6 +606,8 @@
             </button>
 
         </div>
+
+        
 
     </div>
 
@@ -1011,6 +1018,23 @@
    RESPONSIVE
 ===================================================== */
 
+
+        .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: left;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+        }
+
 @media (max-width: 1200px) {
 
     .serial-search {
@@ -1132,8 +1156,6 @@
 .col-actions {
     min-width: 120px;
     text-align: center;
-}
-
 }
 
 </style>
