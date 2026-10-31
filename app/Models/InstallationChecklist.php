@@ -17,10 +17,9 @@ class InstallationChecklist extends Model
     public $incrementing = false;
 
     protected $keyType = 'string';
-    /**
-     * Tabel ini tidak memiliki updated_at.
-     */
-    const UPDATED_AT = null;
+
+    // Tabel tidak menggunakan created_at dan updated_at.
+    public $timestamps = false;
 
     protected $fillable = [
         'checklist_id',
@@ -34,12 +33,8 @@ class InstallationChecklist extends Model
     protected $casts = [
         'is_completed' => 'boolean',
         'completed_at' => 'datetime',
-        'created_at' => 'datetime',
     ];
 
-    /**
-     * Relasi ke Installation.
-     */
     public function installation(): BelongsTo
     {
         return $this->belongsTo(
