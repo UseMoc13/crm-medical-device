@@ -186,4 +186,4 @@ Route::controller(AnnouncementManagementController::class)
             ->name('destroy');
     });
 
-    
+    /**installation

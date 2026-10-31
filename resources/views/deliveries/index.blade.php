@@ -181,7 +181,8 @@
 
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="7" class="empty-state">
+                                No delivery records found.
                             </td>
                         </tr>
                     @endforelse
