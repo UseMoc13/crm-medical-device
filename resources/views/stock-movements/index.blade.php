@@ -305,7 +305,7 @@
                                         href="{{ route('stock-movements.show', $movement->stock_movement_id) }}"
                                         class="action-btn view"
                                         title="View Stock Movement"
-                                        aria-label="View Stock Movement">👁</a>
+                                        aria-label="View Stock Movement">View</a>
                                 </div>
                             </td>
                         </tr>
@@ -329,6 +329,13 @@
                 {{ $movements->links() }}
             </div>
         @endif
+
+        <div class="table-footer">
+            <div>
+                Showing {{ $movements->firstItem() ?? 0 }}
+                to {{ $movements->lastItem() ?? 0 }}
+                of {{ $movements->total() }} Stock Movements
+            </div>
     </div>
 </div>
 
@@ -384,7 +391,7 @@
     .sm-correction-status { background: #fff5df; color: #946200; }
     .sm-reversal-status { background: #f1f5f9; color: #526174; }
     .table-actions { display: inline-flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }
-    .action-btn { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #475569; text-decoration: none; cursor: pointer; padding: 0; font-size: 15px; transition: background-color .18s ease, color .18s ease, border-color .18s ease; }
+    .action-btn { width: 52px; height: 35px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #475569; text-decoration: none; cursor: pointer; padding: 0; font-size: 12px; transition: background-color .18s ease, color .18s ease, border-color .18s ease; }
     .action-btn.view:hover { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
     .sm-empty { padding: 35px 15px; text-align: center; }
     .sm-empty strong { display: block; color: #34415c; font-size: 14px; }
@@ -497,6 +504,22 @@
     padding: 35px 15px;
     text-align: center;
 }
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
 /* Responsive */
 .sm-table-wrap {

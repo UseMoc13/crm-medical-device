@@ -201,9 +201,17 @@
             </table>
         </div>
 
+    <div class="table-footer">
+            <div>
+                Showing {{ $installations->firstItem() ?? 0 }}
+                to {{ $installations->lastItem() ?? 0 }}
+                of {{ $installations->total() }} installations
+            </div>
+
     </div>
 </div>
 
+/**Css
 <style>
     .page-head {
         display: flex;

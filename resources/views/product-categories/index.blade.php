@@ -528,6 +528,13 @@ CATEGORY LIST
 
         @endif
 
+        <div class="table-footer">
+            <div>
+                Showing {{ $categories->firstItem() ?? 0 }}
+                to {{ $categories->lastItem() ?? 0 }}
+                of {{ $categories->total() }} Product Categories
+            </div>
+
     </div>
 
 
@@ -1597,6 +1604,22 @@ DELETE CONFIRMATION MODAL
     color: #c94a4a;
 }
 
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 /* Responsive */
 
 @media (max-width: 768px) {

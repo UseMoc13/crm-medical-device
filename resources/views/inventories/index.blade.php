@@ -695,6 +695,13 @@
 
         @endif
 
+        <div class="table-footer">
+            <div>
+                Showing {{ $inventories->firstItem() ?? 0 }}
+                to {{ $inventories->lastItem() ?? 0 }}
+                of {{ $inventories->total() }} Inventories
+            </div>
+
     </div>
 
 </div>
@@ -1332,7 +1339,7 @@
 
 .inventory-table thead th:nth-child(1),
 .inventory-table tbody td:nth-child(1) {
-    min-width: 190px;
+    min-width: 50px;
 }
 
 .inventory-table thead th:nth-child(2),
@@ -1359,6 +1366,22 @@
 .inventory-table tbody td:nth-child(6) {
     min-width: 135px;
 }
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
 
 /* RESPONSIVE */
 

@@ -820,6 +820,13 @@
 
         @endif
 
+
+        <div class="table-footer">
+            <div>
+                Showing {{ $opportunities->firstItem() ?? 0 }}
+                to {{ $opportunities->lastItem() ?? 0 }}
+                of {{ $opportunities->total() }} Opportunities
+            </div>
     </div>
 
 </div>
@@ -1491,6 +1498,22 @@
         .table-wrap table tbody td[colspan] {
             text-align: center;
             padding: 28px 12px;
+        }
+
+        .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
         }
 
         /* Responsive */

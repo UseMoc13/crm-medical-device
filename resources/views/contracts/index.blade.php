@@ -182,6 +182,13 @@
             </div>
         @endif
 
+        <div class="table-footer">
+            <div>
+                Showing {{ $contracts->firstItem() ?? 0 }}
+                to {{ $contracts->lastItem() ?? 0 }}
+                of {{ $contracts->total() }} Contracts
+            </div>
+
     </div>
 </div>
 
@@ -383,6 +390,23 @@ document.addEventListener('DOMContentLoaded', function () {
     min-width: 100px;
 }
 
+
+.table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .table-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        
 @media (max-width: 768px) {
     .table-responsive .table {
         min-width: 1050px;
