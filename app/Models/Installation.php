@@ -58,7 +58,6 @@ class Installation extends Model
             'user_id'
         );
     }
-
     /**
      * Relasi ke checklist instalasi.
      */

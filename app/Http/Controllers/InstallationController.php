@@ -191,7 +191,7 @@ class InstallationController extends Controller
     }
 
     /**
-     * Hapus instalasi beserta checklist-ny.
+     * Hapus instalasi beserta checklist-nya
      */
     public function destroy(Installation $installation)
     {

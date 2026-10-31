@@ -17,7 +17,6 @@ class InstallationChecklist extends Model
     public $incrementing = false;
 
     protected $keyType = 'string';
-
     /**
      * Tabel ini tidak memiliki updated_at.
      */

@@ -206,7 +206,6 @@
     </div>
 </div>
 
-/**css
 <style>
     .page-head {
         display: flex;
