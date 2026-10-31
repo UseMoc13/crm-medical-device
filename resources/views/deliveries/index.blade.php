@@ -182,19 +182,6 @@
                     @empty
                         <tr>
                             <td colspan="7">
-                                <div class="empty-state">
-                                    <h4>No Deliveries Found</h4>
-                                    <p>
-                                        There are currently no delivery records.
-                                    </p>
-
-                                    <a
-                                        href="{{ route('deliveries.create') }}"
-                                        class="btn primary"
-                                    >
-                                        + Add Delivery
-                                    </a>
-                                </div>
                             </td>
                         </tr>
                     @endforelse
