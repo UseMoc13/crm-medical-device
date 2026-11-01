@@ -424,67 +424,55 @@ CATEGORY LIST
                     ================================================== --}}
 
                         <td>
+                                <div class="table-actions">
+                                    <a
+                                        href="{{ route('product-categories.show', $category->category_id) }}"
+                                        class="action-btn view"
+                                        title="View"
+                                        aria-label="View Product Category"
+                                    >
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    </a>
 
-                            <div class="table-actions">
+                                    <a
+                                        href="{{ route('product-categories.edit', $category->category_id) }}"
+                                        class="action-btn edit"
+                                        title="Edit"
+                                        aria-label="Edit Product Category"
+                                    >
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M12 20h9"/>
+                                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                                        </svg>
+                                    </a>
 
+                                    <form
+                                        action="{{ route('product-categories.destroy', $category->category_id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Are you sure you want to delete this Product Category?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
 
-                                {{-- View --}}
-
-                                <a
-                                    href="{{ route(
-                                    'product-categories.show',
-                                    $category
-                                ) }}"
-                                    class="action-btn view"
-                                    title="View Category"
-                                    aria-label="View Category">
-                                    👁
-                                </a>
-
-
-                                {{-- Edit --}}
-
-                                <a
-                                    href="{{ route(
-                                    'product-categories.edit',
-                                    $category
-                                ) }}"
-                                    class="action-btn edit"
-                                    title="Edit Category"
-                                    aria-label="Edit Category">
-                                    ✎
-                                </a>
-
-
-                                {{-- Delete --}}
-
-                                <form
-                                    action="{{ route(
-                                    'product-categories.destroy',
-                                    $category
-                                ) }}"
-                                    method="POST"
-                                    class="delete-form"
-                                    data-category-name="{{ $category->category_name }}">
-
-                                    @csrf
-
-                                    @method('DELETE')
-
-
-                                    <button
-                                        type="submit"
-                                        class="action-btn delete"
-                                        title="Delete Category"
-                                        aria-label="Delete Category">
-                                        🗑
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </td>
+                                        <button
+                                            type="submit"
+                                            class="action-btn delete"
+                                            title="Delete"
+                                            aria-label="Delete Product Category"
+                                        >
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4h8v2"/>
+                                                <path d="m19 6-1 14H6L5 6"/>
+                                                <path d="M10 11v5M14 11v5"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
 
                     </tr>
 
@@ -1614,6 +1602,42 @@ DELETE CONFIRMATION MODAL
         margin-top: 18px;
         color: #6b7280;
         font-size: 13px;
+    }
+
+.action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 7px;
+        border: 1px solid #e5e7eb;
+        border-radius: 7px;
+        background: #fff;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .action-btn svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .action-btn.view {
+        color: #2563eb;
+    }
+
+    .action-btn.edit {
+        color: #d97706;
+    }
+
+    .action-btn.delete {
+        color: #dc2626;
     }
 
     .table-footer {

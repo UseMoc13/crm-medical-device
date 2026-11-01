@@ -115,7 +115,7 @@
                                         href="{{ route('contracts.show', $contract->contract_id) }}"
                                         class="action-btn view"
                                         title="View"
-                                        aria-label="View warranty"
+                                        aria-label="View Contract"
                                     >
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
@@ -127,7 +127,7 @@
                                         href="{{ route('contracts.edit', $contract->contract_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
-                                        aria-label="Edit warranty"
+                                        aria-label="Edit Contract"
                                     >
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M12 20h9"/>
@@ -138,7 +138,7 @@
                                     <form
                                         action="{{ route('contracts.destroy', $contract->contract_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this warranty?')"
+                                        onsubmit="return confirm('Are you sure you want to delete this Contract?')"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -147,7 +147,7 @@
                                             type="submit"
                                             class="action-btn delete"
                                             title="Delete"
-                                            aria-label="Delete warranty"
+                                            aria-label="Delete Contract"
                                         >
                                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M3 6h18"/>

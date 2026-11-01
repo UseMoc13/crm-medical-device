@@ -4,10 +4,11 @@
 
 @section('content')
 
+{{-- PAGE HEADER --}}
 <div class="page-head">
     <div>
         <h1>Create Product</h1>
-        <p>Create a new product and configure its category, brand, pricing, and warranty.</p>
+        <p>Register a new medical device product and configure its details.</p>
     </div>
 
     <div class="actions">
@@ -17,30 +18,38 @@
     </div>
 </div>
 
-@if($errors->any())
-<div class="alert error">
-    <strong>Please check the following errors:</strong>
-    <ul>
-        @foreach($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
+{{-- VALIDATION ERRORS --}}
+@if ($errors->any())
+    <div class="alert danger">
+        <strong>Please correct the following errors:</strong>
+        <ul class="validation-list">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
+{{-- CREATE PRODUCT FORM --}}
 <div class="card product-create-card">
     <div class="card-head">
         <div>
             <h3>Product Information</h3>
-            <p>Enter the product information, commercial details, and technical specification.</p>
+            <p>Enter the product identity, classification, commercial details, and specification.</p>
         </div>
+
+        <span class="required-note">
+            <span class="required-mark">*</span>
+            Required fields
+        </span>
     </div>
 
     <div class="card-body product-create-body">
         <form
-            method="POST"
             action="{{ route('products.store') }}"
-            id="productCreateForm">
+            method="POST"
+            id="productCreateForm"
+        >
             @csrf
 
             <div class="product-form-layout">
@@ -48,298 +57,362 @@
                 {{-- LEFT: PRODUCT FORM --}}
                 <div class="product-form-main">
 
-                    {{-- PRODUCT IDENTITY --}}
-                    <div class="section-divider first-section">
-                        <div>
+                    {{-- SECTION 1: PRODUCT IDENTITY --}}
+                    <div class="form-section">
+                        <div class="section-heading">
                             <h4>Product Identity</h4>
-                            <p>Enter the basic information used to identify this product.</p>
+                            <p>Basic information used to identify the product.</p>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="product_code">
-                            Product Code <span class="required">*</span>
-                        </label>
+                        <div class="product-form-grid">
 
-                        <input
-                            type="text"
-                            id="product_code"
-                            name="product_code"
-                            value="{{ old('product_code') }}"
-                            placeholder="e.g. PROD-001"
-                            maxlength="100"
-                            autocomplete="off"
-                            required>
+                            {{-- PRODUCT CODE --}}
+                            <div class="form-group">
+                                <label for="product_code">
+                                    Product Code
+                                </label>
 
-                        <span class="form-hint">Unique code used to identify this product.</span>
-
-                        @error('product_code')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="product_name">
-                            Product Name <span class="required">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="product_name"
-                            name="product_name"
-                            value="{{ old('product_name') }}"
-                            placeholder="e.g. Patient Monitor"
-                            maxlength="255"
-                            required>
-
-                        <span class="form-hint">Name of the medical device product.</span>
-
-                        @error('product_name')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="product-two-column">
-
-                        {{-- CATEGORY --}}
-                        <div class="form-group">
-                            <label for="category_id">
-                                Category <span class="required">*</span>
-                            </label>
-
-                            <select id="category_id" name="category_id" required>
-                                <option value="">Select Category</option>
-
-                                @foreach($categories as $category)
-                                <option
-                                    value="{{ $category->category_id }}"
-                                    @selected((string) old('category_id')===(string) $category->category_id)
+                                <div class="auto-number-field">
+                                    <input
+                                        type="text"
+                                        id="product_code"
+                                        class="form-control"
+                                        value="Generated automatically"
+                                        readonly
                                     >
-                                    {{ $category->category_name }}
-                                </option>
-                                @endforeach
-                            </select>
 
-                            <span class="form-hint">Product category classification.</span>
+                                    <span class="auto-number-badge">
+                                        Auto
+                                    </span>
+                                </div>
 
-                            @error('category_id')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
-                        </div>
+                                <small class="form-hint">
+                                    Product code will be generated automatically by the system when saved.
+                                </small>
+                            </div>
 
-                        {{-- BRAND --}}
-                        <div class="form-group">
-                            <label for="brand_id">
-                                Brand <span class="required">*</span>
-                            </label>
-
-                            <select id="brand_id" name="brand_id" required>
-                                <option value="">Select Brand</option>
-
-                                @foreach($brands as $brand)
-                                <option
-                                    value="{{ $brand->brand_id }}"
-                                    @selected((string) old('brand_id')===(string) $brand->brand_id)
-                                    >
-                                    {{ $brand->brand_name }}
-                                </option>
-                                @endforeach
-                            </select>
-
-                            <span class="form-hint">Manufacturer or product brand.</span>
-
-                            @error('brand_id')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="product-two-column">
-
-                        {{-- PRODUCT TYPE --}}
-                        <div class="form-group">
-                            <label for="product_type">
-                                Product Type <span class="required">*</span>
-                            </label>
-
-                            <input
-                                type="text"
-                                id="product_type"
-                                name="product_type"
-                                value="{{ old('product_type') }}"
-                                placeholder="e.g. Medical Equipment"
-                                maxlength="100"
-                                required>
-
-                            <span class="form-hint">Type or classification of the product.</span>
-
-                            @error('product_type')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        {{-- UNIT --}}
-                        <div class="form-group">
-                            <label for="unit">
-                                Unit <span class="required">*</span>
-                            </label>
-
-                            <input
-                                type="text"
-                                id="unit"
-                                name="unit"
-                                value="{{ old('unit') }}"
-                                placeholder="e.g. Unit"
-                                maxlength="50"
-                                required>
-
-                            <span class="form-hint">Selling or inventory unit.</span>
-
-                            @error('unit')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="section-divider">
-                        <div>
-                            <h4>Commercial Information</h4>
-                            <p>Configure product pricing, warranty, and availability.</p>
-                        </div>
-                    </div>
-
-                    <div class="product-two-column">
-
-                        <div class="form-group">
-                            <label for="price">Price</label>
-
-                            <div class="stepper-input currency-input">
-                                <span class="currency-prefix" aria-hidden="true">Rp</span>
+                            {{-- PRODUCT NAME --}}
+                            <div class="form-group">
+                                <label for="product_name">
+                                    Product Name
+                                    <span class="required-mark">*</span>
+                                </label>
 
                                 <input
                                     type="text"
-                                    id="price"
-                                    name="price"
-                                    value="{{ old('price', '0') }}"
-                                    placeholder="0"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    spellcheck="false"
-                                    aria-describedby="priceHint">
+                                    name="product_name"
+                                    id="product_name"
+                                    class="form-control @error('product_name') is-invalid @enderror"
+                                    value="{{ old('product_name') }}"
+                                    placeholder="e.g. Patient Monitor"
+                                    maxlength="255"
+                                    required
+                                >
 
-                                <div class="stepper-buttons">
-                                    <button
-                                        type="button"
-                                        class="number-stepper"
-                                        id="priceMinus"
-                                        aria-label="Kurangi harga Rp 1.000">−</button>
-
-                                    <button
-                                        type="button"
-                                        class="number-stepper"
-                                        id="pricePlus"
-                                        aria-label="Tambah harga Rp 1.000">+</button>
-                                </div>
+                                @error('product_name')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
                             </div>
 
-                            <span class="form-hint" id="priceHint">
-                                Base selling price in Indonesian Rupiah. Use − and + to adjust by Rp 1,000.
-                            </span>
+                        </div>
+                    </div>
 
-                            @error('price')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
+                    {{-- SECTION 2: PRODUCT CLASSIFICATION --}}
+                    <div class="form-section">
+                        <div class="section-heading">
+                            <h4>Product Classification</h4>
+                            <p>Specify the product category, brand, type, and unit.</p>
                         </div>
 
-                        <div class="form-group">
-                            <label for="warranty_period">Warranty Period</label>
+                        <div class="product-form-grid">
 
-                            <div class="stepper-input warranty-input">
+                            {{-- CATEGORY --}}
+                            <div class="form-group">
+                                <label for="category_id">
+                                    Category
+                                    <span class="required-mark">*</span>
+                                </label>
+
+                                <select
+                                    name="category_id"
+                                    id="category_id"
+                                    class="form-control @error('category_id') is-invalid @enderror"
+                                    required
+                                >
+                                    <option value="">-- Select Category --</option>
+
+                                    @foreach ($categories as $category)
+                                        <option
+                                            value="{{ $category->category_id }}"
+                                            @selected((string) old('category_id') === (string) $category->category_id)
+                                        >
+                                            {{ $category->category_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                @error('category_id')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+
+                                @if ($categories->isEmpty())
+                                    <small class="field-error">
+                                        No categories available. Please create a category first.
+                                    </small>
+                                @endif
+                            </div>
+
+                            {{-- BRAND --}}
+                            <div class="form-group">
+                                <label for="brand_id">
+                                    Brand
+                                    <span class="required-mark">*</span>
+                                </label>
+
+                                <select
+                                    name="brand_id"
+                                    id="brand_id"
+                                    class="form-control @error('brand_id') is-invalid @enderror"
+                                    required
+                                >
+                                    <option value="">-- Select Brand --</option>
+
+                                    @foreach ($brands as $brand)
+                                        <option
+                                            value="{{ $brand->brand_id }}"
+                                            @selected((string) old('brand_id') === (string) $brand->brand_id)
+                                        >
+                                            {{ $brand->brand_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                @error('brand_id')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+
+                                @if ($brands->isEmpty())
+                                    <small class="field-error">
+                                        No brands available. Please create a brand first.
+                                    </small>
+                                @endif
+                            </div>
+
+                            {{-- PRODUCT TYPE --}}
+                            <div class="form-group">
+                                <label for="product_type">
+                                    Product Type
+                                    <span class="required-mark">*</span>
+                                </label>
+
                                 <input
-                                    type="number"
-                                    id="warranty_period"
-                                    name="warranty_period"
-                                    value="{{ old('warranty_period', 0) }}"
-                                    placeholder="0"
-                                    min="0"
-                                    step="1"
-                                    inputmode="numeric"
-                                    aria-describedby="warrantyHint">
+                                    type="text"
+                                    name="product_type"
+                                    id="product_type"
+                                    class="form-control @error('product_type') is-invalid @enderror"
+                                    value="{{ old('product_type') }}"
+                                    placeholder="e.g. Medical Equipment"
+                                    maxlength="100"
+                                    required
+                                >
 
-                                <span class="warranty-suffix">Months</span>
-
-                                <div class="stepper-buttons">
-                                    <button
-                                        type="button"
-                                        class="number-stepper"
-                                        id="warrantyMinus"
-                                        aria-label="Kurangi garansi satu bulan">−</button>
-
-                                    <button
-                                        type="button"
-                                        class="number-stepper"
-                                        id="warrantyPlus"
-                                        aria-label="Tambah garansi satu bulan">+</button>
-                                </div>
+                                @error('product_type')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
                             </div>
 
-                            <span class="form-hint" id="warrantyHint">
-                                Product warranty duration in months.
-                            </span>
+                            {{-- UNIT --}}
+                            <div class="form-group">
+                                <label for="unit">
+                                    Unit
+                                    <span class="required-mark">*</span>
+                                </label>
 
-                            @error('warranty_period')
-                            <span class="form-error">{{ $message }}</span>
-                            @enderror
+                                <input
+                                    type="text"
+                                    name="unit"
+                                    id="unit"
+                                    class="form-control @error('unit') is-invalid @enderror"
+                                    value="{{ old('unit') }}"
+                                    placeholder="e.g. Unit"
+                                    maxlength="50"
+                                    required
+                                >
+
+                                @error('unit')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                            </div>
+
                         </div>
                     </div>
 
-                    {{-- STATUS --}}
-                    <div class="form-group">
-                        <label for="status">
-                            Status <span class="required">*</span>
-                        </label>
+                    {{-- SECTION 3: COMMERCIAL INFORMATION --}}
+                    <div class="form-section">
+                        <div class="section-heading">
+                            <h4>Commercial Information</h4>
+                            <p>Configure the product price, warranty period, and availability status.</p>
+                        </div>
 
-                        <select id="status" name="status" required>
-                            <option
-                                value="active"
-                                @selected(old('status', 'active' )==='active' )>Active</option>
+                        <div class="product-form-grid">
 
-                            <option
-                                value="inactive"
-                                @selected(old('status')==='inactive' )>Inactive</option>
-                        </select>
+                            {{-- PRICE --}}
+                            <div class="form-group">
+                                <label for="price">
+                                    Price
+                                </label>
 
-                        <span class="form-hint">Current availability status of the product.</span>
+                                <div class="stepper-input currency-input">
+                                    <span class="currency-prefix">Rp</span>
 
-                        @error('status')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
+                                    <input
+                                        type="text"
+                                        name="price"
+                                        id="price"
+                                        class="form-control @error('price') is-invalid @enderror"
+                                        value="{{ old('price', '0') }}"
+                                        placeholder="0"
+                                        inputmode="numeric"
+                                        autocomplete="off"
+                                    >
+
+                                    <div class="stepper-buttons">
+                                        <button
+                                            type="button"
+                                            class="number-stepper"
+                                            id="priceMinus"
+                                            aria-label="Decrease price"
+                                        >−</button>
+
+                                        <button
+                                            type="button"
+                                            class="number-stepper"
+                                            id="pricePlus"
+                                            aria-label="Increase price"
+                                        >+</button>
+                                    </div>
+                                </div>
+
+                                <small class="form-hint">
+                                    Base selling price in Indonesian Rupiah. Step adjustment: Rp 1,000.
+                                </small>
+
+                                @error('price')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                            </div>
+
+                            {{-- WARRANTY --}}
+                            <div class="form-group">
+                                <label for="warranty_period">
+                                    Warranty Period
+                                </label>
+
+                                <div class="stepper-input warranty-input">
+                                    <input
+                                        type="number"
+                                        name="warranty_period"
+                                        id="warranty_period"
+                                        class="form-control @error('warranty_period') is-invalid @enderror"
+                                        value="{{ old('warranty_period', 0) }}"
+                                        min="0"
+                                        step="1"
+                                    >
+
+                                    <span class="warranty-suffix">Months</span>
+
+                                    <div class="stepper-buttons">
+                                        <button
+                                            type="button"
+                                            class="number-stepper"
+                                            id="warrantyMinus"
+                                            aria-label="Decrease warranty"
+                                        >−</button>
+
+                                        <button
+                                            type="button"
+                                            class="number-stepper"
+                                            id="warrantyPlus"
+                                            aria-label="Increase warranty"
+                                        >+</button>
+                                    </div>
+                                </div>
+
+                                <small class="form-hint">
+                                    Product warranty duration in months.
+                                </small>
+
+                                @error('warranty_period')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                            </div>
+
+                            {{-- STATUS --}}
+                            <div class="form-group">
+                                <label for="status">
+                                    Status
+                                    <span class="required-mark">*</span>
+                                </label>
+
+                                <select
+                                    name="status"
+                                    id="status"
+                                    class="form-control @error('status') is-invalid @enderror"
+                                    required
+                                >
+                                    <option
+                                        value="active"
+                                        @selected(old('status', 'active') === 'active')
+                                    >
+                                        Active
+                                    </option>
+
+                                    <option
+                                        value="inactive"
+                                        @selected(old('status') === 'inactive')
+                                    >
+                                        Inactive
+                                    </option>
+                                </select>
+
+                                @error('status')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                            </div>
+
+                        </div>
                     </div>
 
-                    {{-- PRODUCT SPECIFICATION --}}
-                    <div class="section-divider">
-                        <div>
+                    {{-- SECTION 4: PRODUCT SPECIFICATION --}}
+                    <div class="form-section">
+                        <div class="section-heading">
                             <h4>Product Specification</h4>
-                            <p>Enter technical specifications and additional product information.</p>
+                            <p>Provide technical specifications and additional product information.</p>
                         </div>
-                    </div>
 
-                    <div class="form-group product-specification">
-                        <label for="specification">Specification</label>
+                        <div class="product-form-grid">
+                            <div class="form-group full-width">
+                                <label for="specification">
+                                    Specification
+                                </label>
 
-                        <textarea
-                            id="specification"
-                            name="specification"
-                            rows="5"
-                            placeholder="Enter technical specifications, features, dimensions, or other product information...">{{ old('specification') }}</textarea>
+                                <textarea
+                                    name="specification"
+                                    id="specification"
+                                    rows="5"
+                                    class="form-control @error('specification') is-invalid @enderror"
+                                    placeholder="Enter technical specifications, features, dimensions, or other product information..."
+                                >{{ old('specification') }}</textarea>
 
-                        <span class="form-hint">
-                            Optional technical specification or additional product details.
-                        </span>
+                                <small class="form-hint">
+                                    Optional technical specification or additional product details.
+                                </small>
 
-                        @error('specification')
-                        <span class="form-error">{{ $message }}</span>
-                        @enderror
+                                @error('specification')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     {{-- FORM ACTIONS --}}
@@ -348,14 +421,21 @@
                             Cancel
                         </a>
 
-                        <button type="submit" class="btn primary" id="createProductButton">
+                        <button
+                            type="submit"
+                            class="btn primary"
+                            id="createProductButton"
+                            @disabled($categories->isEmpty() || $brands->isEmpty())
+                        >
                             Create Product
                         </button>
                     </div>
+
                 </div>
 
                 {{-- RIGHT: PRODUCT PREVIEW --}}
                 <aside class="product-preview-panel">
+
                     <div class="preview-label">PRODUCT PREVIEW</div>
 
                     <div class="preview-product-head">
@@ -363,7 +443,7 @@
 
                         <div class="preview-product-main">
                             <h3 id="previewProductName">New Product</h3>
-                            <span id="previewProductCode">No Product Code</span>
+                            <span id="previewProductCode">Generated after saving</span>
                         </div>
                     </div>
 
@@ -403,7 +483,9 @@
 
                     <div class="preview-detail preview-status-detail">
                         <span>Status</span>
-                        <strong id="previewStatus" class="preview-status active">Active</strong>
+                        <strong id="previewStatus" class="preview-status active">
+                            Active
+                        </strong>
                     </div>
 
                     <div class="preview-divider"></div>
@@ -417,9 +499,10 @@
                         <strong>Product Information</strong>
                         <p>
                             This preview updates automatically as you enter product information.
-                            Product data can be edited later from the product detail page.
+                            The product code will be assigned by the system after saving.
                         </p>
                     </div>
+
                 </aside>
 
             </div>
@@ -427,11 +510,19 @@
     </div>
 </div>
 
+{{-- PAGE STYLES --}}
 <style>
-    /* =========================================================
-   PRODUCT CREATE LAYOUT
-========================================================= */
+    /* VALIDATION */
+    .validation-list {
+        margin: 8px 0 0;
+        padding-left: 20px;
+    }
 
+    .validation-list li {
+        margin-bottom: 4px;
+    }
+
+    /* FORM LAYOUT */
     .product-create-card,
     .product-create-body,
     .product-form-layout,
@@ -451,163 +542,189 @@
         min-width: 0;
     }
 
-    /* =========================================================
-   SECTION HEADINGS
-========================================================= */
+    .product-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
 
-    .section-divider {
+    .product-form-grid .form-group {
         display: flex;
-        align-items: center;
-        margin: 25px 0 18px;
-        padding-top: 20px;
-        border-top: 1px solid #edf0f5;
-    }
-
-    .section-divider.first-section {
-        margin-top: 0;
-        padding-top: 0;
-        border-top: 0;
-    }
-
-    .section-divider h4 {
-        margin: 0 0 4px;
-        color: #17284f;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .section-divider p {
-        margin: 0;
-        color: #8a94a6;
-        font-size: 11px;
-        line-height: 1.5;
-    }
-
-    /* =========================================================
-   FORM FIELDS
-========================================================= */
-
-    .form-group {
+        flex-direction: column;
+        gap: 8px;
         min-width: 0;
-        margin-bottom: 19px;
+        margin-bottom: 4px;
     }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 7px;
-        color: #17284f;
+    .product-form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* SECTION HEADINGS */
+    .form-section + .form-section {
+        margin-top: 30px;
+        padding-top: 26px;
+        border-top: 1px solid var(--border, #e2e8f0);
+    }
+
+    .section-heading {
+        margin-bottom: 20px;
+    }
+
+    .section-heading h4 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary, #1e293b);
+    }
+
+    .section-heading p {
+        margin: 0;
         font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-muted, #64748b);
+    }
+
+    /* LABELS */
+    .product-form-grid label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary, #334155);
+    }
+
+    .required-mark {
+        color: #dc2626;
         font-weight: 600;
     }
 
-    .required {
-        color: #c94a4a;
+    .required-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text-muted, #64748b);
+        white-space: nowrap;
     }
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
+    /* INPUTS */
+    .product-form-grid .form-control {
         box-sizing: border-box;
-        border: 1px solid #d9dee8;
-        border-radius: 8px;
-        background: #fff;
-        color: #17284f;
+        display: block;
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid var(--border, #cbd5e1);
+        border-radius: 7px;
+        background: var(--surface, #ffffff);
+        color: var(--text-primary, #1e293b);
         font-family: inherit;
         font-size: 13px;
-        transition: border-color .18s ease, box-shadow .18s ease;
+        transition: border-color .2s, box-shadow .2s;
     }
 
-    .form-group input,
-    .form-group select {
-        height: 42px;
-        padding: 0 12px;
-    }
-
-    .form-group textarea {
-        min-height: 120px;
-        padding: 11px 12px;
+    .product-form-grid textarea.form-control {
+        min-height: auto;
         line-height: 1.6;
         resize: vertical;
     }
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
+    .product-form-grid .form-control:focus {
         outline: none;
-        border-color: #2ba7a0;
-        box-shadow: 0 0 0 3px rgba(43, 167, 160, .10);
+        border-color: var(--primary, #2563eb);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
     }
 
-    .form-group input::placeholder,
-    .form-group textarea::placeholder {
-        color: #a0a8b6;
+    .product-form-grid .form-control[readonly] {
+        background: var(--surface-secondary, #f8fafc);
+        color: var(--text-muted, #64748b);
+        cursor: default;
     }
 
+    .product-form-grid .form-control.is-invalid {
+        border-color: #dc2626;
+    }
+
+    /* AUTOMATIC PRODUCT CODE */
+    .auto-number-field {
+        position: relative;
+    }
+
+    .auto-number-field .form-control {
+        padding-right: 65px;
+    }
+
+    .auto-number-badge {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        padding: 4px 7px;
+        border-radius: 5px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* HELP TEXT AND ERRORS */
     .form-hint {
-        display: block;
-        margin-top: 6px;
-        color: #8a94a6;
         font-size: 11px;
+        line-height: 1.6;
+        color: var(--text-muted, #64748b);
+    }
+
+    .field-error {
+        color: #dc2626;
+        font-size: 12px;
         line-height: 1.5;
     }
 
-    .form-error {
-        display: block;
-        margin-top: 6px;
-        color: #c94a4a;
-        font-size: 11px;
-        line-height: 1.5;
-    }
-
-    .product-two-column {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 16px;
-    }
-
+    /* PRICE AND WARRANTY STEPPERS */
     .stepper-input {
         display: flex;
         align-items: center;
         gap: 8px;
         width: 100%;
-        height: 42px;
+        min-height: 42px;
         box-sizing: border-box;
         padding: 0 8px;
-        border: 1px solid #d9dee8;
-        border-radius: 8px;
-        background: #fff;
+        border: 1px solid var(--border, #cbd5e1);
+        border-radius: 7px;
+        background: var(--surface, #ffffff);
     }
 
     .stepper-input:focus-within {
-        border-color: #2ba7a0;
-        box-shadow: 0 0 0 3px rgba(43, 167, 160, .10);
+        border-color: var(--primary, #2563eb);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
     }
 
     .stepper-input input {
         flex: 1;
         min-width: 0;
+        width: 100%;
         height: 38px;
         padding: 0;
-        border: 0;
+        border: 0 !important;
         outline: none;
         box-shadow: none !important;
         background: transparent;
-        color: #17284f;
+        color: var(--text-primary, #1e293b);
         font-family: inherit;
         font-size: 13px;
     }
 
     .stepper-input input:focus {
-        border: 0;
         outline: none;
+        border: 0;
     }
 
-    .currency-prefix {
+    .currency-prefix,
+    .warranty-suffix {
         flex-shrink: 0;
-        color: #718096;
+        color: var(--text-muted, #64748b);
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 600;
     }
 
     .stepper-buttons {
@@ -624,19 +741,17 @@
         width: 28px;
         height: 28px;
         padding: 0;
-        border: 1px solid #dfe4eb;
+        border: 1px solid var(--border, #cbd5e1);
         border-radius: 6px;
-        background: #fff;
-        color: #17284f;
+        background: var(--surface, #fff);
+        color: var(--text-primary, #1e293b);
         font-size: 16px;
-        line-height: 1;
         cursor: pointer;
     }
 
     .number-stepper:hover {
-        border-color: #2ba7a0;
-        background: #f0faf7;
-        color: #167d70;
+        border-color: var(--primary, #2563eb);
+        background: var(--surface-secondary, #f8fafc);
     }
 
     .number-stepper:active {
@@ -644,7 +759,6 @@
     }
 
     .warranty-input input {
-        text-align: left;
         appearance: textfield;
         -moz-appearance: textfield;
     }
@@ -655,22 +769,24 @@
         -webkit-appearance: none;
     }
 
-    .warranty-suffix {
-        flex-shrink: 0;
-        color: #718096;
-        font-size: 11px;
-    }
-
+    /* FORM ACTIONS */
     .form-actions {
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: 8px;
-        padding-top: 16px;
-        margin-top: 8px;
-        border-top: 1px solid #edf0f5;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 22px;
+        border-top: 1px solid var(--border, #e2e8f0);
     }
 
+    .form-actions button:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+    /* PRODUCT PREVIEW */
     .product-preview-panel {
         position: sticky;
         top: 92px;
@@ -678,16 +794,16 @@
         min-width: 0;
         height: fit-content;
         padding: 24px;
-        border: 1px solid #e6eaf0;
-        border-radius: 12px;
-        background: #fafbfd;
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 10px;
+        background: var(--surface-secondary, #f8fafc);
         box-sizing: border-box;
-        z-index: 5;
+        z-index: 2;
     }
 
     .preview-label {
         margin-bottom: 20px;
-        color: #8a94a6;
+        color: var(--text-muted, #64748b);
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 1.2px;
@@ -706,9 +822,9 @@
         justify-content: center;
         width: 48px;
         height: 48px;
-        border-radius: 12px;
-        background: #eaf7f3;
-        color: #167d70;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: #1d4ed8;
         font-size: 17px;
         font-weight: 700;
     }
@@ -720,17 +836,17 @@
     .preview-product-main h3 {
         overflow: hidden;
         margin: 0 0 4px;
-        color: #17284f;
-        font-size: 17px;
+        color: var(--text-primary, #1e293b);
+        font-size: 16px;
         font-weight: 700;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .preview-product-main>span {
+    .preview-product-main > span {
         display: block;
         overflow: hidden;
-        color: #7d8797;
+        color: var(--text-muted, #64748b);
         font-size: 11px;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -739,7 +855,7 @@
     .preview-divider {
         height: 1px;
         margin: 21px 0;
-        background: #e5e9ef;
+        background: var(--border, #e2e8f0);
     }
 
     .preview-detail,
@@ -751,25 +867,25 @@
         padding: 9px 0;
     }
 
-    .preview-detail>span,
-    .preview-financial-row>span {
+    .preview-detail > span,
+    .preview-financial-row > span {
         flex-shrink: 0;
-        color: #8a94a6;
+        color: var(--text-muted, #64748b);
         font-size: 11px;
     }
 
-    .preview-detail>strong {
+    .preview-detail > strong {
         max-width: 65%;
         overflow-wrap: anywhere;
-        color: #34415c;
+        color: var(--text-primary, #334155);
         font-size: 12px;
         font-weight: 600;
         text-align: right;
     }
 
-    .preview-financial-row>strong {
+    .preview-financial-row > strong {
         max-width: 65%;
-        color: #17284f;
+        color: var(--text-primary, #1e293b);
         font-size: 13px;
         font-weight: 700;
         text-align: right;
@@ -787,59 +903,54 @@
     }
 
     .preview-status.active {
-        background: #eaf7f3;
-        color: #167d70 !important;
+        background: #dcfce7;
+        color: #15803d !important;
     }
 
     .preview-status.inactive {
-        background: #f1f3f6;
-        color: #7d8797 !important;
-    }
-
-    .preview-specification {
-        margin-bottom: 20px;
+        background: #f1f5f9;
+        color: #64748b !important;
     }
 
     .preview-specification-title {
         margin-bottom: 8px;
-        color: #34415c;
+        color: var(--text-primary, #334155);
         font-size: 11px;
         font-weight: 700;
     }
 
     .preview-specification p {
         margin: 0;
-        color: #8a94a6;
-        font-size: 10px;
+        color: var(--text-muted, #64748b);
+        font-size: 11px;
         line-height: 1.6;
         white-space: pre-line;
         overflow-wrap: anywhere;
     }
 
     .preview-note {
+        margin-top: 20px;
         padding: 13px 14px;
-        border-radius: 8px;
-        background: #f1f5f7;
+        border-radius: 7px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #e2e8f0);
     }
 
     .preview-note strong {
         display: block;
         margin-bottom: 5px;
-        color: #34415c;
+        color: var(--text-primary, #334155);
         font-size: 11px;
     }
 
     .preview-note p {
         margin: 0;
-        color: #8a94a6;
+        color: var(--text-muted, #64748b);
         font-size: 10px;
         line-height: 1.6;
     }
 
-    /* =========================================================
-   RESPONSIVE
-========================================================= */
-
+    /* RESPONSIVE */
     @media (max-width: 900px) {
         .product-form-layout {
             grid-template-columns: minmax(0, 1fr);
@@ -851,12 +962,31 @@
         }
     }
 
-    @media (max-width: 600px) {
-        .product-two-column {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 0;
+    @media (max-width: 768px) {
+        .product-form-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
         }
 
+        .product-form-grid .full-width {
+            grid-column: auto;
+        }
+
+        .page-head {
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .page-head .actions {
+            width: 100%;
+        }
+
+        .required-note {
+            margin-top: 8px;
+        }
+    }
+
+    @media (max-width: 480px) {
         .form-actions {
             flex-direction: column-reverse;
             align-items: stretch;
@@ -864,231 +994,209 @@
 
         .form-actions .btn {
             width: 100%;
-            justify-content: center;
             text-align: center;
+            justify-content: center;
         }
-    }
 
-    @media (max-width: 450px) {
         .product-preview-panel {
             padding: 18px;
-        }
-
-        .preview-detail,
-        .preview-financial-row {
-            gap: 10px;
         }
     }
 </style>
 
+{{-- PAGE SCRIPT --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        'use strict';
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
 
-        const form = document.getElementById('productCreateForm');
+    const form = document.getElementById('productCreateForm');
 
-        const productCode = document.getElementById('product_code');
-        const productName = document.getElementById('product_name');
-        const category = document.getElementById('category_id');
-        const brand = document.getElementById('brand_id');
-        const productType = document.getElementById('product_type');
-        const unit = document.getElementById('unit');
-        const price = document.getElementById('price');
-        const warranty = document.getElementById('warranty_period');
-        const status = document.getElementById('status');
-        const specification = document.getElementById('specification');
+    const productName = document.getElementById('product_name');
+    const category = document.getElementById('category_id');
+    const brand = document.getElementById('brand_id');
+    const productType = document.getElementById('product_type');
+    const unit = document.getElementById('unit');
+    const price = document.getElementById('price');
+    const warranty = document.getElementById('warranty_period');
+    const status = document.getElementById('status');
+    const specification = document.getElementById('specification');
 
-        const priceMinus = document.getElementById('priceMinus');
-        const pricePlus = document.getElementById('pricePlus');
-        const warrantyMinus = document.getElementById('warrantyMinus');
-        const warrantyPlus = document.getElementById('warrantyPlus');
+    const priceMinus = document.getElementById('priceMinus');
+    const pricePlus = document.getElementById('pricePlus');
+    const warrantyMinus = document.getElementById('warrantyMinus');
+    const warrantyPlus = document.getElementById('warrantyPlus');
 
-        const previewProductName = document.getElementById('previewProductName');
-        const previewProductCode = document.getElementById('previewProductCode');
-        const previewCategory = document.getElementById('previewCategory');
-        const previewBrand = document.getElementById('previewBrand');
-        const previewProductType = document.getElementById('previewProductType');
-        const previewUnit = document.getElementById('previewUnit');
-        const previewPrice = document.getElementById('previewPrice');
-        const previewWarranty = document.getElementById('previewWarranty');
-        const previewStatus = document.getElementById('previewStatus');
-        const previewSpecification = document.getElementById('previewSpecification');
+    const previewProductName = document.getElementById('previewProductName');
+    const previewCategory = document.getElementById('previewCategory');
+    const previewBrand = document.getElementById('previewBrand');
+    const previewProductType = document.getElementById('previewProductType');
+    const previewUnit = document.getElementById('previewUnit');
+    const previewPrice = document.getElementById('previewPrice');
+    const previewWarranty = document.getElementById('previewWarranty');
+    const previewStatus = document.getElementById('previewStatus');
+    const previewSpecification = document.getElementById('previewSpecification');
 
-        const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+    const PRICE_STEP = 1000;
+
+    function getPriceValue(value) {
+        const digits = String(value ?? '').replace(/\D/g, '');
+        const parsed = Number(digits || 0);
+
+        return Number.isSafeInteger(parsed)
+            ? parsed
+            : Number.MAX_SAFE_INTEGER;
+    }
+
+    function formatPrice(value) {
+        return new Intl.NumberFormat('id-ID', {
             maximumFractionDigits: 0
-        });
+        }).format(value);
+    }
 
+    function getWarrantyValue() {
+        const parsed = Number.parseInt(warranty.value, 10);
 
-        const PRICE_STEP = 1000;
-
-        function getPriceValue(value) {
-            const digits = String(value ?? '').replace(/\D/g, '');
-
-            if (digits === '') {
-                return 0;
-            }
-
-            const parsed = Number(digits);
-
-            return Number.isSafeInteger(parsed) ?
-                parsed :
-                Number.MAX_SAFE_INTEGER;
+        if (!Number.isFinite(parsed) || parsed < 0) {
+            return 0;
         }
 
-        function formatPriceInput(value) {
-            return new Intl.NumberFormat('id-ID', {
-                maximumFractionDigits: 0
-            }).format(value);
+        return Math.min(parsed, 1000000);
+    }
+
+    function getSelectedText(element, fallback) {
+        if (!element || element.selectedIndex < 0) {
+            return fallback;
         }
 
-        function formatCurrency(value) {
-            return 'Rp ' + formatPriceInput(getPriceValue(value));
-        }
+        return element.value
+            ? element.options[element.selectedIndex].text.trim()
+            : fallback;
+    }
 
-        function setPrice(value) {
-            const safeValue = Math.max(
-                0,
-                Math.min(Number.MAX_SAFE_INTEGER, Math.trunc(value))
-            );
+    function updatePreview() {
+        previewProductName.textContent =
+            productName.value.trim() || 'New Product';
 
-            price.value = formatPriceInput(safeValue);
-            updatePreview();
-        }
+        previewCategory.textContent =
+            getSelectedText(category, 'No Category');
 
-        price.addEventListener('input', function() {
-            const numericValue = getPriceValue(price.value);
+        previewBrand.textContent =
+            getSelectedText(brand, 'No Brand');
 
-            price.value = formatPriceInput(numericValue);
-            updatePreview();
-        });
+        previewProductType.textContent =
+            productType.value.trim() || '-';
 
-        priceMinus.addEventListener('click', function() {
-            const currentPrice = getPriceValue(price.value);
-            setPrice(Math.max(0, currentPrice - PRICE_STEP));
-        });
+        previewUnit.textContent =
+            unit.value.trim() || '-';
 
-        pricePlus.addEventListener('click', function() {
-            const currentPrice = getPriceValue(price.value);
-            setPrice(currentPrice + PRICE_STEP);
-        });
+        previewPrice.textContent =
+            'Rp ' + formatPrice(getPriceValue(price.value));
 
-        function setWarranty(value) {
-            const nextValue = Math.max(
-                0,
-                Math.min(1000000, Math.trunc(value))
-            );
+        previewWarranty.textContent =
+            getWarrantyValue() + ' Months';
 
-            warranty.value = String(nextValue);
-            updatePreview();
-        }
+        const statusValue = status.value || 'active';
 
-        function getWarrantyValue() {
-            const parsed = Number.parseInt(warranty.value, 10);
+        previewStatus.textContent =
+            statusValue === 'inactive' ? 'Inactive' : 'Active';
 
-            if (!Number.isFinite(parsed) || parsed < 0) {
-                return 0;
-            }
+        previewStatus.classList.toggle(
+            'inactive',
+            statusValue === 'inactive'
+        );
 
-            return Math.min(parsed, 1000000);
-        }
+        previewStatus.classList.toggle(
+            'active',
+            statusValue !== 'inactive'
+        );
 
-        warrantyMinus.addEventListener('click', function() {
-            setWarranty(getWarrantyValue() - 1);
-            warranty.focus();
-        });
+        previewSpecification.textContent =
+            specification.value.trim() || 'No specification provided.';
+    }
 
-        warrantyPlus.addEventListener('click', function() {
-            setWarranty(getWarrantyValue() + 1);
-            warranty.focus();
-        });
+    function setPrice(value) {
+        const safeValue = Math.max(
+            0,
+            Math.min(Number.MAX_SAFE_INTEGER, Math.trunc(value))
+        );
 
-        warranty.addEventListener('input', function() {
-            if (warranty.value !== '') {
-                const parsed = Number.parseInt(warranty.value, 10);
+        price.value = formatPrice(safeValue);
+        updatePreview();
+    }
 
-                if (Number.isFinite(parsed) && parsed < 0) {
-                    warranty.value = '0';
-                }
-            }
+    function setWarranty(value) {
+        const safeValue = Math.max(
+            0,
+            Math.min(1000000, Math.trunc(value))
+        );
 
-            updatePreview();
-        });
+        warranty.value = String(safeValue);
+        updatePreview();
+    }
 
-        warranty.addEventListener('change', function() {
-            setWarranty(getWarrantyValue());
-        });
+    // PRICE INPUT
+    price.addEventListener('input', function () {
+        const numericValue = getPriceValue(price.value);
+        price.value = formatPrice(numericValue);
+        updatePreview();
+    });
 
-        function updatePreview() {
-            previewProductName.textContent =
-                productName.value.trim() || 'New Product';
+    priceMinus.addEventListener('click', function () {
+        setPrice(Math.max(0, getPriceValue(price.value) - PRICE_STEP));
+    });
 
-            previewProductCode.textContent =
-                productCode.value.trim() || 'No Product Code';
+    pricePlus.addEventListener('click', function () {
+        setPrice(getPriceValue(price.value) + PRICE_STEP);
+    });
 
-            previewCategory.textContent =
-                getSelectedText(category, 'No Category');
+    // WARRANTY INPUT
+    warrantyMinus.addEventListener('click', function () {
+        setWarranty(getWarrantyValue() - 1);
+        warranty.focus();
+    });
 
-            previewBrand.textContent =
-                getSelectedText(brand, 'No Brand');
+    warrantyPlus.addEventListener('click', function () {
+        setWarranty(getWarrantyValue() + 1);
+        warranty.focus();
+    });
 
-            previewProductType.textContent =
-                productType.value.trim() || '-';
-
-            previewUnit.textContent =
-                unit.value.trim() || '-';
-
-            previewPrice.textContent =
-                formatCurrency(price.value);
-
-            previewWarranty.textContent =
-                getWarrantyValue() + ' Months';
-
-            const statusValue = status.value || 'active';
-
-            previewStatus.textContent =
-                statusValue === 'inactive' ? 'Inactive' : 'Active';
-
-            previewStatus.classList.toggle(
-                'inactive',
-                statusValue === 'inactive'
-            );
-
-            previewStatus.classList.toggle(
-                'active',
-                statusValue !== 'inactive'
-            );
-
-            previewSpecification.textContent =
-                specification.value.trim() || 'No specification provided.';
-        }
-
-        [
-            productCode,
-            productName,
-            category,
-            brand,
-            productType,
-            unit,
-            status,
-            specification
-        ].forEach(function(element) {
-            element.addEventListener('input', updatePreview);
-            element.addEventListener('change', updatePreview);
-        });
-
-        form.addEventListener('submit', function() {
-            price.value = String(getPriceValue(price.value));
-            warranty.value = String(getWarrantyValue());
-        });
-
-        normalizePriceField();
-
-        if (warranty.value !== '') {
-            setWarranty(getWarrantyValue());
+    warranty.addEventListener('input', function () {
+        if (warranty.value !== '' && Number(warranty.value) < 0) {
+            warranty.value = '0';
         }
 
         updatePreview();
     });
+
+    warranty.addEventListener('change', function () {
+        setWarranty(getWarrantyValue());
+    });
+
+    // LIVE PREVIEW
+    [
+        productName,
+        category,
+        brand,
+        productType,
+        unit,
+        status,
+        specification
+    ].forEach(function (element) {
+        element.addEventListener('input', updatePreview);
+        element.addEventListener('change', updatePreview);
+    });
+
+    // NORMALIZE VALUES BEFORE SUBMIT
+    form.addEventListener('submit', function () {
+        price.value = String(getPriceValue(price.value));
+        warranty.value = String(getWarrantyValue());
+    });
+
+    // INITIALIZE FORM VALUES
+    setPrice(getPriceValue(price.value));
+    setWarranty(getWarrantyValue());
+    updatePreview();
+});
 </script>
 
 @endsection

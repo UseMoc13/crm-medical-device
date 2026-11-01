@@ -8,6 +8,7 @@ use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\Opportunity;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -264,83 +265,83 @@ class ProductController extends Controller
     */
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
+{
+    $validated = $request->validate([
+        'category_id' => [
+            'required',
+            'uuid',
+            'exists:product_categories,category_id',
+        ],
 
-            'category_id' => [
-                'required',
-                'uuid',
-                'exists:product_categories,category_id',
-            ],
+        'brand_id' => [
+            'required',
+            'uuid',
+            'exists:brands,brand_id',
+        ],
 
-            'brand_id' => [
-                'required',
-                'uuid',
-                'exists:brands,brand_id',
-            ],
+        'product_name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
 
-            'product_code' => [
-                'required',
-                'string',
-                'max:100',
-                'unique:products,product_code',
-            ],
+        'product_type' => [
+            'required',
+            'string',
+            'max:100',
+        ],
 
-            'product_name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+        'specification' => [
+            'nullable',
+            'string',
+        ],
 
-            'product_type' => [
-                'required',
-                'string',
-                'max:100',
-            ],
+        'unit' => [
+            'required',
+            'string',
+            'max:50',
+        ],
 
-            'specification' => [
-                'nullable',
-                'string',
-            ],
+        'price' => [
+            'nullable',
+            'numeric',
+            'min:0',
+        ],
 
-            'unit' => [
-                'required',
-                'string',
-                'max:50',
-            ],
+        'warranty_period' => [
+            'nullable',
+            'integer',
+            'min:0',
+        ],
 
-            'price' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
+        'status' => [
+            'required',
+            'string',
+            Rule::in(['active', 'inactive']),
+        ],
+    ]);
 
-            'warranty_period' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
+    // Generate Product Code automatically using PostgreSQL sequence
+    $sequence = DB::selectOne(
+        "SELECT nextval('products_product_code_seq') AS code"
+    );
 
-            'status' => [
-                'required',
-                'string',
-                Rule::in([
-                    'active',
-                    'inactive',
-                ]),
-            ],
+    $productCode = 'PRD-' . str_pad(
+        $sequence->code,
+        6,
+        '0',
+        STR_PAD_LEFT
+    );
 
-        ]);
+    Product::create([
+        ...$validated,
+        'product_code' => $productCode,
+    ]);
 
-        Product::create($validated);
-
-        return redirect()
-            ->route('products.index')
-            ->with(
-                'success',
-                'Product berhasil ditambahkan.'
-            );
-    }
+    return redirect()
+        ->route('products.index')
+        ->with('success', 'Product berhasil ditambahkan.');
+}
 
 
     /*
