@@ -315,7 +315,6 @@
                                 <div class="empty sm-empty">
                                     <strong>No stock movements found.</strong>
                                     <p>Add a new stock movement or adjust your search and filters.</p>
-                                    <a href="{{ route('stock-movements.create') }}" class="btn primary">+ New Movement</a>
                                 </div>
                             </td>
                         </tr>
