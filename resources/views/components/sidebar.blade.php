@@ -324,7 +324,10 @@
             <span class="nav-text">Maintenance</span>
         </a>
 
-        <a href="#" data-label="Service History">
+        <a href="{{ route('service-history.index') }}"
+            class="{{ request()->routeIs('service-history.*') ? 'active' : '' }}"
+            data-label="Service History">
+
             <span class="ico">◷</span>
             <span class="nav-text">Service History</span>
         </a>

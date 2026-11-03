@@ -26,6 +26,7 @@ use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\ServiceTicketController;
 use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\ServiceHistoryController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -138,6 +139,13 @@ Route::delete('/maintenance/{maintenance}/records/{record}', [
     MaintenanceController::class,
     'destroyRecord',
 ])->name('maintenance.records.destroy');
+
+// Service History (read-only)
+Route::get('/service-history', [ServiceHistoryController::class, 'index'])
+    ->name('service-history.index');
+
+Route::get('/service-history/{serialNumber}', [ServiceHistoryController::class, 'show'])
+    ->name('service-history.show');
 
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
