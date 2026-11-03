@@ -310,7 +310,7 @@
 
         <a href="{{ route('service-tickets.index') }}"
             class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}"
-            data-label="service-tickets">
+            data-label="Service-Tickets">
             
             <span class="ico">⚑</span>
             <span class="nav-text">Service Tickets</span>
