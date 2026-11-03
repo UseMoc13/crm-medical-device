@@ -316,7 +316,10 @@
             <span class="nav-text">Service Tickets</span>
         </a>
 
-        <a href="#" data-label="Maintenance">
+        <a href="{{ route('maintenance.index') }}"
+            class="{{ request()->routeIs('maintenance.*') ? 'active' : '' }}"
+            data-label="Maintenance">
+
             <span class="ico">⚙</span>
             <span class="nav-text">Maintenance</span>
         </a>

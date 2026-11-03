@@ -25,6 +25,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\ServiceTicketController;
 use App\Http\Controllers\WarrantyController;
+use App\Http\Controllers\MaintenanceController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -109,6 +110,34 @@ Route::delete('/serial-numbers/{serialNumber}', [SerialNumberController::class, 
 
 Route::resource('service-tickets', ServiceTicketController::class)
     ->except(['destroy']);
+
+// Maintenance
+Route::resource('maintenance', MaintenanceController::class);
+
+Route::get('/maintenance/{maintenance}/records/create', [
+    MaintenanceController::class,
+    'createRecord',
+])->name('maintenance.records.create');
+
+Route::post('/maintenance/{maintenance}/records', [
+    MaintenanceController::class,
+    'storeRecord',
+])->name('maintenance.records.store');
+
+Route::get('/maintenance/{maintenance}/records/{record}/edit', [
+    MaintenanceController::class,
+    'editRecord',
+])->name('maintenance.records.edit');
+
+Route::put('/maintenance/{maintenance}/records/{record}', [
+    MaintenanceController::class,
+    'updateRecord',
+])->name('maintenance.records.update');
+
+Route::delete('/maintenance/{maintenance}/records/{record}', [
+    MaintenanceController::class,
+    'destroyRecord',
+])->name('maintenance.records.destroy');
 
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
