@@ -27,6 +27,8 @@ use App\Http\Controllers\ServiceTicketController;
 use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ServiceHistoryController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -146,6 +148,18 @@ Route::get('/service-history', [ServiceHistoryController::class, 'index'])
 
 Route::get('/service-history/{serialNumber}', [ServiceHistoryController::class, 'show'])
     ->name('service-history.show');
+
+// Billing & Reporting
+Route::resource('invoices', InvoiceController::class);
+
+Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])
+    ->name('invoices.status');
+
+Route::get('/reports', [ReportController::class, 'index'])
+    ->name('reports.index');
+
+Route::get('/reports/export/invoices', [ReportController::class, 'exportInvoices'])
+    ->name('reports.export.invoices');
 
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
