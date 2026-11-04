@@ -10,6 +10,19 @@ use Illuminate\Support\Str;
 
 class SalesOrderController extends Controller
 {
+    public function download(SalesOrder $salesOrder)
+    {
+        $salesOrder->load(['quotation.opportunity.customer', 'items.product']);
+        $pdf = \App\Support\SalesOrderPdf::make($salesOrder);
+        $filename = preg_replace('/[^A-Za-z0-9_-]/', '_', $salesOrder->sales_order_number) . '.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => (string) strlen($pdf),
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = SalesOrder::with([

@@ -41,6 +41,9 @@ Route::resource('contacts', ContactController::class);
 Route::resource('leads', LeadController::class);
 Route::resource('opportunities', OpportunityController::class);
 Route::resource('quotations', QuotationController::class);
+Route::post('/quotations/{quotation}/change-status', [QuotationController::class, 'changeStatus'])
+    ->whereUuid('quotation')
+    ->name('quotations.change-status');
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
@@ -195,6 +198,10 @@ Route::get('/opportunities/{opportunity}/items', [
     OpportunityController::class,
     'items',
 ])->name('opportunities.items');
+
+Route::get('/sales-orders/{salesOrder}/download', [SalesOrderController::class, 'download'])
+    ->whereUuid('salesOrder')
+    ->name('sales-orders.download');
 
 Route::resource('sales-orders', SalesOrderController::class)
     ->only(['index', 'show']);
