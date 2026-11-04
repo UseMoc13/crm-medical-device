@@ -31,6 +31,13 @@
     </div>
 @endif
 
+@php
+    $previewNumber = $delivery->delivery_number;
+    $previewOrder = ($delivery->salesOrder->sales_order_number ?? '—');
+    $previewStatus = ucwords(str_replace('_', ' ', $delivery->status));
+@endphp
+
+<div class="delivery-editor-layout">
 {{-- EDIT DELIVERY FORM --}}
 <div class="card">
     <div class="card-head">
@@ -73,28 +80,8 @@
                         Sales Order <span class="required">*</span>
                     </label>
 
-                    <select
-                        name="sales_order_id"
-                        id="sales_order_id"
-                        required
-                    >
-                        <option value="">-- Select Sales Order --</option>
-
-                        @foreach ($salesOrders as $salesOrder)
-                            <option
-                                value="{{ $salesOrder->sales_order_id }}"
-                                @selected(
-                                    old(
-                                        'sales_order_id',
-                                        $delivery->sales_order_id
-                                    ) == $salesOrder->sales_order_id
-                                )
-                            >
-                                {{ $salesOrder->sales_order_number
-                                    ?? $salesOrder->sales_order_id }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" value="{{ $delivery->salesOrder->sales_order_number ?? $delivery->sales_order_id }}" readonly>
+                    <a class="delivery-origin-link" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">View Original Sales Order</a>
 
                     @error('sales_order_id')
                         <small class="field-error">{{ $message }}</small>
@@ -128,35 +115,8 @@
                         Status <span class="required">*</span>
                     </label>
 
-                    <select name="status" id="status" required>
-                        <option value="pending"
-                            @selected(
-                                old('status', $delivery->status) === 'pending'
-                            )>
-                            Pending
-                        </option>
-
-                        <option value="in_transit"
-                            @selected(
-                                old('status', $delivery->status) === 'in_transit'
-                            )>
-                            In Transit
-                        </option>
-
-                        <option value="delivered"
-                            @selected(
-                                old('status', $delivery->status) === 'delivered'
-                            )>
-                            Delivered
-                        </option>
-
-                        <option value="cancelled"
-                            @selected(
-                                old('status', $delivery->status) === 'cancelled'
-                            )>
-                            Cancelled
-                        </option>
-                    </select>
+                    <input type="text" id="status" value="{{ ucwords(str_replace('_', ' ', $delivery->status)) }}" readonly>
+                    <small class="form-hint">Use the status actions on Delivery Details to update this status.</small>
 
                     @error('status')
                         <small class="field-error">{{ $message }}</small>
@@ -176,6 +136,8 @@
                         'delivery_address',
                         $delivery->delivery_address
                     ) }}</textarea>
+
+                    @include('deliveries._map')
 
                     @error('delivery_address')
                         <small class="field-error">{{ $message }}</small>
@@ -214,90 +176,11 @@
     </div>
 </div>
 
-<style>
-    .delivery-form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .delivery-form-grid .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .delivery-form-grid .full-width {
-        grid-column: 1 / -1;
-    }
-
-    .delivery-form-grid label {
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .delivery-form-grid input,
-    .delivery-form-grid select,
-    .delivery-form-grid textarea {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--border-color, #d1d5db);
-        border-radius: 6px;
-        background: #fff;
-        font: inherit;
-        font-size: 14px;
-    }
-
-    .delivery-form-grid textarea {
-        resize: vertical;
-    }
-
-    .delivery-form-grid input:focus,
-    .delivery-form-grid select:focus,
-    .delivery-form-grid textarea:focus {
-        outline: none;
-        border-color: var(--primary-color, #2563eb);
-    }
-
-    .delivery-form-grid input[readonly] {
-        background: var(--surface-secondary, #f8fafc);
-        color: var(--text-muted, #64748b);
-    }
-
-    .delivery-form-grid small {
-        font-size: 12px;
-        color: var(--text-muted, #64748b);
-    }
-
-    .delivery-form-grid .required {
-        color: #dc2626;
-    }
-
-    .delivery-form-grid .field-error {
-        color: #dc2626;
-    }
-
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid var(--border-color, #e5e7eb);
-    }
-
-    @media (max-width: 768px) {
-        .delivery-form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .delivery-form-grid .full-width {
-            grid-column: auto;
-        }
-    }
-</style>
+@include('deliveries._preview')
+</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxwpeoID7pFtHNj6ncewuQmk=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@include('deliveries._interaction')
+@include('deliveries._style')
 
 @endsection

@@ -47,6 +47,7 @@ Route::post('/quotations/{quotation}/change-status', [QuotationController::class
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
+Route::post('/deliveries/{delivery}/change-status', [DeliveryController::class, 'changeStatus'])->name('deliveries.change-status');
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);

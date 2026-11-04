@@ -47,12 +47,59 @@
     </div>
 </div>
 
-{{-- SUCCESS MESSAGE --}}
-@if(session('success'))
-    <div class="alert success">
-        {{ session('success') }}
+<div class="card delivery-workflow">
+    <div class="card-head"><div><h3>Delivery Workflow</h3><p>Record shipping progress after completing the physical action.</p></div></div>
+    <div class="card-body">
+        <div class="delivery-workflow-body">
+            @if($delivery->status === 'pending')
+                <button type="button" class="btn primary" data-delivery-action="in_transit" data-delivery-title="Mark as In Transit?" data-delivery-text="Confirm the shipment has been dispatched.">Mark as In Transit</button>
+                <button type="button" class="btn" data-delivery-action="cancelled" data-delivery-title="Cancel Delivery?" data-delivery-text="Cancel this pending delivery?">Cancel Delivery</button>
+            @elseif($delivery->status === 'in_transit')
+                <button type="button" class="btn primary" data-delivery-action="delivered" data-delivery-title="Confirm Delivery?" data-delivery-text="Confirm that the customer has received this shipment. Inventory and serial numbers are not automatically updated yet.">Confirm Delivered</button>
+            @else
+                <span class="delivery-warning">This delivery has reached a final status.</span>
+            @endif
+        </div>
+        <p class="delivery-workflow-note">Stock movements, individual serial numbers, and installation scheduling will be connected in a separate integration step.</p>
     </div>
-@endif
+</div>
+
+<div class="delivery-confirm" id="deliveryConfirm" hidden role="dialog" aria-modal="true" aria-labelledby="deliveryConfirmTitle">
+    <div class="delivery-confirm-dialog">
+        <div class="delivery-modal-symbol">?</div>
+        <h3 id="deliveryConfirmTitle">Confirm status</h3>
+        <p id="deliveryConfirmText"></p>
+        <form method="POST" action="{{ route('deliveries.change-status', $delivery->delivery_id) }}" id="deliveryStatusForm">
+            @csrf
+            <input type="hidden" name="status" id="deliveryNextStatus">
+            <div class="delivery-confirm-actions">
+                <button type="button" class="btn" id="deliveryCancel">Cancel</button>
+                <button type="submit" class="btn primary">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(() => {
+    const modal = document.getElementById('deliveryConfirm');
+    const title = document.getElementById('deliveryConfirmTitle');
+    const message = document.getElementById('deliveryConfirmText');
+    const next = document.getElementById('deliveryNextStatus');
+    const close = () => { modal.hidden = true; };
+    document.querySelectorAll('[data-delivery-action]').forEach(button => {
+        button.addEventListener('click', () => {
+            title.textContent = button.dataset.deliveryTitle;
+            message.textContent = button.dataset.deliveryText;
+            next.value = button.dataset.deliveryAction;
+            modal.hidden = false;
+        });
+    });
+    document.getElementById('deliveryCancel').addEventListener('click', close);
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+})();
+</script>
 
 {{-- DELIVERY INFORMATION --}}
 <div class="information-layout">
@@ -176,9 +223,9 @@
                             Sales Order Number
                         </span>
 
-                        <strong class="sales-order-number">
+                        <a class="delivery-origin-link sales-order-number" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">
                             {{ $delivery->salesOrder->sales_order_number ?? '-' }}
-                        </strong>
+                        </a>
                     </div>
 
                     <div class="sales-order-grid">
@@ -224,161 +271,6 @@
 
 </div>
 
-<style>
-    /* =====================================================
-       DELIVERY DETAIL
-    ====================================================== */
-
-    .delivery-information-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px;
-    }
-
-    .delivery-information-grid .information-field {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .delivery-information-grid .full-width {
-        grid-column: 1 / -1;
-    }
-
-    .delivery-information-grid .information-label {
-        color: var(--text-muted, #64748b);
-        font-size: 13px;
-    }
-
-    .delivery-information-grid .information-value {
-        color: var(--text-primary, #1e293b);
-        font-size: 14px;
-        font-weight: 600;
-        overflow-wrap: anywhere;
-    }
-
-    .delivery-number {
-        letter-spacing: 0.2px;
-    }
-
-    .delivery-text {
-        white-space: pre-line;
-        line-height: 1.7;
-        font-weight: 400 !important;
-    }
-
-    /* =====================================================
-       DELIVERY STATUS BADGE
-    ====================================================== */
-
-    .delivery-status-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: fit-content;
-        padding: 6px 11px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .status-pending {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .status-in-transit {
-        background: #dbeafe;
-        color: #1d4ed8;
-    }
-
-    .status-delivered {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-cancelled {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .status-unknown {
-        background: #f1f5f9;
-        color: #475569;
-    }
-
-    /* =====================================================
-       SALES ORDER INFORMATION
-    ====================================================== */
-
-    .sales-order-content {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-
-    .sales-order-heading {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 16px;
-        border: 1px solid var(--border-color, #e2e8f0);
-        border-radius: 8px;
-        background: var(--surface-secondary, #f8fafc);
-    }
-
-    .sales-order-number {
-        color: var(--text-primary, #1e293b);
-        font-size: 17px;
-        overflow-wrap: anywhere;
-    }
-
-    .sales-order-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .sales-order-grid .information-field {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .sales-order-grid .information-label {
-        color: var(--text-muted, #64748b);
-        font-size: 13px;
-    }
-
-    .sales-order-grid .information-value {
-        color: var(--text-primary, #1e293b);
-        font-size: 14px;
-        overflow-wrap: anywhere;
-    }
-
-    @media (max-width: 768px) {
-        .delivery-information-grid,
-        .sales-order-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .delivery-information-grid .full-width {
-            grid-column: auto;
-        }
-
-        .page-head {
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .page-head .actions {
-            flex-wrap: wrap;
-        }
-    }
-</style>
+@include('deliveries._style')
 
 @endsection

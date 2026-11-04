@@ -31,6 +31,13 @@
     </div>
 @endif
 
+@php
+    $previewNumber = $deliveryNumber;
+    $previewOrder = '—';
+    $previewStatus = 'Pending';
+@endphp
+
+<div class="delivery-editor-layout">
 {{-- CREATE DELIVERY FORM --}}
 <div class="card">
     <div class="card-head">
@@ -104,7 +111,7 @@
                                 <option
                                     value="{{ $salesOrder->sales_order_id }}"
                                     @selected(
-                                        old('sales_order_id') == $salesOrder->sales_order_id
+                                        old('sales_order_id', request('sales_order_id')) == $salesOrder->sales_order_id
                                     )
                                 >
                                     {{ $salesOrder->sales_order_number
@@ -163,40 +170,8 @@
                             <span class="required-mark">*</span>
                         </label>
 
-                        <select
-                            name="status"
-                            id="status"
-                            class="form-control @error('status') is-invalid @enderror"
-                            required
-                        >
-                            <option
-                                value="pending"
-                                @selected(old('status', 'pending') === 'pending')
-                            >
-                                Pending
-                            </option>
-
-                            <option
-                                value="in_transit"
-                                @selected(old('status') === 'in_transit')
-                            >
-                                In Transit
-                            </option>
-
-                            <option
-                                value="delivered"
-                                @selected(old('status') === 'delivered')
-                            >
-                                Delivered
-                            </option>
-
-                            <option
-                                value="cancelled"
-                                @selected(old('status') === 'cancelled')
-                            >
-                                Cancelled
-                            </option>
-                        </select>
+                        <input type="text" id="status" class="form-control" value="Pending" readonly>
+                        <small class="form-hint">New deliveries start as Pending. Update status from the detail page.</small>
 
                         @error('status')
                             <small class="field-error">{{ $message }}</small>
@@ -227,6 +202,8 @@
                             class="form-control @error('delivery_address') is-invalid @enderror"
                             placeholder="Enter the delivery destination address"
                         >{{ old('delivery_address') }}</textarea>
+
+                        @include('deliveries._map')
 
                         @error('delivery_address')
                             <small class="field-error">{{ $message }}</small>
@@ -278,211 +255,11 @@
 </div>
 
 {{-- PAGE STYLES --}}
-<style>
-    /* VALIDATION */
-    .validation-list {
-        margin: 8px 0 0;
-        padding-left: 20px;
-    }
-
-    .validation-list li {
-        margin-bottom: 4px;
-    }
-
-    /* FORM GRID */
-    .delivery-form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .delivery-form-grid .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 0;
-        margin-bottom: 4px;
-    }
-
-    .delivery-form-grid .full-width {
-        grid-column: 1 / -1;
-    }
-
-    /* SECTION HEADINGS */
-    .form-section + .form-section {
-        margin-top: 30px;
-        padding-top: 26px;
-        border-top: 1px solid var(--border, #e2e8f0);
-    }
-
-    .section-heading {
-        margin-bottom: 20px;
-    }
-
-    .section-heading h4 {
-        margin: 0 0 6px;
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-primary, #1e293b);
-    }
-
-    .section-heading p {
-        margin: 0;
-        font-size: 13px;
-        line-height: 1.6;
-        color: var(--text-muted, #64748b);
-    }
-
-    /* LABELS */
-    .delivery-form-grid label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary, #334155);
-    }
-
-    .required-mark {
-        color: #dc2626;
-        font-weight: 600;
-    }
-
-    .required-note {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: var(--text-muted, #64748b);
-        white-space: nowrap;
-    }
-
-    /* INPUTS */
-    .delivery-form-grid .form-control {
-        box-sizing: border-box;
-        display: block;
-        width: 100%;
-        min-height: 42px;
-        padding: 10px 12px;
-        border: 1px solid var(--border, #cbd5e1);
-        border-radius: 7px;
-        background: var(--surface, #ffffff);
-        color: var(--text-primary, #1e293b);
-        font-family: inherit;
-        font-size: 13px;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .delivery-form-grid textarea.form-control {
-        min-height: auto;
-        line-height: 1.6;
-        resize: vertical;
-    }
-
-    .delivery-form-grid .form-control:focus {
-        outline: none;
-        border-color: var(--primary, #2563eb);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
-    }
-
-    .delivery-form-grid .form-control[readonly] {
-        background: var(--surface-secondary, #f8fafc);
-        color: var(--text-muted, #64748b);
-        cursor: default;
-    }
-
-    .delivery-form-grid .form-control.is-invalid {
-        border-color: #dc2626;
-    }
-
-    /* AUTOMATIC DELIVERY NUMBER */
-    .auto-number-field {
-        position: relative;
-    }
-
-    .auto-number-field .form-control {
-        padding-right: 65px;
-    }
-
-    .auto-number-badge {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        padding: 4px 7px;
-        border-radius: 5px;
-        background: #dbeafe;
-        color: #1d4ed8;
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    /* HELP TEXT AND ERRORS */
-    .delivery-form-grid .form-hint {
-        font-size: 11px;
-        line-height: 1.6;
-        color: var(--text-muted, #64748b);
-    }
-
-    .delivery-form-grid .field-error {
-        color: #dc2626;
-        font-size: 12px;
-        line-height: 1.5;
-    }
-
-    /* FORM ACTIONS */
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 30px;
-        padding-top: 22px;
-        border-top: 1px solid var(--border, #e2e8f0);
-    }
-
-    /* DISABLED BUTTON */
-    .form-actions button:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        .delivery-form-grid {
-            grid-template-columns: 1fr;
-            gap: 18px;
-        }
-
-        .delivery-form-grid .full-width {
-            grid-column: auto;
-        }
-
-        .page-head {
-            flex-wrap: wrap;
-            gap: 14px;
-        }
-
-        .page-head .actions {
-            width: 100%;
-        }
-
-        .required-note {
-            margin-top: 8px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .form-actions {
-            flex-direction: column-reverse;
-            align-items: stretch;
-        }
-
-        .form-actions .btn {
-            width: 100%;
-            text-align: center;
-            justify-content: center;
-        }
-    }
-</style>
+@include('deliveries._preview')
+</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxwpeoID7pFtHNj6ncewuQmk=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@include('deliveries._interaction')
+@include('deliveries._style')
 
 @endsection
