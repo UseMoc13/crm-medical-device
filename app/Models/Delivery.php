@@ -63,6 +63,11 @@ class Delivery extends Model
         });
     }
 
+    public function items()
+    {
+        return $this->hasMany(DeliveryItem::class, 'delivery_id', 'delivery_id');
+    }
+
     public function salesOrder()
     {
         return $this->belongsTo(

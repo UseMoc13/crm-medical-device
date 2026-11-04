@@ -48,6 +48,8 @@ Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
 Route::post('/deliveries/{delivery}/change-status', [DeliveryController::class, 'changeStatus'])->name('deliveries.change-status');
+Route::post('/deliveries/{delivery}/items', [DeliveryController::class, 'addItem'])->name('deliveries.items.store');
+Route::delete('/deliveries/{delivery}/items/{item}', [DeliveryController::class, 'removeItem'])->name('deliveries.items.destroy');
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);

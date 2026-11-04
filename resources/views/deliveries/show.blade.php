@@ -52,15 +52,15 @@
     <div class="card-body">
         <div class="delivery-workflow-body">
             @if($delivery->status === 'pending')
-                <button type="button" class="btn primary" data-delivery-action="in_transit" data-delivery-title="Mark as In Transit?" data-delivery-text="Confirm the shipment has been dispatched.">Mark as In Transit</button>
+                <button type="button" class="btn primary" data-delivery-action="in_transit" data-delivery-title="Mark as In Transit?" data-delivery-text="Dispatch the selected units and deduct inventory from their selected warehouses? This action records Stock Movements and assigns serial numbers.">Mark as In Transit</button>
                 <button type="button" class="btn" data-delivery-action="cancelled" data-delivery-title="Cancel Delivery?" data-delivery-text="Cancel this pending delivery?">Cancel Delivery</button>
             @elseif($delivery->status === 'in_transit')
-                <button type="button" class="btn primary" data-delivery-action="delivered" data-delivery-title="Confirm Delivery?" data-delivery-text="Confirm that the customer has received this shipment. Inventory and serial numbers are not automatically updated yet.">Confirm Delivered</button>
+                <button type="button" class="btn primary" data-delivery-action="delivered" data-delivery-title="Confirm Delivery?" data-delivery-text="Confirm that the customer has received this shipment. Stock and serial number updates were recorded at dispatch.">Confirm Delivered</button>
             @else
                 <span class="delivery-warning">This delivery has reached a final status.</span>
             @endif
         </div>
-        <p class="delivery-workflow-note">Stock movements, individual serial numbers, and installation scheduling will be connected in a separate integration step.</p>
+        <p class="delivery-workflow-note">Dispatch deducts stock and marks allocated serials Assigned. Confirm Delivered only after customer receipt. Installation integration follows in the next phase.</p>
     </div>
 </div>
 
@@ -98,6 +98,96 @@
     document.getElementById('deliveryCancel').addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+})();
+</script>
+
+<div class="card delivery-serial-card">
+    <div class="card-head"><div><h3>Delivery Items & Serial Numbers</h3><p>Allocate devices included in the Sales Order before dispatch. Select each unit and source warehouse. Stock is deducted only when dispatch is confirmed.</p></div></div>
+    <div class="card-body">
+        @if(!$trackingAvailable)
+            <p class="delivery-warning">Delivery Item warehouse tracking is unavailable. Run both Delivery Items migrations first.</p>
+        @else
+            @if($delivery->status === 'pending')
+                <form action="{{ route('deliveries.items.store', $delivery) }}" method="POST" class="delivery-serial-form">
+                    @csrf
+                    <label for="serial_number_id">Available serial number</label>
+                    <select name="serial_number_id" id="serial_number_id" required>
+                        <option value="">Select a unit from the Sales Order...</option>
+                        @foreach($availableSerials as $serial)
+                            <option value="{{ $serial->serial_number_id }}">{{ $serial->serial_number }} — {{ $serial->product->product_name ?? $serial->product_id }}</option>
+                        @endforeach
+                    </select>
+                    <label for="warehouse_id">Source warehouse</label>
+                    <select name="warehouse_id" id="warehouse_id" required>
+                        <option value="">Select warehouse with stock...</option>
+                        @foreach($warehouseStocks as $inventory)
+                            <option value="{{ $inventory->warehouse_id }}" data-product-id="{{ $inventory->product_id }}">
+                                {{ $inventory->warehouse->warehouse_name ?? $inventory->warehouse_id }} — {{ $inventory->quantity }} available
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn primary" @disabled($availableSerials->isEmpty() || $warehouseStocks->isEmpty())>Add Unit</button>
+                    <p class="delivery-warning">Select a warehouse that physically holds the chosen serial number. Current database does not track each serial's warehouse location.</p>
+                </form>
+                @error('serial_number_id') <p class="delivery-warning">{{ $message }}</p> @enderror
+                @error('warehouse_id') <p class="delivery-warning">{{ $message }}</p> @enderror
+                @error('status') <p class="delivery-warning">{{ $message }}</p> @enderror
+            @endif
+            <div class="delivery-serial-grid">
+                <div class="delivery-serial-summary">
+                    <strong>Sales Order Items</strong>
+                    @forelse($orderProducts as $product)
+                        <p>{{ $product['name'] }} <span>Ordered: {{ $product['quantity'] }}</span></p>
+                    @empty
+                        <p>No products found.</p>
+                    @endforelse
+                </div>
+                <div class="delivery-serial-summary">
+                    <strong>Allocated Units ({{ $delivery->items->count() }})</strong>
+                    @forelse($delivery->items as $item)
+                        <div class="delivery-serial-assigned">
+                            <span>{{ $item->serialNumber->serial_number ?? 'Unknown Serial' }} — {{ $item->serialNumber->product->product_name ?? '-' }}<small class="delivery-source-warehouse">{{ $item->warehouse->warehouse_name ?? 'Warehouse not assigned' }}</small></span>
+                            @if($delivery->status === 'pending')
+                                <form action="{{ route('deliveries.items.destroy', [$delivery, $item]) }}" method="POST" onsubmit="return confirm('Remove this serial number from Delivery?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn">Remove</button>
+                                </form>
+                            @endif
+                        </div>
+                    @empty
+                        <p>No serial numbers allocated yet.</p>
+                    @endforelse
+                </div>
+            </div>
+            @if($dispatchMovements->isNotEmpty())
+                <div class="delivery-dispatch-records">
+                    <strong>Recorded Stock Out</strong>
+                    @foreach($dispatchMovements as $movement)
+                        <p>{{ $movement->product_name }} — {{ $movement->warehouse_name }}: {{ $movement->quantity }} unit(s)</p>
+                    @endforeach
+                </div>
+            @endif
+        @endif
+    </div>
+</div>
+
+<script>
+(() => {
+  const serial = document.getElementById('serial_number_id');
+  const warehouse = document.getElementById('warehouse_id');
+  if (!serial || !warehouse) return;
+  const products = @json($serialProductMap);
+  function filterWarehouses() {
+    const productId = products[serial.value];
+    [...warehouse.options].forEach(option => {
+      if (!option.value) return;
+      option.hidden = Boolean(productId && option.dataset.productId !== productId);
+      option.disabled = Boolean(productId && option.dataset.productId !== productId);
+    });
+    if (warehouse.selectedOptions[0]?.disabled) warehouse.value = '';
+  }
+  serial.addEventListener('change', filterWarehouses);
+  filterWarehouses();
 })();
 </script>
 
