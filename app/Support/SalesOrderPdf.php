@@ -8,85 +8,51 @@ class SalesOrderPdf
 {
     public static function make(SalesOrder $order): string
     {
-        $pages = [];
-        $items = $order->items;
-        $chunks = $items->chunk(15);
-        if ($chunks->isEmpty()) {
-            $chunks = collect([collect()]);
-        }
+        $pdf = new SalesPdfCanvas();
         $money = fn ($value) => 'Rp ' . number_format((float) $value, 0, ',', '.');
-        $customer = $order->quotation?->opportunity?->customer?->customer_name ?? '-';
-        foreach ($chunks as $pageIndex => $chunk) {
-            $lines = [
-                ['CRM MEDICAL DEVICE', 18, true],
-                ['SALES ORDER', 14, true],
-                ['Order Number: ' . $order->sales_order_number, 11, true],
-                ['Customer: ' . $customer, 10, false],
-                ['Quotation: ' . ($order->quotation?->quotation_number ?? '-'), 10, false],
-                ['Date: ' . ($order->order_date?->format('d M Y') ?? '-'), 10, false],
-                ['Status: ' . ucfirst((string) $order->status), 10, false],
-                [' ', 10, false],
-                ['ORDER ITEMS (page ' . ($pageIndex + 1) . ')', 11, true],
-                ['No | Product / Code | Qty | Unit Price | Discount | Subtotal', 9, true],
-            ];
-            foreach ($chunk as $index => $item) {
-                $product = $item->product?->product_name ?? 'Unknown product';
-                $line = ($pageIndex * 15 + $index + 1) . '. ' . $product . ' (' . ($item->product?->product_code ?? '-') . ')';
-                $lines[] = [mb_strimwidth($line, 0, 91, '...'), 9, false];
-                $lines[] = ['    Qty ' . $item->quantity . '  |  ' . $money($item->unit_price) . '  |  Disc ' . $money($item->discount) . '  |  ' . $money($item->subtotal), 9, false];
+        $customer = $order->quotation?->opportunity?->customer;
+        $start = function () use ($pdf, $order) {
+            $pdf->page(); $pdf->header('Sales Order', (string) $order->sales_order_number);
+            $pdf->text('ORDER INFORMATION', 35, 145, 9, true, '#15966F');
+            $pdf->rule(35, 153, 560);
+            $pdf->text('ORDER DATE', 35, 174, 8, true, '#8391A7');
+            $pdf->text($order->order_date?->format('d M Y') ?? '-', 35, 192, 11, true);
+            $pdf->text('QUOTATION', 224, 174, 8, true, '#8391A7');
+            $pdf->text((string) ($order->quotation?->quotation_number ?? '-'), 224, 192, 10, true, '#17284F', 31);
+            $pdf->text('STATUS', 452, 174, 8, true, '#8391A7');
+            $pdf->text(ucfirst((string) $order->status), 452, 192, 10, true, '#15966F');
+            $pdf->rect(35, 209, 525, 65, '#F4F7FB');
+            $pdf->text('CUSTOMER', 48, 229, 8, true, '#8391A7');
+            $pdf->text((string) ($order->quotation?->opportunity?->customer?->customer_name ?? '-'), 48, 248, 12, true, '#17284F', 70);
+            $pdf->text('ORDER ITEMS', 35, 300, 9, true, '#15966F');
+            $pdf->rect(35, 310, 525, 29, '#EAF0F7');
+            foreach ([['PRODUCT / CODE', 46], ['QTY', 290], ['UNIT PRICE', 335], ['DISCOUNT', 418], ['SUBTOTAL', 496]] as [$label, $x]) {
+                $pdf->text($label, $x, 329, 8, true, '#52637B');
             }
-            if ($pageIndex === $chunks->count() - 1) {
-                $lines[] = [' ', 10, false];
-                $lines[] = ['Subtotal: ' . $money($order->subtotal), 11, false];
-                $effectiveDiscount = max(0, (float) $order->subtotal + (float) $order->tax - (float) $order->total_amount);
-                if ($effectiveDiscount > 0.009) {
-                    $lines[] = ['Discount: -' . $money($effectiveDiscount), 11, false];
-                }
-                $lines[] = ['Tax: ' . $money($order->tax), 11, false];
-                $lines[] = ['TOTAL: ' . $money($order->total_amount), 13, true];
-                $lines[] = ['Notes: ' . mb_strimwidth((string) ($order->notes ?? '-'), 0, 100, '...'), 9, false];
-            }
-            $pages[] = $lines;
+        };
+        $start(); $y = 341;
+        foreach ($order->items as $item) {
+            if ($y > 706) { $pdf->footer('Sales Order | ' . $order->sales_order_number); $start(); $y = 341; }
+            $pdf->rect(35, $y, 525, 46, '#FAFBFE');
+            $pdf->text((string) ($item->product?->product_name ?? 'Product'), 46, $y + 18, 9, true, '#17284F', 42);
+            $pdf->text((string) ($item->product?->product_code ?? '-'), 46, $y + 33, 8, false, '#8A99AD', 32);
+            $pdf->text((string) $item->quantity, 290, $y + 26, 9);
+            $pdf->text($money($item->unit_price), 335, $y + 26, 8, false, '#41506A', 17);
+            $pdf->text($money($item->discount ?? 0), 418, $y + 26, 8, false, '#41506A', 16);
+            $pdf->text($money($item->subtotal), 496, $y + 26, 8, true, '#17284F', 18);
+            $y += 48;
         }
-        return self::encode($pages);
-    }
-
-    private static function encode(array $pages): string
-    {
-        $objects = [];
-        $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
-        $objects[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
-        $objects[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
-        $kids = [];
-        foreach ($pages as $index => $lines) {
-            $pageId = 5 + $index * 2;
-            $streamId = $pageId + 1;
-            $kids[] = $pageId . ' 0 R';
-            $commands = '';
-            $y = 800;
-            foreach ($lines as [$text, $fontSize, $bold]) {
-                $converted = iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $text);
-                $safe = str_replace(['\\', '(', ')', "\r", "\n"], ['\\\\', '\(', '\)', '', ' '], $converted === false ? '' : $converted);
-                $commands .= sprintf('BT /F%d %d Tf 46 %d Td (%s) Tj ET', $bold ? 2 : 1, $fontSize, $y, $safe) . "\n";
-                $y -= $fontSize >= 13 ? 23 : 15;
-            }
-            $objects[$pageId] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ' . $streamId . ' 0 R >>';
-            $objects[$streamId] = '<< /Length ' . strlen($commands) . " >>\nstream\n" . $commands . 'endstream';
+        if ($y > 620) { $pdf->footer('Sales Order | ' . $order->sales_order_number); $start(); $y = 341; }
+        $discount = max(0, (float) $order->subtotal + (float) $order->tax - (float) $order->total_amount);
+        $pdf->rule(35, $y + 14, 560);
+        foreach ([['Subtotal', $money($order->subtotal)], ['Discount', $discount ? '- ' . $money($discount) : '-'], ['Tax', '+ ' . $money($order->tax)]] as $i => [$label, $value]) {
+            $pdf->text($label, 379, $y + 42 + $i * 21, 10, false, '#8391A7');
+            $pdf->text($value, 468, $y + 42 + $i * 21, 10, true, '#17284F', 19);
         }
-        $objects[2] = '<< /Type /Pages /Kids [' . implode(' ', $kids) . '] /Count ' . count($pages) . ' >>';
-        ksort($objects);
-        $output = "%PDF-1.4\n";
-        $offsets = [0];
-        foreach ($objects as $id => $body) {
-            $offsets[$id] = strlen($output);
-            $output .= $id . " 0 obj\n" . $body . "\nendobj\n";
-        }
-        $xref = strlen($output);
-        $output .= "xref\n0 " . (max(array_keys($objects)) + 1) . "\n0000000000 65535 f \n";
-        for ($id = 1; $id <= max(array_keys($objects)); $id++) {
-            $output .= sprintf('%010d 00000 n ', $offsets[$id]) . "\n";
-        }
-        $output .= 'trailer << /Size ' . (max(array_keys($objects)) + 1) . " /Root 1 0 R >>\nstartxref\n" . $xref . "\n%%EOF";
-        return $output;
+        $pdf->rect(365, $y + 112, 195, 46, '#E8F7F0');
+        $pdf->text('TOTAL', 377, $y + 140, 10, true, '#146E58');
+        $pdf->text($money($order->total_amount), 442, $y + 140, 12, true, '#146E58', 24);
+        $pdf->footer('Generated from CRM Medical Device | For internal transaction records');
+        return $pdf->output();
     }
 }

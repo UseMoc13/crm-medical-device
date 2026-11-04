@@ -667,7 +667,8 @@
                                 <form
                                     method="POST"
                                     action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
-                                    onsubmit="return confirm('Buat Sales Order dari quotation ini?')"
+                                    data-sales-order-create-form
+                                    data-quotation-number="{{ $quotation->quotation_number }}"
                                 >
                                     @csrf
                                     <button type="submit" class="btn primary">
@@ -989,6 +990,54 @@ document.addEventListener(
 </script>
 
 @endsection
+
+
+<div class="quotation-sales-modal" id="quotationSalesModal" hidden role="dialog" aria-modal="true" aria-labelledby="quotationSalesModalTitle">
+    <div class="quotation-sales-dialog">
+        <div class="quotation-sales-icon">SO</div>
+        <h3 id="quotationSalesModalTitle">Create Sales Order?</h3>
+        <p>Convert <strong id="quotationSalesNumber"></strong> into a new Sales Order? This action will copy the quotation products and totals. Only approved quotations are eligible.</p>
+        <div class="quotation-sales-buttons">
+            <button type="button" class="btn" id="quotationSalesCancel">Cancel</button>
+            <button type="button" class="btn primary" id="quotationSalesConfirm">Yes, Create Sales Order</button>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('quotationSalesModal');
+    const cancel = document.getElementById('quotationSalesCancel');
+    const confirm = document.getElementById('quotationSalesConfirm');
+    const number = document.getElementById('quotationSalesNumber');
+    if (!modal || !cancel || !confirm) return;
+    let pending = null;
+    function close() {
+        if (confirm.disabled) return;
+        modal.hidden = true;
+        pending = null;
+        document.body.style.overflow = '';
+    }
+    document.querySelectorAll('form[data-sales-order-create-form]').forEach(form => {
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            pending = form;
+            number.textContent = form.dataset.quotationNumber || 'this quotation';
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            confirm.focus();
+        });
+    });
+    confirm.addEventListener('click', () => {
+        if (!pending) return;
+        confirm.disabled = true;
+        confirm.textContent = 'Creating...';
+        pending.submit();
+    });
+    cancel.addEventListener('click', close);
+    modal.addEventListener('click', event => { if (event.target === modal) close(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.hidden) close(); });
+});
+</script>
 
 @push('styles')
     @include('quotations._style')

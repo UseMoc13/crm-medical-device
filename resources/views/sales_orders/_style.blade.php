@@ -64,4 +64,18 @@
 .so-header-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 @media(max-width: 1100px) { .so-detail-layout { grid-template-columns: minmax(0,1fr); } .so-preview-card { position: static; } }
 @media(max-width: 650px) { .so-info-grid { grid-template-columns: 1fr; padding: 18px; } .so-card .card-head, .so-filter-wrap { padding: 18px; } .so-filter>* { flex: 1 1 100% !important; } .so-header-actions { width: 100%; } }
+
+.so-export-backdrop[hidden] { display: none !important; }
+.so-export-backdrop { position:fixed; inset:0; z-index:30000; background:rgba(12,27,56,.6); display:flex; align-items:center; justify-content:center; padding:20px; }
+.so-export-dialog { background:#fff; border-radius:16px; box-shadow:0 22px 70px rgba(12,27,56,.22); width:100%; max-width:490px; padding:26px; }
+.so-export-heading { display:flex; justify-content:space-between; gap:15px; margin-bottom:22px; }
+.so-export-heading h3 { font-size:19px; margin:0 0 6px; color:#17284f; }
+.so-export-heading p { margin:0; font-size:12px; line-height:1.5; color:#8592a8; }
+.so-export-close { cursor:pointer; background:transparent; border:0; color:#8996ad; font-size:26px; line-height:1; }
+.so-export-option { display:flex; gap:13px; align-items:flex-start; border:1px solid #e1e7f0; border-radius:10px; padding:17px; margin-bottom:11px; cursor:pointer; }
+.so-export-option:has(input:checked) { border-color:#15966f; background:#f4fbf8; }
+.so-export-option input { accent-color:#15966f; margin-top:3px; }
+.so-export-option strong { display:block; color:#17284f; font-size:13px; margin-bottom:5px; }
+.so-export-option small { display:block; color:#7d8ba1; font-size:11px; line-height:1.5; }
+.so-export-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; flex-wrap:wrap; }
 </style>

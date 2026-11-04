@@ -586,6 +586,18 @@
         color: #dc2626;
     }
 
+.table-wrap td form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 !important;
+    padding: 0;
+}
+
+.table-wrap td .action-btn {
+    margin: 0 !important;
+    vertical-align: middle;
+}
+
 .table-footer {
         display: flex;
         justify-content: space-between;
@@ -4673,4 +4685,14 @@
 .quotation-decision-actions { display: flex; gap: 9px; justify-content: flex-end; flex-wrap: wrap; }
 .quotation-decision-actions .danger { color: #fff; background: #c63d49; border-color: #c63d49; }
 
+
+.quotation-sales-modal[hidden] { display: none !important; }
+.quotation-sales-modal { position: fixed; inset: 0; z-index: 30000; background: rgba(12,27,56,.58); display:flex; align-items:center; justify-content:center; padding:18px; }
+.quotation-sales-dialog { max-width: 450px; width:100%; border-radius:16px; padding:28px; background:#fff; box-shadow: 0 25px 75px rgba(8,28,59,.22); text-align:center; }
+.quotation-sales-icon { margin:0 auto 15px; display:grid; place-items:center; width:55px; height:55px; border-radius:14px; color:#168568; background:#e8f8f0; font-size:17px; font-weight:800; }
+.quotation-sales-dialog h3 { margin:0 0 9px; color:#17284f; font-size:19px; }
+.quotation-sales-dialog p { margin:0 0 24px; line-height:1.65; font-size:13px; color:#6b7890; }
+.quotation-sales-dialog strong { color:#17284f; }
+.quotation-sales-buttons { display:flex; justify-content:center; gap:9px; flex-wrap:wrap; }
+.quotation-sales-buttons .btn { min-height:40px; }
 </style>

@@ -199,6 +199,8 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
+Route::get('/sales-orders/export', [SalesOrderController::class, 'export'])->name('sales-orders.export');
+
 Route::get('/sales-orders/{salesOrder}/download', [SalesOrderController::class, 'download'])
     ->whereUuid('salesOrder')
     ->name('sales-orders.download');

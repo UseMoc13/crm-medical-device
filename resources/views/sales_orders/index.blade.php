@@ -8,6 +8,9 @@
         <h1>Sales Orders</h1>
         <p>Monitor confirmed customer orders and access their source quotations.</p>
     </div>
+    <div class="actions so-header-actions">
+        <button type="button" class="btn primary" id="openSoExport">Download / Export</button>
+    </div>
 </div>
 
 @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif
@@ -81,6 +84,35 @@
         @if($orders->hasPages())<div>{{ $orders->withQueryString()->links() }}</div>@endif
     </div>
 </div>
+
+<div id="soExportModal" class="so-export-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="soExportTitle">
+    <div class="so-export-dialog">
+        <div class="so-export-heading">
+            <div><h3 id="soExportTitle">Export Sales Orders</h3><p>Download the current search and status-filtered results.</p></div>
+            <button type="button" class="so-export-close" id="closeSoExport" aria-label="Close">&times;</button>
+        </div>
+        <form action="{{ route('sales-orders.export') }}" method="GET" id="soExportForm">
+            <input type="hidden" name="search" value="{{ request('search') }}">
+            <input type="hidden" name="status" value="{{ request('status') }}">
+            <label class="so-export-option"><input type="radio" name="format" value="pdf" checked><span><strong>PDF Report</strong><small>Formatted document with summary, tables, totals, and pagination. Maximum 2,000 records.</small></span></label>
+            <label class="so-export-option"><input type="radio" name="format" value="csv"><span><strong>CSV Data (Excel compatible)</strong><small>Complete matching records with raw numbers for spreadsheet analysis.</small></span></label>
+            <div class="so-export-actions"><button type="button" class="btn" id="cancelSoExport">Cancel</button><button type="submit" class="btn primary">Download File</button></div>
+        </form>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('soExportModal');
+    const open = document.getElementById('openSoExport');
+    if (!modal || !open) return;
+    const close = () => { modal.hidden = true; document.body.style.overflow = ''; };
+    open.addEventListener('click', () => { modal.hidden = false; document.body.style.overflow = 'hidden'; });
+    ['closeSoExport', 'cancelSoExport'].forEach(id => document.getElementById(id)?.addEventListener('click', close));
+    modal.addEventListener('click', event => { if (event.target === modal) close(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.hidden) close(); });
+    document.getElementById('soExportForm')?.addEventListener('submit', () => { close(); });
+});
+</script>
 @endsection
 
 @push('styles')
