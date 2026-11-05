@@ -71,13 +71,12 @@
         <p id="deliveryConfirmText"></p>
         <form method="POST" action="{{ route('deliveries.change-status', $delivery->delivery_id) }}" id="deliveryStatusForm">
             @csrf
-            {{-- HTTP method MUST stay PATCH; delivery statuses belong only in the status field. --}}
-            <input type="hidden" name="_method" id="deliveryHttpMethod" value="PATCH">
+            @method('PATCH')
             <input type="hidden" name="status" id="deliveryNextStatus">
             <div class="delivery-confirm-actions">
                 <button type="button" class="btn" id="deliveryCancel">Cancel</button>
                 <button type="submit" class="btn primary">Confirm</button>
-            </div>
+            </div>1
         </form>
     </div>
 </div>
@@ -88,28 +87,14 @@
     const title = document.getElementById('deliveryConfirmTitle');
     const message = document.getElementById('deliveryConfirmText');
     const next = document.getElementById('deliveryNextStatus');
-    const form = document.getElementById('deliveryStatusForm');
-    const httpMethod = document.getElementById('deliveryHttpMethod');
-    const allowed = new Set(['in_transit', 'delivered', 'cancelled']);
     const close = () => { modal.hidden = true; };
     document.querySelectorAll('[data-delivery-action]').forEach(button => {
         button.addEventListener('click', () => {
             title.textContent = button.dataset.deliveryTitle;
             message.textContent = button.dataset.deliveryText;
-            const status = button.dataset.deliveryAction;
-            if (!allowed.has(status)) return;
-            next.value = status;
-            httpMethod.value = 'PATCH';
+            next.value = button.dataset.deliveryAction;
             modal.hidden = false;
         });
-    });
-    form.addEventListener('submit', (event) => {
-        // Prevent accidental mutation of Laravel's HTTP method spoofing value.
-        httpMethod.value = 'PATCH';
-        if (!allowed.has(next.value)) {
-            event.preventDefault();
-            return;
-        }
     });
     document.getElementById('deliveryCancel').addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
