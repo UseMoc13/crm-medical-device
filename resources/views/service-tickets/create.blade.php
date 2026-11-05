@@ -281,7 +281,7 @@
                         >
                             <option value="">Select status</option>
 
-                            @foreach($statuses as $status)
+                            @foreach(['open'] as $status)
                                 <option
                                     value="{{ $status }}"
                                     @selected(old('status', 'open') === $status)
@@ -292,7 +292,7 @@
                         </select>
 
                         <span class="form-hint">
-                            New service requests normally begin with Open status.
+                            New tickets must start as Open. Change progress later through the ticket workflow.
                         </span>
 
                         @error('status')

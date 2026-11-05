@@ -297,7 +297,7 @@
                         >
                             <option value="">Select status</option>
 
-                            @foreach($statuses as $status)
+                            @foreach($allowedStatuses as $status)
                                 <option
                                     value="{{ $status }}"
                                     @selected(old('status', $serviceTicket->status) === $status)
@@ -308,7 +308,7 @@
                         </select>
 
                         <span class="form-hint">
-                            Update the current progress of this service request.
+                            Only valid next statuses are available. Status changes are also checked by the server.
                         </span>
 
                         @error('status')

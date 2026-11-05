@@ -261,3 +261,8 @@ Route::patch(
 // Installation -> Warranty Activation (independent of CRUD & existing status routes)
 \Illuminate\Support\Facades\Route::post('/installations/{installation}/activate-warranties', [\App\Http\Controllers\InstallationWarrantyActivationController::class, 'store'])
     ->whereUuid('installation')->name('installations.warranties.activate');
+
+// Service Ticket workflow: dedicated status change, distinct from regular CRUD update.
+Route::patch('/service-tickets/{serviceTicket}/change-status', [ServiceTicketController::class, 'changeStatus'])
+    ->whereUuid('serviceTicket')
+    ->name('service-tickets.change-status');
