@@ -310,7 +310,7 @@
 
         <a href="{{ route('service-tickets.index') }}"
             class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}"
-            data-label="Service-Tickets">
+            data-label="service-tickets">
             
             <span class="ico">⚑</span>
             <span class="nav-text">Service Tickets</span>
@@ -341,12 +341,18 @@
             Billing & Reporting
         </div>
 
-        <a href="#" data-label="Invoices">
+        <a href="{{ route('invoices.index') }}"
+            class="{{ request()->routeIs('invoices.*') ? 'active' : '' }}"
+            data-label="Invoices">
+
             <span class="ico">▤</span>
             <span class="nav-text">Invoices</span>
         </a>
 
-        <a href="#" data-label="Reports">
+        <a href="{{ route('reports.index') }}"
+            class="{{ request()->routeIs('reports.*') ? 'active' : '' }}"
+            data-label="Reports">
+
             <span class="ico">▥</span>
             <span class="nav-text">Reports</span>
         </a>

@@ -381,8 +381,7 @@ class QuotationController extends Controller
 
             'status' => [
                 'required',
-                'string',
-                'max:100',
+                Rule::in(['draft', 'sent']),
             ],
 
             /*
@@ -1155,8 +1154,7 @@ class QuotationController extends Controller
 
             'status' => [
                 'required',
-                'string',
-                'max:100',
+                Rule::in(['draft', 'sent', 'approved', 'rejected', 'expired', 'cancelled']),
             ],
 
             'notes' => [
@@ -1360,6 +1358,23 @@ class QuotationController extends Controller
             $totalAmount;
 
 
+        $currentStatus = strtolower(trim((string) $quotation->status));
+        $newStatus = strtolower(trim((string) $validated['status']));
+        $allowedStatusTransitions = [
+            'draft' => ['draft', 'sent'],
+            'sent' => ['sent', 'approved', 'rejected'],
+        ];
+        if (!in_array($newStatus, $allowedStatusTransitions[$currentStatus] ?? [$currentStatus], true)) {
+            return back()->withErrors(['status' => 'This status transition is not allowed.'])->withInput();
+        }
+        if ($newStatus === 'rejected' && DB::table('sales_orders')->where('quotation_id', $quotation->quotation_id)->exists()) {
+            return back()->withErrors(['status' => 'Cannot reject a quotation that already has a Sales Order.'])->withInput();
+        }
+        // Protect finalized quotations from accidental modifications to their financial contents.
+        if (in_array($currentStatus, ['approved', 'rejected', 'expired', 'cancelled'], true)) {
+            return back()->withErrors(['status' => 'Finalized quotations cannot be edited.'])->withInput();
+        }
+
         $quotation->update(
             $validated
         );
@@ -1374,6 +1389,40 @@ class QuotationController extends Controller
                 'success',
                 'Quotation berhasil diperbarui.'
             );
+    }
+
+
+    public function changeStatus(Request $request, Quotation $quotation)
+    {
+        $validated = $request->validate([
+            'action' => ['required', Rule::in(['mark_sent', 'approve', 'reject'])],
+        ]);
+
+        $transitions = [
+            'mark_sent' => ['from' => 'draft', 'to' => 'sent'],
+            'approve' => ['from' => 'sent', 'to' => 'approved'],
+            'reject' => ['from' => 'sent', 'to' => 'rejected'],
+        ];
+
+        $transition = $transitions[$validated['action']];
+
+        $updated = DB::table('quotations')
+            ->where('quotation_id', $quotation->quotation_id)
+            ->whereRaw('LOWER(TRIM(status)) = ?', [$transition['from']])
+            ->update([
+                'status' => $transition['to'],
+                'updated_at' => now(),
+            ]);
+
+        if (!$updated) {
+            return redirect()
+                ->route('quotations.show', $quotation)
+                ->with('error', 'The quotation status has changed or the selected action is not allowed.');
+        }
+
+        return redirect()
+            ->route('quotations.show', $quotation)
+            ->with('success', 'Quotation status updated to ' . ucfirst($transition['to']) . '.');
     }
 
 

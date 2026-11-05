@@ -3,401 +3,111 @@
 @section('title', 'Sales Order Details')
 
 @section('content')
-
-{{-- Page Header --}}
-<div class="page-head">
+@php
+    $customer = $order->quotation?->opportunity?->customer;
+    $formatMoney = fn ($value) => 'Rp ' . number_format((float)$value, 0, ',', '.');
+@endphp
+<div class="page-head so-detail-head">
     <div>
         <h1>Sales Order Details</h1>
-        <p>View sales order information and associated products.</p>
+        <p>Review order information, items, totals, and source quotation.</p>
     </div>
-
-    <div class="actions">
-        <a href="{{ route('sales_orders.index') }}" class="btn secondary">
-            Back to Sales Orders
-        </a>
-    </div>
-</div>
-
-{{-- Flash Messages --}}
-@if(session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert error">
-        {{ session('error') }}
-    </div>
-@endif
-
-{{-- Sales Order Information --}}
-<div class="card">
-    <div class="card-head">
-        <div>
-            <h3>Sales Order Information</h3>
-            <p>General information about this sales order.</p>
-        </div>
-
-        <span class="sales-order-status-badge {{ strtolower($order->status ?? '') === 'confirmed' ? 'confirmed' : '' }}">
-            {{ ucfirst($order->status ?? 'unknown') }}
-        </span>
-    </div>
-
-    <div class="card-body">
-        <div class="form-grid">
-
-            <div class="form-group">
-                <label>Sales Order Number</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->sales_order_number ?? '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Quotation Number</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->quotation->quotation_number ?? '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Customer</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->quotation->opportunity->customer->customer_name ?? '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Order Date</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->order_date
-                        ? $order->order_date->format('d M Y')
-                        : '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Expected Delivery Date</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->delivery_date
-                        ? $order->delivery_date->format('d M Y')
-                        : '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Contract</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->contract->contract_number ?? 'No contract linked' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Created At</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->created_at
-                        ? $order->created_at->format('d M Y, H:i')
-                        : '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Last Updated</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->updated_at
-                        ? $order->updated_at->format('d M Y, H:i')
-                        : '-' }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Notes</label>
-                <div class="sales-order-detail-value">
-                    {{ $order->notes ?: '-' }}
-                </div>
-            </div>
-
-        </div>
+    <div class="actions so-header-actions">
+        <a href="{{ route('sales_orders.index') }}" class="btn">Back</a>
+        @if($order->quotation)
+            <a href="{{ route('quotations.show', $order->quotation) }}" class="btn">View Quotation</a>
+        @endif
+        <a href="{{ route('sales-orders.download', $order) }}" class="btn primary">Download PDF</a>
     </div>
 </div>
+@if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif
+@if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif
 
-{{-- Product Items --}}
-<div class="card sales-order-items-card">
-    <div class="card-head">
-        <div>
-            <h3>Order Items</h3>
-            <p>Products included in this sales order.</p>
+<div class="so-detail-layout">
+    <div class="so-detail-main">
+        <div class="card so-card">
+            <div class="card-head">
+                <div><h3>Sales Order Information</h3><p>General transaction details</p></div>
+                <span class="so-status so-status-{{ strtolower((string)($order->status ?? 'draft')) }}">{{ ucfirst(str_replace('_', ' ', $order->status ?? 'draft')) }}</span>
+            </div>
+            <div class="so-info-grid">
+                <div class="so-field"><span>Sales Order Number</span><strong>{{ $order->sales_order_number }}</strong></div>
+                <div class="so-field"><span>Order Date</span><strong>{{ $order->order_date?->format('d M Y') ?? '-' }}</strong></div>
+                <div class="so-field"><span>Original Quotation</span><strong>@if($order->quotation)<a href="{{ route('quotations.show', $order->quotation) }}" class="so-text-link">{{ $order->quotation->quotation_number }} ↗</a>@else - @endif</strong></div>
+                <div class="so-field"><span>Expected Delivery</span><strong>{{ $order->delivery_date?->format('d M Y') ?? 'Not scheduled' }}</strong></div>
+                <div class="so-field"><span>Customer</span><strong>{{ $customer?->customer_name ?? '-' }}</strong></div>
+                <div class="so-field"><span>Contract</span><strong>{{ $order->contract?->contract_number ?? 'Not linked' }}</strong></div>
+                <div class="so-field"><span>Created At</span><strong>{{ $order->created_at?->format('d M Y, H:i') ?? '-' }}</strong></div>
+                <div class="so-field"><span>Updated At</span><strong>{{ $order->updated_at?->format('d M Y, H:i') ?? '-' }}</strong></div>
+                <div class="so-field so-field-full"><span>Notes</span><strong>{{ $order->notes ?: '-' }}</strong></div>
+            </div>
         </div>
-    </div>
-
-    <div class="card-body">
-        <div class="sales-order-table-wrap">
-            <table class="sales-order-detail-table">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Discount</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-
-                <tbody>
+        <div class="card so-card">
+            <div class="card-head"><div><h3>Order Items</h3><p>{{ $order->items->count() }} product lines in this sales order</p></div></div>
+            <div class="so-table-scroll">
+                <table class="so-table so-items-table">
+                    <thead><tr><th>No.</th><th>Product</th><th>Qty</th><th class="so-right">Unit Price</th><th class="so-right">Discount</th><th class="so-right">Subtotal</th></tr></thead>
+                    <tbody>
                     @forelse($order->items as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-
-                            <td>
-                                {{ $item->product->product_code ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $item->product->product_name
-                                    ?? 'Product not found' }}
-                            </td>
-
+                            <td><strong>{{ $item->product?->product_name ?? 'Unknown Product' }}</strong><span class="so-muted so-block">{{ $item->product?->product_code ?? '-' }}</span></td>
                             <td>{{ $item->quantity }}</td>
-
-                            <td>
-                                Rp {{ number_format(
-                                    (float) $item->unit_price,
-                                    0, ',', '.'
-                                ) }}
-                            </td>
-
-                            <td>
-                                Rp {{ number_format(
-                                    (float) ($item->discount ?? 0),
-                                    0, ',', '.'
-                                ) }}
-                            </td>
-
-                            <td>
-                                Rp {{ number_format(
-                                    (float) $item->subtotal,
-                                    0, ',', '.'
-                                ) }}
-                            </td>
+                            <td class="so-right">{{ $formatMoney($item->unit_price) }}</td>
+                            <td class="so-right">{{ $formatMoney($item->discount ?? 0) }}</td>
+                            <td class="so-right so-number">{{ $formatMoney($item->subtotal) }}</td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                No products found for this sales order.
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" class="so-empty">No products attached to this Sales Order.</td></tr>
                     @endforelse
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
+    <aside class="so-detail-side">
+        <div class="card so-card so-preview-card">
+            <div class="so-preview-heading">
+                <div><h3>Sales Order Preview</h3><p>Transaction summary</p></div>
+                <span class="so-status so-status-{{ strtolower((string)($order->status ?? 'draft')) }}">{{ ucfirst($order->status ?? 'draft') }}</span>
+            </div>
+            <div class="so-preview-title">{{ $order->sales_order_number }}</div>
+            <div class="so-preview-meta">
+                <div><span>Customer</span><strong>{{ $customer?->customer_name ?? '-' }}</strong></div>
+                <div><span>Quotation</span><strong>{{ $order->quotation?->quotation_number ?? '-' }}</strong></div>
+                <div><span>Order Date</span><strong>{{ $order->order_date?->format('d M Y') ?? '-' }}</strong></div>
+            </div>
+            <div class="so-preview-items">
+                <h4>Items</h4>
+                @foreach($order->items as $item)
+                    <div class="so-preview-item">
+                        <div><strong>{{ $item->product?->product_name ?? 'Product' }}</strong><span>{{ $item->quantity }} × {{ $formatMoney($item->unit_price) }}</span></div>
+                        <strong>{{ $formatMoney($item->subtotal) }}</strong>
+                    </div>
+                @endforeach
+            </div>
+            <div class="so-totals">
+                <div><span>Subtotal</span><strong>{{ $formatMoney($order->subtotal) }}</strong></div>
+                @php($effectiveDiscount = max(0, (float) $order->subtotal + (float) $order->tax - (float) $order->total_amount))
+                @if($effectiveDiscount > 0.009)
+                    <div><span>Quotation Discount*</span><strong>- {{ $formatMoney($effectiveDiscount) }}</strong></div>
+                @endif
+                <div><span>Tax</span><strong>+ {{ $formatMoney($order->tax) }}</strong></div>
+                <div class="so-grand-total"><span>Total Amount</span><strong>{{ $formatMoney($order->total_amount) }}</strong></div>
+            </div>
+            @if($effectiveDiscount > 0.009)
+                <p class="so-summary-note">*Discount inferred from stored subtotal, tax, and total because Sales Orders have no header discount field.</p>
+            @endif
+            <a href="{{ route('sales-orders.download', $order) }}" class="btn primary so-download-wide">Download PDF</a>
+            @if($order->quotation)
+                <a href="{{ route('quotations.show', $order->quotation) }}" class="btn so-download-wide so-secondary-link">View Original Quotation</a>
+            @endif
+        </div>
+    </aside>
 </div>
-
-{{-- Financial Summary --}}
-<div class="card sales-order-summary-card">
-    <div class="card-head">
-        <div>
-            <h3>Financial Summary</h3>
-            <p>Summary of sales order amounts.</p>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <div class="sales-order-summary-grid">
-
-            <div class="sales-order-summary-item">
-                <span>Subtotal</span>
-                <strong>
-                    Rp {{ number_format(
-                        (float) $order->subtotal,
-                        0, ',', '.'
-                    ) }}
-                </strong>
-            </div>
-
-            <div class="sales-order-summary-item">
-                <span>Tax</span>
-                <strong>
-                    Rp {{ number_format(
-                        (float) $order->tax,
-                        0, ',', '.'
-                    ) }}
-                </strong>
-            </div>
-
-            <div class="sales-order-summary-item total">
-                <span>Total Amount</span>
-                <strong>
-                    Rp {{ number_format(
-                        (float) $order->total_amount,
-                        0, ',', '.'
-                    ) }}
-                </strong>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
-<style>
-    
-    /* Sales Order Status */
-    .sales-order-status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #eef2ff;
-    color: #4338ca;
-    white-space: nowrap;
-}
-
-.sales-order-status-badge.confirmed {
-    background: #dcfce7;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-}
-
-    /* Detail Values */
-    .sales-order-detail-value {
-        min-height: 42px;
-        padding: 11px 13px;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        background: #f8fafc;
-        color: #334155;
-        font-size: 14px;
-        line-height: 1.5;
-        overflow-wrap: anywhere;
-    }
-
-    /* Product Table */
-.sales-order-table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-}
-
-.sales-order-detail-table {
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    font-size: 13px;
-    background: #ffffff;
-}
-
-/* Header */
-.sales-order-detail-table thead th {
-    padding: 14px;
-    background: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-    text-align: left;
-    white-space: nowrap;
-    border: 1px solid #cbd5e1;
-}
-
-/* Table Cells */
-.sales-order-detail-table tbody td {
-    padding: 12px 14px;
-    color: #334155;
-    border: 1px solid #cbd5e1;
-    vertical-align: middle;
-}
-
-/* Alternating Rows */
-.sales-order-detail-table tbody tr:nth-child(even) {
-    background: #f8fafc;
-}
-
-.sales-order-detail-table tbody tr:nth-child(odd) {
-    background: #ffffff;
-}
-
-/* Hover Effect */
-.sales-order-detail-table tbody tr:hover {
-    background: #eff6ff;
-}
-
-/* Column Alignment */
-.sales-order-detail-table td:nth-child(1),
-.sales-order-detail-table td:nth-child(4) {
-    text-align: center;
-}
-
-.sales-order-detail-table td:nth-child(5),
-.sales-order-detail-table td:nth-child(6),
-.sales-order-detail-table td:nth-child(7) {
-    text-align: right;
-    white-space: nowrap;
-}
-
-/* Empty State */
-.sales-order-detail-table .empty-state {
-    padding: 24px;
-    text-align: center;
-    color: #64748b;
-}
-
-    /* Financial Summary */
-    .sales-order-summary-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-    }
-
-    .sales-order-summary-item {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 18px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: #fff;
-    }
-
-    .sales-order-summary-item span {
-        color: #64748b;
-        font-size: 13px;
-    }
-
-    .sales-order-summary-item strong {
-        color: #1e293b;
-        font-size: 18px;
-        overflow-wrap: anywhere;
-    }
-
-    .sales-order-summary-item.total {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-
-    .sales-order-summary-item.total strong {
-        font-size: 20px;
-    }
-
-    @media (max-width: 768px) {
-        .sales-order-summary-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .page-head {
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .sales-order-detail-table {
-            min-width: 850px;
-        }
-    }
-
-</style>
 @endsection
+
+@push('styles')
+    @include('sales_orders._style')
+@endpush

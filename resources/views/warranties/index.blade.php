@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Warranties')
 @section('content')
 <div class="page-head">
     <div>
@@ -14,62 +15,19 @@
     </div>
 </div>
 
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert danger">
-        {{ session('error') }}
-    </div>
-@endif
-
-@if ($errors->any())
-    <div class="alert danger">
-        <strong>Please check the following errors:</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-<div class="summary-grid">
-    <div class="summary-card">
-        <span class="summary-label">Total Warranties</span>
-        <strong>{{ $summary['total'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Active Warranties</span>
-        <strong>{{ $summary['active'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Expired Warranties</span>
-        <strong>{{ $summary['expired'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Other Statuses</span>
-        <strong>{{ $summary['other'] }}</strong>
-    </div>
-</div>
+@include('warranties._toast')
 
 <div class="card">
     <div class="card-head">
-        <h2>Warranty List</h2>
+        <div><h3>Warranty List</h3><p>Manage coverage and warranty records.</p></div>
     </div>
 
     <div class="card-body">
         <form method="GET"
               action="{{ route('warranties.index') }}"
-              class="filter-form">
+              class="warranty-filter-bar">
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <input
                     type="text"
                     name="search"
@@ -78,7 +36,7 @@
                 >
             </div>
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <select name="status">
                     <option value="">All Statuses</option>
 
@@ -93,7 +51,7 @@
                 </select>
             </div>
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <select name="customer_id">
                     <option value="">All Customers</option>
 
@@ -108,8 +66,8 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn primary">
-                Search
+            <button type="submit" class="btn">
+                Filter
             </button>
 
             <a href="{{ route('warranties.index') }}" class="btn">
@@ -117,7 +75,7 @@
             </a>
         </form>
 
-        <div class="table-wrap">
+        <div class="table-wrap warranty-table-wrap">
             <table class="warranty-table">
                 <thead>
                     <tr>
@@ -181,7 +139,7 @@
                             </td>
 
                             <td>
-                                <span class="badge {{ $badgeClass }}">
+                                <span class="warranty-status-badge warranty-status-{{ $badgeClass }}">
                                     {{ $warranty->status }}
 
                                     @if ($status === 'active' && $isExpired)
@@ -219,7 +177,7 @@
                                     <form
                                         action="{{ route('warranties.destroy', $warranty->warranty_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this warranty?')"
+                                        class="warranty-delete-form" data-number="{{ $warranty->warranty_number }}"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -266,297 +224,7 @@
     </div>
 </div>
 
-<style>
-    .page-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
+@include('warranties._confirm')
+@include('warranties._style')
 
-    .page-head h1 {
-        margin: 0 0 6px;
-        font-size: 26px;
-    }
-
-    .page-head p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-    .actions,
-    .filter-form,
-    .table-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .summary-card {
-        padding: 20px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #fff;
-    }
-
-    .summary-label {
-        display: block;
-        margin-bottom: 10px;
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .summary-card strong {
-        font-size: 26px;
-        color: #111827;
-    }
-
-    .card {
-        overflow: hidden;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #fff;
-    }
-
-    .card-head {
-        padding: 18px 20px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .card-head h2 {
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
-
-    .btn {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        background: #fff;
-        color: #374151;
-        text-decoration: none;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .btn.primary {
-        background: #15966f;
-        border-color: #15966f;
-        color: #fff;
-    }
-
-    .filter-form {
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-
-    .filter-field input,
-    .filter-field select {
-        min-height: 40px;
-        padding: 9px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        background: #fff;
-        color: #374151;
-    }
-
-    .filter-field input {
-        width: 280px;
-        max-width: 100%;
-    }
-
-    .filter-field select {
-        max-width: 100%;
-    }
-
-    .table-wrap {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .warranty-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-
-    .warranty-table th,
-    .warranty-table td {
-        padding: 13px 14px;
-        border: 1px solid #e5e7eb;
-        text-align: left;
-        vertical-align: middle;
-    }
-
-    .warranty-table th {
-        background: #f9fafb;
-        color: #374151;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .warranty-table tbody tr:hover {
-        background: #f9fafb;
-    }
-
-    .col-number {
-        width: 55px;
-        text-align: center !important;
-    }
-
-    .col-actions {
-        width: 130px;
-        text-align: center !important;
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .badge.success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .badge.warning {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge.danger {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .badge.secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .table-actions {
-        justify-content: center;
-    }
-
-    .table-actions form {
-        display: inline-flex;
-        margin: 0;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        padding: 7px;
-        border: 1px solid #e5e7eb;
-        border-radius: 7px;
-        background: #fff;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    .action-btn svg {
-        width: 17px;
-        height: 17px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .action-btn.view {
-        color: #2563eb;
-    }
-
-    .action-btn.edit {
-        color: #d97706;
-    }
-
-    .action-btn.delete {
-        color: #dc2626;
-    }
-
-    .empty-state {
-        padding: 32px !important;
-        color: #6b7280;
-        text-align: center !important;
-    }
-
-    .table-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-top: 18px;
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .alert {
-        margin-bottom: 18px;
-        padding: 14px 16px;
-        border-radius: 8px;
-    }
-
-    .alert.success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .alert.danger {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    @media (max-width: 900px) {
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 768px) {
-        .page-head {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .filter-form {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .filter-field input,
-        .filter-field select {
-            width: 100%;
-        }
-
-        .table-footer {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-    }
-</style>
 @endsection

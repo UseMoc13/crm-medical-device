@@ -27,6 +27,9 @@ use App\Http\Controllers\ServiceTicketController;
 use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ServiceHistoryController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ReportController;
+
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
@@ -42,6 +45,15 @@ Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
+Route::post('/deliveries/{delivery}/items', [DeliveryController::class, 'addItem'])
+    ->whereUuid('delivery')
+    ->name('deliveries.items.store');
+
+Route::delete('/deliveries/{delivery}/items/{item}', [DeliveryController::class, 'removeItem'])
+    ->whereUuid('delivery')
+    ->whereUuid('item')
+    ->name('deliveries.items.destroy');
+
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
@@ -147,6 +159,18 @@ Route::get('/service-history', [ServiceHistoryController::class, 'index'])
 Route::get('/service-history/{serialNumber}', [ServiceHistoryController::class, 'show'])
     ->name('service-history.show');
 
+// Billing & Reporting
+Route::resource('invoices', InvoiceController::class);
+
+Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])
+    ->name('invoices.status');
+
+Route::get('/reports', [ReportController::class, 'index'])
+    ->name('reports.index');
+
+Route::get('/reports/export/invoices', [ReportController::class, 'exportInvoices'])
+    ->name('reports.export.invoices');
+
 Route::get('/opportunities/{opportunity}/items/create', [
     OpportunityItemController::class,
     'create',
@@ -223,3 +247,14 @@ Route::controller(AnnouncementManagementController::class)
             ->whereUuid('announcement')
             ->name('destroy');
     });
+Route::patch('/installations/{installation}/change-status', [InstallationController::class, 'changeStatus'])
+    ->whereUuid('installation')->name('installations.change-status');
+
+Route::patch('/installations/{installation}/checklists/{checklist}', [InstallationController::class, 'updateChecklist'])
+    ->whereUuid('installation')->whereUuid('checklist')->name('installations.checklists.update');
+
+Route::patch(
+    '/deliveries/{delivery}/change-status',
+    [DeliveryController::class, 'changeStatus']
+)->name('deliveries.change-status');
+

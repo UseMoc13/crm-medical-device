@@ -18,20 +18,6 @@
     </div>
 </div>
 
-{{-- SUCCESS MESSAGE --}}
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
-{{-- ERROR MESSAGE --}}
-@if (session('error'))
-    <div class="alert danger">
-        {{ session('error') }}
-    </div>
-@endif
-
 {{-- DELIVERY TABLE --}}
 <div class="card">
     <div class="card-head">
@@ -42,8 +28,33 @@
     </div>
 
     <div class="card-body">
+        <form method="GET" action="{{ route('deliveries.index') }}" class="delivery-filter-bar">
+            <div class="delivery-filter-search">
+                <input name="search" type="search" value="{{ request('search') }}" placeholder="Search delivery, sales order, address..." aria-label="Search deliveries">
+            </div>
+            <select name="status" aria-label="Filter delivery status">
+                <option value="">All Statuses</option>
+                @foreach (['pending' => 'Pending', 'in_transit' => 'In Transit', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled'] as $value => $label)
+                    <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <select name="sort" aria-label="Sort deliveries by">
+                <option value="created_at" @selected(request('sort', 'created_at') === 'created_at')>Created Date</option>
+                <option value="delivery_date" @selected(request('sort') === 'delivery_date')>Delivery Date</option>
+                <option value="delivery_number" @selected(request('sort') === 'delivery_number')>Delivery Number</option>
+                <option value="status" @selected(request('sort') === 'status')>Status</option>
+            </select>
+            <select name="direction" aria-label="Sort direction">
+                <option value="desc" @selected(request('direction', 'desc') === 'desc')>Descending</option>
+                <option value="asc" @selected(request('direction') === 'asc')>Ascending</option>
+            </select>
+            <button class="btn" type="submit">Filter</button>
+            @if (request()->filled('search') || request()->filled('status') || request()->filled('sort') || request()->filled('direction'))
+                <a href="{{ route('deliveries.index') }}" class="btn">Reset</a>
+            @endif
+        </form>
 
-        <div class="table-wrap">
+        <div class="table-wrap delivery-table-wrap">
             <table class="delivery-table">
                 <thead>
                     <tr>
@@ -105,9 +116,9 @@
 
                             {{-- SALES ORDER --}}
                             <td>
-                                <span class="order-number">
+                                <a class="delivery-origin-link" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">
                                     {{ $delivery->salesOrder->sales_order_number ?? '—' }}
-                                </span>
+                                </a>
                             </td>
 
                             {{-- DELIVERY DATE --}}
@@ -161,7 +172,9 @@
                                     <form
                                         action="{{ route('deliveries.destroy', $delivery->delivery_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this delivery?')"
+                                        class="delivery-delete-form"
+                                        data-number="{{ $delivery->delivery_number }}"
+                                        data-locked="{{ $status !== 'pending' ? '1' : '0' }}"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -201,250 +214,45 @@
                 to {{ $deliveries->lastItem() ?? 0 }}
                 of {{ $deliveries->total() }} deliveries
             </div>
-
-
+            <div class="delivery-pagination">{{ $deliveries->links() }}</div>
+        </div>
     </div>
 </div>
 
+<div class="delivery-confirm delivery-index-modal" id="deliveryDeleteModal" hidden role="dialog" aria-modal="true" aria-labelledby="deliveryDeleteTitle">
+  <div class="delivery-confirm-dialog">
+    <div class="delivery-modal-symbol" id="deliveryDeleteSymbol">!</div>
+    <h3 id="deliveryDeleteTitle">Delete Delivery?</h3>
+    <p id="deliveryDeleteMessage">Are you sure?</p>
+    <div class="delivery-confirm-actions">
+      <button type="button" class="btn" id="deliveryDeleteCancel">Cancel</button>
+      <button type="button" class="btn delivery-delete-confirm" id="deliveryDeleteConfirm">Delete Delivery</button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const modal = document.getElementById('deliveryDeleteModal');
+  const title = document.getElementById('deliveryDeleteTitle');
+  const message = document.getElementById('deliveryDeleteMessage');
+  const confirmButton = document.getElementById('deliveryDeleteConfirm');
+  let selectedForm = null;
+  const close = () => {modal.hidden = true; selectedForm = null;};
+  document.querySelectorAll('.delivery-delete-form').forEach(form => form.addEventListener('submit', e => {
+    e.preventDefault(); selectedForm = form; const locked = form.dataset.locked === '1';
+    title.textContent = locked ? 'Cannot Delete Delivery' : 'Delete Delivery?';
+    message.textContent = locked ? 'Delivery ' + form.dataset.number + ' is no longer Pending. Only Pending deliveries without installations may be deleted.' : 'Delete ' + form.dataset.number + '? This action cannot be undone.';
+    confirmButton.hidden = locked;
+    document.getElementById('deliveryDeleteCancel').textContent = locked ? 'Close' : 'Cancel';
+    modal.hidden = false;
+  }));
+  confirmButton.addEventListener('click', () => { if(selectedForm) selectedForm.submit(); });
+  document.getElementById('deliveryDeleteCancel').addEventListener('click', close);
+  modal.addEventListener('click',e => {if(e.target === modal)close();});
+  document.addEventListener('keydown',e => {if(e.key === 'Escape' && !modal.hidden)close();});
+})();
+</script>
 {{-- PAGE STYLES --}}
-<style>
-/* TABLE CONTAINER */
-.table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-}
-
-.empty-state {
-        padding: 32px !important;
-        color: #6b7280;
-        text-align: center !important;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        padding: 7px;
-        border: 1px solid #e5e7eb;
-        border-radius: 7px;
-        background: #fff;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    .action-btn svg {
-        width: 17px;
-        height: 17px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .action-btn.view {
-        color: #2563eb;
-    }
-
-    .action-btn.edit {
-        color: #d97706;
-    }
-
-    .action-btn.delete {
-        color: #dc2626;
-    }
-    
-/* TABLE STRUCTURE */
-.delivery-table {
-    width: 100%;
-    min-width: 950px;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
-}
-
-/* TABLE HEADER */
-.delivery-table thead th {
-    padding: 14px 12px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    color: var(--text-muted, #64748b);
-    background: var(--surface-secondary, #f8fafc);
-
-    /* Partisi header */
-    border-right: 1px solid #e2e8f0;
-    border-bottom: 2px solid #cbd5e1;
-}
-
-/* TABLE BODY */
-.delivery-table tbody td {
-    padding: 14px 12px;
-    font-size: 13px;
-    vertical-align: middle;
-    color: var(--text-primary, #1e293b);
-
-    /* Partisi setiap sel */
-    border-right: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
-
-    overflow-wrap: anywhere;
-}
-
-/* HILANGKAN BORDER KANAN PADA KOLOM TERAKHIR */
-.delivery-table thead th:last-child,
-.delivery-table tbody td:last-child {
-    border-right: none;
-}
-
-/* HILANGKAN BORDER BAWAH PADA BARIS TERAKHIR */
-.delivery-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* HOVER ROW */
-.delivery-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-/* COLUMN WIDTHS */
-.delivery-table .col-number {
-    width: 6%;
-}
-
-.delivery-table .col-delivery {
-    width: 16%;
-}
-
-.delivery-table .col-order {
-    width: 15%;
-}
-
-.delivery-table .col-date {
-    width: 12%;
-}
-
-.delivery-table .col-address {
-    width: 25%;
-}
-
-.delivery-table .col-status {
-    width: 12%;
-}
-
-.delivery-table .col-action {
-    width: 14%;
-    text-align: center;
-}
-
-.table-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-top: 18px;
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .table-footer {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-/* DELIVERY NUMBER */
-.delivery-number {
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* SALES ORDER NUMBER */
-.order-number {
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-/* ADDRESS */
-.address-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-}
-
-/* ACTIONS */
-.table-actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    white-space: nowrap;
-}
-
-/* RESPONSIVE */
-@media (max-width: 600px) {
-    .delivery-table {
-        min-width: 950px;
-    }
-}
-
-/* STATUS BADGES */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.4;
-    white-space: nowrap;
-    border: 1px solid transparent;
-}
-
-/* PENDING */
-.badge.warning {
-    color: #92400e;
-    background: #fef3c7;
-    border-color: #fde68a;
-}
-
-/* IN TRANSIT */
-.badge.info {
-    color: #1d4ed8;
-    background: #dbeafe;
-    border-color: #bfdbfe;
-}
-
-/* DELIVERED */
-.badge.success {
-    color: #166534;
-    background: #dcfce7;
-    border-color: #bbf7d0;
-}
-
-/* CANCELLED */
-.badge.danger {
-    color: #991b1b;
-    background: #fee2e2;
-    border-color: #fecaca;
-}
-
-/* UNKNOWN STATUS */
-.badge.secondary {
-    color: #475569;
-    background: #f1f5f9;
-    border-color: #e2e8f0;
-}
-</style>
+@include('deliveries._style')
 
 @endsection
