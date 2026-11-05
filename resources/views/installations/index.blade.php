@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Installations')
 @section('content')
 <div class="page-head">
     <div>
@@ -14,34 +15,19 @@
     </div>
 </div>
 
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if ($errors->any())
-    <div class="alert danger">
-        <strong>Please check the following errors:</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+@include('installations._toast')
 
 <div class="card">
     <div class="card-head">
-        <h2>Installation List</h2>
+        <div><h3>Installation List</h3><p>Manage and monitor installation schedules.</p></div>
     </div>
 
     <div class="card-body">
         <form method="GET"
               action="{{ route('installations.index') }}"
-              class="filter-form">
+              class="installation-filter-bar">
 
-            <div class="filter-field">
+            <div class="installation-filter-search">
                 <input
                     type="text"
                     name="search"
@@ -50,7 +36,7 @@
                 >
             </div>
 
-            <div class="filter-field">
+            <div >
                 <select name="status">
                     <option value="">All Statuses</option>
                     @foreach ([
@@ -78,7 +64,7 @@
             </a>
         </form>
 
-        <div class="table-wrap">
+        <div class="table-wrap installation-table-wrap">
             <table class="installation-table">
                 <thead>
                     <tr>
@@ -114,7 +100,7 @@
                             </td>
 
                             <td>
-                                {{ $installation->delivery?->delivery_number ?? '—' }}
+                                <a class="installation-link" href="{{ route('deliveries.show', $installation->delivery_id) }}">{{ $installation->delivery?->delivery_number ?? '—' }}</a>
                             </td>
 
                             <td>
@@ -134,7 +120,7 @@
                             </td>
 
                             <td>
-                                <span class="badge {{ $badgeClass }}">
+                                <span class="installation-badge {{ $badgeClass }}">
                                     {{ str_replace('_', ' ', $installation->status) }}
                                 </span>
                             </td>
@@ -168,7 +154,9 @@
                                     <form
                                         action="{{ route('installations.destroy', $installation->installation_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this installation?')"
+                                        class="installation-delete-form"
+                                        data-locked="{{ $installation->status === 'Scheduled' ? '0' : '1' }}"
+                                        data-number="{{ $installation->delivery?->delivery_number ?? $installation->installation_id }}"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -201,15 +189,28 @@
             </table>
         </div>
 
-    <div class="table-footer">
+    <div class="installation-table-footer">
             <div>
                 Showing {{ $installations->firstItem() ?? 0 }}
                 to {{ $installations->lastItem() ?? 0 }}
                 of {{ $installations->total() }} installations
             </div>
 
+        <div>{{ $installations->links() }}</div>
+    </div>
     </div>
 </div>
 
-@include('installations._style', ['page' => 'index'])
+<div class="installation-confirm" id="installationDeleteModal" hidden role="dialog" aria-modal="true" aria-labelledby="installationDeleteTitle">
+  <div class="installation-confirm-dialog">
+    <div class="installation-confirm-symbol">!</div><h3 id="installationDeleteTitle">Delete Installation?</h3><p id="installationDeleteText"></p>
+    <div class="installation-confirm-actions"><button type="button" class="btn" id="installationDeleteCancel">Cancel</button><button type="button" class="btn installation-delete-confirm" id="installationDeleteConfirm">Delete Installation</button></div>
+  </div>
+</div>
+<script>
+(()=>{const modal=document.getElementById('installationDeleteModal');const title=document.getElementById('installationDeleteTitle');const msg=document.getElementById('installationDeleteText');const approve=document.getElementById('installationDeleteConfirm');let selected=null;
+ const close=()=>{modal.hidden=true;selected=null};document.querySelectorAll('.installation-delete-form').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();selected=form;const locked=form.dataset.locked==='1';title.textContent=locked?'Cannot Delete Installation':'Delete Installation?';msg.textContent=locked?'Only Scheduled installations can be deleted.':'Delete the installation for '+form.dataset.number+'? This action cannot be undone.';approve.hidden=locked;modal.hidden=false;}));approve.addEventListener('click',()=>{if(selected)selected.submit()});document.getElementById('installationDeleteCancel').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
+@include('installations._style')
 @endsection

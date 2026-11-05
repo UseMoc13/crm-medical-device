@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Warranties')
 @section('content')
 <div class="page-head">
     <div>
@@ -14,62 +15,19 @@
     </div>
 </div>
 
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert danger">
-        {{ session('error') }}
-    </div>
-@endif
-
-@if ($errors->any())
-    <div class="alert danger">
-        <strong>Please check the following errors:</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-<div class="summary-grid">
-    <div class="summary-card">
-        <span class="summary-label">Total Warranties</span>
-        <strong>{{ $summary['total'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Active Warranties</span>
-        <strong>{{ $summary['active'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Expired Warranties</span>
-        <strong>{{ $summary['expired'] }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span class="summary-label">Other Statuses</span>
-        <strong>{{ $summary['other'] }}</strong>
-    </div>
-</div>
+@include('warranties._toast')
 
 <div class="card">
     <div class="card-head">
-        <h2>Warranty List</h2>
+        <div><h3>Warranty List</h3><p>Manage coverage and warranty records.</p></div>
     </div>
 
     <div class="card-body">
         <form method="GET"
               action="{{ route('warranties.index') }}"
-              class="filter-form">
+              class="warranty-filter-bar">
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <input
                     type="text"
                     name="search"
@@ -78,7 +36,7 @@
                 >
             </div>
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <select name="status">
                     <option value="">All Statuses</option>
 
@@ -93,7 +51,7 @@
                 </select>
             </div>
 
-            <div class="filter-field">
+            <div class="warranty-filter-field">
                 <select name="customer_id">
                     <option value="">All Customers</option>
 
@@ -108,8 +66,8 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn primary">
-                Search
+            <button type="submit" class="btn">
+                Filter
             </button>
 
             <a href="{{ route('warranties.index') }}" class="btn">
@@ -117,7 +75,7 @@
             </a>
         </form>
 
-        <div class="table-wrap">
+        <div class="table-wrap warranty-table-wrap">
             <table class="warranty-table">
                 <thead>
                     <tr>
@@ -181,7 +139,7 @@
                             </td>
 
                             <td>
-                                <span class="badge {{ $badgeClass }}">
+                                <span class="warranty-status-badge warranty-status-{{ $badgeClass }}">
                                     {{ $warranty->status }}
 
                                     @if ($status === 'active' && $isExpired)
@@ -219,7 +177,7 @@
                                     <form
                                         action="{{ route('warranties.destroy', $warranty->warranty_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this warranty?')"
+                                        class="warranty-delete-form" data-number="{{ $warranty->warranty_number }}"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -266,6 +224,7 @@
     </div>
 </div>
 
-@include('warranties._style', ['page' => 'index'])
+@include('warranties._confirm')
+@include('warranties._style')
 
 @endsection

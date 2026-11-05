@@ -227,10 +227,17 @@ class InstallationController extends Controller
             if ($record->status !== 'In Progress' || $checklist->installation_id !== $record->getKey()) {
                 throw ValidationException::withMessages(['checklist' => 'Checklist can only be edited for an In Progress installation.']);
             }
-            $checklist->update([
-                'is_completed' => (bool) $data['is_completed'],
-                'notes' => $data['notes'] ?? $checklist->notes,
-                'completed_at' => $data['is_completed'] ? now() : null,
+            $lockedChecklist = InstallationChecklist::query()
+                ->whereKey($checklist->getKey())
+                ->where('installation_id', $record->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $wasCompleted = (bool) $lockedChecklist->is_completed;
+            $isCompleted = (bool) $data['is_completed'];
+            $lockedChecklist->update([
+                'is_completed' => $isCompleted,
+                'notes' => array_key_exists('notes', $data) ? $data['notes'] : $lockedChecklist->notes,
+                'completed_at' => $isCompleted ? ($wasCompleted ? $lockedChecklist->completed_at ?? now() : now()) : null,
             ]);
         });
         return redirect()->route('installations.show', $installation)->with('success', 'Checklist updated.');

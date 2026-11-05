@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Create Installation')
 @section('content')
 <div class="page-head">
     <div>
@@ -23,9 +24,10 @@
     </div>
 @endif
 
+<div class="installation-editor-layout">
 <div class="card">
     <div class="card-head">
-        <h2>Installation Information</h2>
+        <div><h3>Installation Information</h3><p>Enter the installation and technician details below.</p></div>
         <span class="required-note">* Required fields</span>
     </div>
 
@@ -49,10 +51,10 @@
         >
             @csrf
 
-            <div class="form-section">
-                <h3>General Information</h3>
+            <div class="installation-form-section">
+                <div class="installation-section-heading"><h4>General Information</h4><p>Delivery and assigned technician.</p></div>
 
-                <div class="form-grid">
+                <div class="installation-form-grid">
                     <div class="form-group">
                         <label for="delivery_id">
                             Delivery <span class="required">*</span>
@@ -110,10 +112,10 @@
                 </div>
             </div>
 
-            <div class="form-section">
-                <h3>Installation Details</h3>
+            <div class="installation-form-section">
+                <div class="installation-section-heading"><h4>Installation Details</h4><p>Schedule, location, and additional instructions.</p></div>
 
-                <div class="form-grid">
+                <div class="installation-form-grid">
                     <div class="form-group">
                         <label for="installation_date">
                             Installation Date
@@ -134,7 +136,7 @@
                     <div class="form-group">
                         <label>Initial Status</label>
                         <input type="text" value="Scheduled" readonly>
-                        <small>Change status later from Installation Edit.</small>
+                        <small>Change status from Installation Details after scheduling.</small>
                     </div>
 
                     <div class="form-group full-width">
@@ -169,7 +171,7 @@
                 </div>
             </div>
 
-            <div class="form-actions">
+            <div class="installation-form-actions">
                 <a href="{{ route('installations.index') }}" class="btn">
                     Cancel
                 </a>
@@ -186,5 +188,8 @@
     </div>
 </div>
 
-@include('installations._style', ['page' => 'create'])
+@include('installations._preview')
+</div>
+@include('installations._toast')
+@include('installations._style')
 @endsection

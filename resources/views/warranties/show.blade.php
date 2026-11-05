@@ -1,182 +1,27 @@
 @extends('layouts.app')
-
+@section('title', 'Warranty Details')
 @section('content')
-<div class="page-head">
-    <div>
-        <h1>Warranty Details</h1>
-        <p>View warranty information and coverage details.</p>
-    </div>
-
-    <div class="actions">
-        <a href="{{ route('warranties.index') }}" class="btn">
-            Back to Warranties
-        </a>
-
-        <a
-            href="{{ route('warranties.edit', $warranty->warranty_id) }}"
-            class="btn primary"
-        >
-            Edit Warranty
-        </a>
-    </div>
-</div>
-
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-@endif
-
 @php
-    $status = strtolower(trim($warranty->status));
-
-    $isExpired = \Carbon\Carbon::parse($warranty->end_date)
-        ->lt(now()->startOfDay());
-
-    $badgeClass = match ($status) {
-        'active' => $isExpired ? 'danger' : 'success',
-        'expired' => 'danger',
-        'claimed' => 'warning',
-        'void' => 'secondary',
-        default => 'secondary',
-    };
+ $status = strtolower(trim((string)$warranty->status));
+ $isExpired = $warranty->end_date && \Illuminate\Support\Carbon::parse($warranty->end_date)->lt(today());
+ $badgeClass = match($status){'active'=>$isExpired?'danger':'success','expired'=>'danger','claimed'=>'warning','void'=>'secondary',default=>'secondary'};
 @endphp
-
-<div class="detail-grid">
-
-    {{-- Warranty Information --}}
-    <div class="card">
-        <div class="card-head">
-            <h2>Warranty Information</h2>
-        </div>
-
-        <div class="card-body">
-            <div class="detail-item">
-                <span class="detail-label">Warranty Number</span>
-                <strong>{{ $warranty->warranty_number }}</strong>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Warranty Type</span>
-                <span>{{ $warranty->warranty_type ?: '—' }}</span>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Status</span>
-
-                <span class="badge {{ $badgeClass }}">
-                    {{ $warranty->status }}
-
-                    @if ($status === 'active' && $isExpired)
-                        (Date Passed)
-                    @endif
-                </span>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Start Date</span>
-                <span>
-                    {{ \Carbon\Carbon::parse($warranty->start_date)->format('d M Y') }}
-                </span>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">End Date</span>
-                <span>
-                    {{ \Carbon\Carbon::parse($warranty->end_date)->format('d M Y') }}
-                </span>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Coverage Period</span>
-                <span>
-                    {{ \Carbon\Carbon::parse($warranty->start_date)->diffInMonths(
-                        \Carbon\Carbon::parse($warranty->end_date)
-                    ) }} months
-                </span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Product Information --}}
-    <div class="card">
-        <div class="card-head">
-            <h2>Product Information</h2>
-        </div>
-
-        <div class="card-body">
-            <div class="detail-item">
-                <span class="detail-label">Serial Number</span>
-                <strong>{{ $warranty->serial_number }}</strong>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Product Name</span>
-                <span>{{ $warranty->product_name ?? '—' }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Customer Information --}}
-    <div class="card">
-        <div class="card-head">
-            <h2>Customer Information</h2>
-        </div>
-
-        <div class="card-body">
-            <div class="detail-item">
-                <span class="detail-label">Customer Name</span>
-                <strong>{{ $warranty->customer_name }}</strong>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Customer ID</span>
-                <span>{{ $warranty->customer_id }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- Warranty Terms --}}
-    <div class="card">
-        <div class="card-head">
-            <h2>Warranty Terms and Conditions</h2>
-        </div>
-
-        <div class="card-body">
-            @if ($warranty->terms)
-                <div class="terms-content">{{ $warranty->terms }}</div>
-            @else
-                <p class="empty-state">
-                    No warranty terms or conditions have been provided.
-                </p>
-            @endif
-        </div>
-    </div>
-
+<div class="page-head"><div><h1>{{ $warranty->warranty_number }}</h1><p>View warranty coverage, registered device, and customer information.</p></div><div class="actions"><a href="{{ route('warranties.edit',$warranty->warranty_id) }}" class="btn primary">✎ Edit Warranty</a><a href="{{ route('warranties.index') }}" class="btn">← Back</a></div></div>
+@include('warranties._toast')
+<div class="warranty-detail-layout">
+<div class="card warranty-information-card"><div class="card-head"><div><h3>Warranty Information</h3><p>Coverage identification, type and validity.</p></div><span class="badge {{ $badgeClass }}">{{ $warranty->status }} @if($status === 'active' && $isExpired)(Date Passed)@endif</span></div><div class="card-body"><div class="warranty-information-grid">
+<div class="warranty-information-field"><span>Warranty Number</span><strong>{{ $warranty->warranty_number }}</strong></div>
+<div class="warranty-information-field"><span>Warranty Type</span><strong>{{ $warranty->warranty_type ?: '—' }}</strong></div>
+<div class="warranty-information-field"><span>Start Date</span><strong>{{ $warranty->start_date ? \Illuminate\Support\Carbon::parse($warranty->start_date)->format('d M Y') : '—' }}</strong></div>
+<div class="warranty-information-field"><span>End Date</span><strong>{{ $warranty->end_date ? \Illuminate\Support\Carbon::parse($warranty->end_date)->format('d M Y') : '—' }}</strong></div>
+<div class="warranty-information-field"><span>Coverage Period</span><strong>{{ $warranty->start_date && $warranty->end_date ? \Illuminate\Support\Carbon::parse($warranty->start_date)->diffInMonths(\Illuminate\Support\Carbon::parse($warranty->end_date)) : '—' }} months</strong></div>
+<div class="warranty-information-field"><span>Status</span><strong><span class="badge {{ $badgeClass }}">{{ $warranty->status }}</span></strong></div>
+</div></div></div>
+<div class="card warranty-information-card"><div class="card-head"><div><h3>Product Information</h3><p>Device registered under this warranty.</p></div></div><div class="card-body"><div class="warranty-information-grid"><div class="warranty-information-field"><span>Serial Number</span><strong>{{ $warranty->serial_number ?? '—' }}</strong></div><div class="warranty-information-field"><span>Product Name</span><strong>{{ $warranty->product_name ?? '—' }}</strong></div></div></div></div>
+<div class="card warranty-information-card"><div class="card-head"><div><h3>Customer Information</h3><p>Warranty ownership and customer details.</p></div></div><div class="card-body"><div class="warranty-information-grid"><div class="warranty-information-field"><span>Customer Name</span><strong>{{ $warranty->customer_name ?? '—' }}</strong></div><div class="warranty-information-field"><span>Customer ID</span><strong>{{ $warranty->customer_id }}</strong></div></div></div></div>
+<div class="card warranty-information-card"><div class="card-head"><div><h3>Warranty Terms and Conditions</h3><p>Additional coverage conditions.</p></div></div><div class="card-body"><p class="warranty-terms">{{ $warranty->terms ?: 'No warranty terms or conditions have been provided.' }}</p></div></div>
 </div>
-
-<div class="bottom-actions">
-    <a
-        href="{{ route('warranties.edit', $warranty->warranty_id) }}"
-        class="btn primary"
-    >
-        Edit Warranty
-    </a>
-
-    <form
-        action="{{ route('warranties.destroy', $warranty->warranty_id) }}"
-        method="POST"
-        onsubmit="return confirm('Are you sure you want to delete this warranty?')"
-    >
-        @csrf
-        @method('DELETE')
-
-        <button type="submit" class="btn danger">
-            Delete Warranty
-        </button>
-    </form>
-</div>
-
-@include('warranties._style', ['page' => 'show'])
-
+<div class="warranty-detail-actions"><a href="{{ route('warranties.edit',$warranty->warranty_id) }}" class="btn primary">Edit Warranty</a><form method="POST" action="{{ route('warranties.destroy',$warranty->warranty_id) }}" class="warranty-delete-form" data-number="{{ $warranty->warranty_number }}">@csrf @method('DELETE')<button type="submit" class="btn warranty-danger-btn">Delete Warranty</button></form></div>
+@include('warranties._confirm')
+@include('warranties._style')
 @endsection

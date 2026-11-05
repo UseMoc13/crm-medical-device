@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Installation')
 @section('content')
 <div class="page-head">
     <div>
@@ -26,9 +27,10 @@
     </div>
 @endif
 
+<div class="installation-editor-layout">
 <div class="card">
     <div class="card-head">
-        <h2>Installation Information</h2>
+        <div><h3>Installation Information</h3><p>Enter the installation and technician details below.</p></div>
         <span class="required-note">* Required fields</span>
     </div>
 
@@ -40,10 +42,10 @@
             @csrf
             @method('PUT')
 
-            <div class="form-section">
-                <h3>General Information</h3>
+            <div class="installation-form-section">
+                <div class="installation-section-heading"><h4>General Information</h4><p>Delivery and assigned technician.</p></div>
 
-                <div class="form-grid">
+                <div class="installation-form-grid">
                     <div class="form-group">
                         <label for="delivery_id">
                             Delivery <span class="required">*</span>
@@ -105,10 +107,10 @@
                 </div>
             </div>
 
-            <div class="form-section">
-                <h3>Installation Details</h3>
+            <div class="installation-form-section">
+                <div class="installation-section-heading"><h4>Installation Details</h4><p>Schedule, location, and additional instructions.</p></div>
 
-                <div class="form-grid">
+                <div class="installation-form-grid">
                     <div class="form-group">
                         <label for="installation_date">Installation Date</label>
 
@@ -132,24 +134,9 @@
                             Status <span class="required">*</span>
                         </label>
 
-                        <select id="status" name="status" required>
-                            @foreach ([
-                                'Scheduled' => 'Scheduled',
-                                'In Progress' => 'In Progress',
-                                'Completed' => 'Completed',
-                                'Cancelled' => 'Cancelled',
-                            ] as $value => $label)
-                                <option
-                                    value="{{ $value }}"
-                                    @selected(
-                                        old('status', $installation->status) === $value
-                                    )
-                                >
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <small class="form-hint">Scheduled → In Progress → Completed. Complete every checklist item before marking Completed. Cancel is available only while Scheduled.</small>
+                        <input type="text" value="{{ $installation->status }}" readonly>
+                        <input type="hidden" name="status" value="{{ $installation->status }}">
+                        <small class="form-hint">Use Installation Details to change status safely, after completing the physical action.</small>
 
                         @error('status')
                             <small class="field-error">{{ $message }}</small>
@@ -186,7 +173,7 @@
                 </div>
             </div>
 
-            <div class="form-actions">
+            <div class="installation-form-actions">
                 <a
                     href="{{ route('installations.show', $installation->installation_id) }}"
                     class="btn"
@@ -202,5 +189,8 @@
     </div>
 </div>
 
-@include('installations._style', ['page' => 'edit'])
+@include('installations._preview')
+</div>
+@include('installations._toast')
+@include('installations._style')
 @endsection
