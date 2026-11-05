@@ -206,6 +206,14 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
+// Sales Orders: register specific GET routes before the resource show route.
+Route::get('/sales-orders/export', [SalesOrderController::class, 'export'])
+    ->name('sales-orders.export');
+
+Route::get('/sales-orders/{salesOrder}/download', [SalesOrderController::class, 'download'])
+    ->whereUuid('salesOrder')
+    ->name('sales-orders.download');
+
 Route::resource('sales-orders', SalesOrderController::class)
     ->only(['index', 'show']);
 
