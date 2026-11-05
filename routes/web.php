@@ -258,3 +258,6 @@ Route::patch(
     [DeliveryController::class, 'changeStatus']
 )->name('deliveries.change-status');
 
+// Installation -> Warranty Activation (independent of CRUD & existing status routes)
+\Illuminate\Support\Facades\Route::post('/installations/{installation}/activate-warranties', [\App\Http\Controllers\InstallationWarrantyActivationController::class, 'store'])
+    ->whereUuid('installation')->name('installations.warranties.activate');
