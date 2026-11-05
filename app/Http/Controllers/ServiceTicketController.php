@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\SerialNumber;
 use App\Models\ServiceTicket;
+use App\Services\ServiceWarrantyCoverage;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -176,6 +177,7 @@ class ServiceTicketController extends Controller
         ]);
 
         return view('service-tickets.show', [
+            'ticketWarrantyCoverage' => app(ServiceWarrantyCoverage::class)->forSerial((string) $serviceTicket->serial_number_id),
             'serviceTicket' => $serviceTicket,
         ]);
     }
@@ -282,6 +284,7 @@ class ServiceTicketController extends Controller
         return [
             'customers' => $customers,
             'serialNumbers' => $serialNumbers,
+            'warrantyCoverageBySerial' => app(ServiceWarrantyCoverage::class)->forSerials($serialNumbers->pluck('serial_number_id')->all()),
 
             // $users digunakan oleh halaman Create.
             'users' => $users,

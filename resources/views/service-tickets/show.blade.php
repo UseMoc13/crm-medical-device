@@ -4,6 +4,7 @@
 @section('title', 'Service Ticket Details')
 
 @section('content')
+@include('service-tickets._warranty_detail')
 
 @php
     $ticketNumber = $serviceTicket->ticket_number ?? '-';

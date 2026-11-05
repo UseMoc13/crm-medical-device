@@ -214,6 +214,8 @@
                         @enderror
                     </div>
 
+                    @include('service-tickets._warranty_coverage')
+
                     {{-- ASSIGNMENT AND PRIORITY --}}
 
                     <div class="section-divider">

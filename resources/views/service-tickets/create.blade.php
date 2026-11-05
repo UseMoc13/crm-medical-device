@@ -190,13 +190,15 @@
                         </select>
 
                         <span class="form-hint">
-                            Select the registered device that requires service.
+                            Select a device assigned to the customer. You can also choose a serial number first.
                         </span>
 
                         @error('serial_number_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    @include('service-tickets._warranty_coverage')
 
                     {{-- ASSIGNMENT AND PRIORITY --}}
 
@@ -820,5 +822,9 @@ document.addEventListener('DOMContentLoaded', function () {
     updatePreview();
 });
 </script>
+
+@include('service-tickets._device_customer_filter')
+
+@include('service-tickets._device_customer_filter')
 
 @endsection
