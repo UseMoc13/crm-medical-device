@@ -11,5 +11,7 @@
 @include('warranties._preview')
 </div>
 @include('warranties._interaction')
+@include('warranties._device_customer_filter')
+@include('warranties._device_customer_filter')
 @include('warranties._style')
 @endsection

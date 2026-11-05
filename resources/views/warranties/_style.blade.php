@@ -27,4 +27,37 @@
 .warranty-table .warranty-status-danger { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
 .warranty-table .warranty-status-info { color: #1d4ed8; background: #dbeafe; border-color: #bfdbfe; }
 .warranty-table .warranty-status-secondary { color: #475569; background: #f1f5f9; border-color: #e2e8f0; }
+
+
+/* Warranty Show v5 — harmonized with Delivery Details without changing other CRUD pages */
+.warranty-show-card{margin-bottom:18px;min-width:0}
+.warranty-show-card .card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.warranty-show-card .card-head h3{margin:0 0 5px}
+.warranty-show-card .card-head p{margin:0;color:#64748b;font-size:13px;line-height:1.6}
+.warranty-show-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.warranty-show-field{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.warranty-show-label{font-size:13px;color:var(--text-muted,#64748b)}
+.warranty-show-value{font-size:14px;font-weight:600;color:var(--text-primary,#1e293b);overflow-wrap:anywhere;line-height:1.5}
+.warranty-show-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+.warranty-show-related>.card{min-width:0}
+.warranty-show-related-fields{grid-template-columns:1fr;gap:22px}
+.warranty-show-id{font-size:12px;word-break:break-all}
+.warranty-show-terms{margin:0;white-space:pre-line;font-size:13px;color:#34415c;line-height:1.8;overflow-wrap:anywhere}
+.warranty-show-bottom-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0}
+.warranty-show-bottom-actions form{margin:0}
+.warranty-coverage-panel{margin-top:24px;padding:18px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px}
+.warranty-coverage-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:#17284f}
+.warranty-coverage-heading span{color:#64748b;font-weight:500}
+.warranty-coverage-track{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+.warranty-coverage-fill{height:100%;border-radius:99px;background:#158765;transition:width .2s ease}
+.warranty-coverage-dates{display:flex;justify-content:space-between;gap:16px;margin-top:10px;color:#64748b;font-size:11px}
+/* Dedicated badges: status no longer renders as bare bold text on Show */
+.warranty-show-primary .warranty-status-badge{display:inline-flex;align-items:center;justify-content:center;max-width:100%;padding:5px 10px;border:1px solid transparent;border-radius:20px;font-size:11px;font-weight:600;line-height:1.4;white-space:nowrap}
+.warranty-show-primary .warranty-status-success{color:#166534;background:#dcfce7;border-color:#bbf7d0}
+.warranty-show-primary .warranty-status-warning{color:#92400e;background:#fef3c7;border-color:#fde68a}
+.warranty-show-primary .warranty-status-danger{color:#991b1b;background:#fee2e2;border-color:#fecaca}
+.warranty-show-primary .warranty-status-secondary{color:#475569;background:#f1f5f9;border-color:#e2e8f0}
+@media(max-width:900px){.warranty-show-related{grid-template-columns:1fr}}
+@media(max-width:700px){.warranty-show-grid{grid-template-columns:1fr;gap:20px}.warranty-show-bottom-actions{align-items:stretch}.warranty-show-card .card-head{align-items:flex-start}}
+
 </style>

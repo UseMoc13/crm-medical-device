@@ -190,13 +190,15 @@
                         </select>
 
                         <span class="form-hint">
-                            Select the registered device that requires service.
+                            Select a device assigned to the customer. You can also choose a serial number first.
                         </span>
 
                         @error('serial_number_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    @include('service-tickets._warranty_coverage')
 
                     {{-- ASSIGNMENT AND PRIORITY --}}
 
@@ -279,7 +281,7 @@
                         >
                             <option value="">Select status</option>
 
-                            @foreach($statuses as $status)
+                            @foreach(['open'] as $status)
                                 <option
                                     value="{{ $status }}"
                                     @selected(old('status', 'open') === $status)
@@ -290,7 +292,7 @@
                         </select>
 
                         <span class="form-hint">
-                            New service requests normally begin with Open status.
+                            New tickets must start as Open. Change progress later through the ticket workflow.
                         </span>
 
                         @error('status')
@@ -410,338 +412,7 @@
     </div>
 </div>
 
-<style>
-/* =========================================================
-   SERVICE TICKET CREATE
-========================================================= */
 
-.ticket-create-card,
-.ticket-create-body,
-.ticket-form-layout,
-.ticket-form-main {
-    overflow: visible !important;
-}
-
-/* =========================================================
-   FORM LAYOUT
-========================================================= */
-
-.ticket-form-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
-    gap: 32px;
-    align-items: start;
-    width: 100%;
-}
-
-.ticket-form-main {
-    min-width: 0;
-}
-
-/* =========================================================
-   SECTION DIVIDER
-========================================================= */
-
-.ticket-form-main .section-divider {
-    margin: 25px 0 18px;
-    padding-top: 20px;
-    border-top: 1px solid #edf0f5;
-}
-
-.ticket-form-main .section-divider.first-section {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: 0;
-}
-
-.ticket-form-main .section-divider h4 {
-    margin: 0 0 4px;
-    color: #17284f;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.ticket-form-main .section-divider p {
-    margin: 0;
-    color: #8a94a6;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-/* =========================================================
-   FORM GROUP
-========================================================= */
-
-.ticket-form-main .form-group {
-    margin-bottom: 19px;
-}
-
-.ticket-form-main .form-group label {
-    display: block;
-    margin-bottom: 7px;
-    color: #17284f;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.ticket-form-main .required {
-    color: #c94a4a;
-}
-
-/* =========================================================
-   INPUT / SELECT / TEXTAREA
-========================================================= */
-
-.ticket-form-main .form-group input,
-.ticket-form-main .form-group select,
-.ticket-form-main .form-group textarea {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 11px 12px;
-    border: 1px solid #d9dee8;
-    border-radius: 8px;
-    background: #fff;
-    color: #17284f;
-    font-family: inherit;
-    font-size: 13px;
-    transition: border-color .18s ease, box-shadow .18s ease;
-}
-
-.ticket-form-main .form-group input,
-.ticket-form-main .form-group select {
-    height: 42px;
-}
-
-.ticket-form-main .form-group textarea {
-    min-height: 115px;
-    resize: vertical;
-    line-height: 1.6;
-}
-
-.ticket-form-main .form-group input:focus,
-.ticket-form-main .form-group select:focus,
-.ticket-form-main .form-group textarea:focus {
-    outline: none;
-    border-color: #2ba7a0;
-    box-shadow: 0 0 0 3px rgba(43, 167, 160, .08);
-}
-
-.ticket-form-main .form-group input::placeholder,
-.ticket-form-main .form-group textarea::placeholder {
-    color: #a0a8b6;
-}
-
-/* =========================================================
-   HINT / ERROR
-========================================================= */
-
-.ticket-form-main .form-hint,
-.ticket-form-main .form-error {
-    display: block;
-    margin-top: 6px;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-.ticket-form-main .form-hint {
-    color: #8a94a6;
-}
-
-.ticket-form-main .form-error {
-    color: #c94a4a;
-}
-
-/* =========================================================
-   FORM ACTIONS
-========================================================= */
-
-.ticket-form-main .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
-    padding-top: 16px;
-    margin-top: 8px;
-    border-top: 1px solid #edf0f5;
-}
-
-/* =========================================================
-   PREVIEW PANEL
-========================================================= */
-
-.ticket-preview-panel {
-    position: sticky;
-    top: 92px;
-    align-self: start;
-    min-width: 0;
-    height: fit-content;
-    padding: 24px;
-    box-sizing: border-box;
-    border: 1px solid #e6eaf0;
-    border-radius: 12px;
-    background: #fafbfd;
-    z-index: 5;
-}
-
-.ticket-preview-panel .preview-label {
-    margin-bottom: 20px;
-    color: #8a94a6;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-}
-
-.ticket-preview-panel .preview-ticket-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    margin-bottom: 16px;
-    border-radius: 12px;
-    background: #eaf7f3;
-    color: #167d70;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.ticket-preview-panel .preview-ticket-number {
-    color: #17284f;
-    font-size: 17px;
-    font-weight: 700;
-}
-
-.ticket-preview-panel .preview-caption {
-    margin-top: 5px;
-    color: #7d8797;
-    font-size: 11px;
-}
-
-.ticket-preview-panel .preview-divider {
-    height: 1px;
-    margin: 21px 0;
-    background: #e5e9ef;
-}
-
-.ticket-preview-panel .preview-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin-bottom: 17px;
-}
-
-.ticket-preview-panel .preview-item span {
-    color: #8a94a6;
-    font-size: 11px;
-}
-
-.ticket-preview-panel .preview-item strong {
-    overflow-wrap: anywhere;
-    color: #34415c;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.ticket-preview-panel .preview-item .preview-priority,
-.ticket-preview-panel .preview-item .preview-status {
-    display: inline-block;
-    width: fit-content;
-    padding: 5px 9px;
-    border-radius: 6px;
-    background: #eef1f6;
-    color: #596579;
-    font-size: 11px;
-}
-
-.ticket-preview-panel .preview-item .preview-priority.priority-low {
-    background: #eaf7f3;
-    color: #167d70;
-}
-
-.ticket-preview-panel .preview-item .preview-priority.priority-medium {
-    background: #eef3fb;
-    color: #41638f;
-}
-
-.ticket-preview-panel .preview-item .preview-priority.priority-high {
-    background: #fff3df;
-    color: #a66b12;
-}
-
-.ticket-preview-panel .preview-item .preview-priority.priority-urgent {
-    background: #fdebec;
-    color: #bd4148;
-}
-
-.ticket-preview-panel .preview-item .preview-status.status-open {
-    background: #eef3fb;
-    color: #41638f;
-}
-
-.ticket-preview-panel .preview-item .preview-status.status-in-progress {
-    background: #eaf7f3;
-    color: #167d70;
-}
-
-.ticket-preview-panel .preview-item .preview-status.status-on-hold {
-    background: #fff3df;
-    color: #a66b12;
-}
-
-.ticket-preview-panel .preview-item .preview-status.status-resolved,
-.ticket-preview-panel .preview-item .preview-status.status-closed {
-    background: #eaf7f3;
-    color: #167d70;
-}
-
-.ticket-preview-panel .preview-note {
-    padding: 13px 14px;
-    border-radius: 8px;
-    background: #f1f5f7;
-}
-
-.ticket-preview-panel .preview-note strong {
-    display: block;
-    margin-bottom: 5px;
-    color: #34415c;
-    font-size: 11px;
-}
-
-.ticket-preview-panel .preview-note p {
-    margin: 0;
-    color: #8a94a6;
-    font-size: 10px;
-    line-height: 1.6;
-}
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 900px) {
-    .ticket-form-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .ticket-preview-panel {
-        position: static;
-        order: -1;
-    }
-}
-
-@media (max-width: 600px) {
-    .ticket-form-main .form-actions {
-        flex-direction: column-reverse;
-        align-items: stretch;
-    }
-
-    .ticket-form-main .form-actions .btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -820,5 +491,11 @@ document.addEventListener('DOMContentLoaded', function () {
     updatePreview();
 });
 </script>
+
+@include('service-tickets._device_customer_filter')
+
+@include('service-tickets._device_customer_filter')
+
+@include('service-tickets._style')
 
 @endsection

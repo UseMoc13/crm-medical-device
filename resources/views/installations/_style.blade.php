@@ -27,4 +27,11 @@
 @media(max-width:1050px){.installation-editor-layout{grid-template-columns:1fr}.installation-preview{position:static}}
 @media(max-width:768px){.installation-form-grid,.installation-info-grid{grid-template-columns:1fr}.installation-form-grid .full-width,.installation-info-grid .full-width{grid-column:auto}.installation-filter-bar{flex-direction:column;align-items:stretch}.installation-filter-search,.installation-filter-bar select,.installation-filter-bar .btn{width:100%}}
 @media(max-width:480px){.installation-form-actions{flex-direction:column-reverse}.installation-form-actions .btn{width:100%}}
+
+/* Installation warranty activation — uses the existing Delivery-like card and modal */
+.installation-warranty-card{margin-top:18px;margin-bottom:18px}
+.installation-warranty-card .card-body>.installation-muted{margin:0 0 16px}
+.installation-warranty-card .installation-warranty-trigger{margin-top:16px}
+.installation-warranty-card .installation-table{min-width:690px}
+
 </style>

@@ -206,6 +206,14 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
+// Sales Orders: register specific GET routes before the resource show route.
+Route::get('/sales-orders/export', [SalesOrderController::class, 'export'])
+    ->name('sales-orders.export');
+
+Route::get('/sales-orders/{salesOrder}/download', [SalesOrderController::class, 'download'])
+    ->whereUuid('salesOrder')
+    ->name('sales-orders.download');
+
 Route::resource('sales-orders', SalesOrderController::class)
     ->only(['index', 'show']);
 
@@ -258,3 +266,19 @@ Route::patch(
     [DeliveryController::class, 'changeStatus']
 )->name('deliveries.change-status');
 
+// Installation -> Warranty Activation (independent of CRUD & existing status routes)
+\Illuminate\Support\Facades\Route::post('/installations/{installation}/activate-warranties', [\App\Http\Controllers\InstallationWarrantyActivationController::class, 'store'])
+    ->whereUuid('installation')->name('installations.warranties.activate');
+
+// Service Ticket workflow: dedicated status change, distinct from regular CRUD update.
+Route::patch('/service-tickets/{serviceTicket}/change-status', [ServiceTicketController::class, 'changeStatus'])
+    ->whereUuid('serviceTicket')
+    ->name('service-tickets.change-status');
+
+// Service Ticket parts: detail-page CRUD, no inventory deduction at this stage.
+Route::post('/service-tickets/{serviceTicket}/parts', [\App\Http\Controllers\ServiceTicketPartController::class, 'store'])
+    ->whereUuid('serviceTicket')->name('service-tickets.parts.store');
+Route::patch('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Controllers\ServiceTicketPartController::class, 'update'])
+    ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.update');
+Route::delete('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Controllers\ServiceTicketPartController::class, 'destroy'])
+    ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.destroy');

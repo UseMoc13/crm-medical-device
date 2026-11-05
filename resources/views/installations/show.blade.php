@@ -264,6 +264,7 @@
         </form>
     </div>
 </div>
+@include('installations._warranty_activation')
 @include('installations._style')
 <script>
 (() => {
