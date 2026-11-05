@@ -113,6 +113,12 @@
     </div>
 </div>
 
+@if ($errors->any())
+    <div class="alert error" role="alert">
+        <strong>Unable to save service part.</strong>
+        <ul>@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+    </div>
+@endif
 @if (session('success'))
     <div class="alert success">
         {{ session('success') }}
@@ -557,8 +563,11 @@
             <p>Products and replacement parts recorded for this service ticket.</p>
         </div>
 
-        <div class="parts-count">
-            {{ $totalParts }} {{ $totalParts === 1 ? 'Item' : 'Items' }}
+        <div class="ticket-part-header-actions">
+            <span class="parts-count">{{ $totalParts }} {{ $totalParts === 1 ? 'Item' : 'Items' }}</span>
+            @if($serviceTicket->status === 'in_progress')
+                <button type="button" class="btn primary ticket-part-open" data-mode="add">+ Add Service Part</button>
+            @endif
         </div>
     </div>
 
@@ -575,6 +584,7 @@
                             <th>Unit Price</th>
                             <th>Subtotal</th>
                             <th>Notes</th>
+                            @if($serviceTicket->status === 'in_progress')<th>Actions</th>@endif
                         </tr>
                     </thead>
 
@@ -620,6 +630,21 @@
                                         {{ filled($part->notes) ? $part->notes : '-' }}
                                     </span>
                                 </td>
+                                @if($serviceTicket->status === 'in_progress')
+                                    <td class="ticket-part-action-cell">
+                                        <button type="button" class="ticket-part-action ticket-part-edit"
+                                            aria-label="Edit part" title="Edit part"
+                                            data-url="{{ route('service-tickets.parts.update', [$serviceTicket, $part->service_ticket_part_id]) }}"
+                                            data-product="{{ $part->product_id }}"
+                                            data-quantity="{{ $quantity }}"
+                                            data-price="{{ $unitPrice }}"
+                                            data-notes="{{ $part->notes }}">Edit</button>
+                                        <button type="button" class="ticket-part-action ticket-part-remove"
+                                            aria-label="Remove part" title="Remove part"
+                                            data-url="{{ route('service-tickets.parts.destroy', [$serviceTicket, $part->service_ticket_part_id]) }}"
+                                            data-name="{{ $partProduct?->product_name ?? 'this part' }}">Remove</button>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -631,7 +656,7 @@
                             </td>
 
                             <td>
-                                <strong>{{ $formatCurrency($parts->sum('unit_price')) }}</strong>
+                                <strong>—</strong>
                             </td>
 
                             <td>
@@ -641,6 +666,7 @@
                             </td>
 
                             <td></td>
+                            @if($serviceTicket->status === 'in_progress')<td></td>@endif
                         </tr>
                     </tfoot>
                 </table>
@@ -782,6 +808,7 @@
 
 
 
+@include('service-tickets._parts_interaction')
 @include('service-tickets._style')
 
 @endsection

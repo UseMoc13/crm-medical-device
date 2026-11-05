@@ -266,3 +266,11 @@ Route::patch(
 Route::patch('/service-tickets/{serviceTicket}/change-status', [ServiceTicketController::class, 'changeStatus'])
     ->whereUuid('serviceTicket')
     ->name('service-tickets.change-status');
+
+// Service Ticket parts: detail-page CRUD, no inventory deduction at this stage.
+Route::post('/service-tickets/{serviceTicket}/parts', [\App\Http\Controllers\ServiceTicketPartController::class, 'store'])
+    ->whereUuid('serviceTicket')->name('service-tickets.parts.store');
+Route::patch('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Controllers\ServiceTicketPartController::class, 'update'])
+    ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.update');
+Route::delete('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Controllers\ServiceTicketPartController::class, 'destroy'])
+    ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.destroy');

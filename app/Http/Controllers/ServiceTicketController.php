@@ -182,6 +182,7 @@ class ServiceTicketController extends Controller
         return view('service-tickets.show', [
             'ticketWarrantyCoverage' => app(ServiceWarrantyCoverage::class)->forSerial((string) $serviceTicket->serial_number_id),
             'serviceTicket' => $serviceTicket,
+            'partProducts' => \App\Models\Product::query()->orderBy('product_name')->get(['product_id', 'product_name', 'product_code']),
         ]);
     }
 

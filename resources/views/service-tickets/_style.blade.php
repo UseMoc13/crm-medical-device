@@ -2072,4 +2072,31 @@
 .ticket-workflow-resolution small{font-size:11px;color:#718096}.ticket-workflow-dialog-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .ticket-workflow-toast{position:fixed;z-index:19000;top:20px;left:50%;transform:translateX(-50%);max-width:min(90vw,540px);padding:14px 18px;border-radius:10px;background:#e7f8ef;color:#106c48;border:1px solid #95d5b4;box-shadow:0 8px 30px #0002;font-size:13px;font-weight:600;text-align:center}
 @media(max-width:600px){.ticket-workflow-actions{align-items:stretch;flex-direction:column}.ticket-workflow-actions .btn{text-align:center}}
+
+/* ==============================================================
+   SERVICE TICKET SHOW — SERVICE PARTS CRUD (v5)
+   All Service Ticket styles remain in this single module partial.
+============================================================== */
+.ticket-part-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.ticket-part-action-cell{white-space:nowrap;min-width:132px}
+.ticket-part-action{padding:7px 10px;margin:2px;border-radius:7px;border:1px solid #d9e2ee;background:#fff;color:#27618a;font-size:11px;font-weight:600;cursor:pointer}
+.ticket-part-action:hover{background:#f1f5f9}
+.ticket-part-remove{border-color:#fecaca;color:#b91c1c}
+.ticket-part-remove:hover{background:#fef2f2}
+.ticket-part-modal[hidden]{display:none!important}
+.ticket-part-modal{position:fixed;inset:0;z-index:21000;background:rgba(14,28,54,.65);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.ticket-part-dialog{box-sizing:border-box;width:min(100%,520px);background:#fff;border-radius:14px;box-shadow:0 20px 70px #14203738;padding:25px;text-align:left}
+.ticket-part-dialog h3{font-size:18px;color:#17284f;margin:0 0 6px}
+.ticket-part-dialog p{font-size:12px;color:#64748b;line-height:1.6;margin:0 0 20px}
+.ticket-part-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ticket-part-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.ticket-part-field.full{grid-column:1/-1}
+.ticket-part-field label{color:#334155;font-size:12px;font-weight:600}
+.ticket-part-field input,.ticket-part-field select,.ticket-part-field textarea{width:100%;box-sizing:border-box;min-height:40px;padding:9px 11px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;font-size:13px;color:#17284f;font-family:inherit}
+.ticket-part-field textarea{min-height:85px;resize:vertical}
+.ticket-part-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+.ticket-part-dialog-actions .danger{background:#dc2626;color:#fff;border-color:#dc2626}
+.ticket-part-dialog .ticket-part-warning{padding:10px 12px;border-radius:7px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;margin-bottom:14px}
+.ticket-part-message{margin-top:12px;color:#64748b;font-size:11px;line-height:1.6}
+@media(max-width:600px){.ticket-part-form-grid{grid-template-columns:1fr}.ticket-part-field.full{grid-column:auto}.ticket-part-dialog-actions{flex-wrap:wrap}}
 </style>
