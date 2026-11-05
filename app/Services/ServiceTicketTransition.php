@@ -53,6 +53,13 @@ class ServiceTicketTransition
         $resolution = array_key_exists('resolution', $input)
             ? trim((string) ($input['resolution'] ?? ''))
             : trim((string) ($ticket->resolution ?? ''));
+        // Every Resolve / Close transition must submit its own new resolution entry.
+        // An existing ticket resolution alone must never satisfy this requirement.
+        if ($next !== $current && in_array($next, ['resolved', 'closed'], true)
+            && (!array_key_exists('resolution', $input) || trim((string) ($input['resolution'] ?? '')) === '')) {
+            throw ValidationException::withMessages(['resolution' => 'Write a new resolution note for this status change.']);
+        }
+
         if (in_array($next, ['resolved', 'closed'], true) && $resolution === '') {
             throw ValidationException::withMessages(['resolution' => 'Enter a resolution before resolving or closing the ticket.']);
         }

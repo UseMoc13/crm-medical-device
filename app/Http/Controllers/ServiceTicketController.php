@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\ServiceTicketResolutionHistory;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -182,6 +183,7 @@ class ServiceTicketController extends Controller
         return view('service-tickets.show', [
             'ticketWarrantyCoverage' => app(ServiceWarrantyCoverage::class)->forSerial((string) $serviceTicket->serial_number_id),
             'serviceTicket' => $serviceTicket,
+            'resolutionHistory' => DB::table('service_ticket_resolution_logs')->where('service_ticket_id', $serviceTicket->getKey())->orderByDesc('created_at')->orderByDesc('resolution_log_id')->get(),
             'partProducts' => \App\Models\Product::query()->orderBy('product_name')->get(['product_id', 'product_name', 'product_code']),
         ]);
     }
@@ -269,7 +271,10 @@ class ServiceTicketController extends Controller
 
             $transition = app(ServiceTicketTransition::class);
             $validated = $transition->prepare($ticket, $validated);
+            $previousStatus = (string) $ticket->status;
+            $previousResolution = (string) ($ticket->resolution ?? '');
             $ticket->update($validated);
+            app(ServiceTicketResolutionHistory::class)->record($ticket, $previousStatus, $previousResolution, $validated);
         }, 3);
 
         return redirect()
@@ -292,7 +297,10 @@ class ServiceTicketController extends Controller
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())
                 ->lockForUpdate()->firstOrFail();
             $changes = app(ServiceTicketTransition::class)->prepare($ticket, $data);
+            $previousStatus = (string) $ticket->status;
+            $previousResolution = (string) ($ticket->resolution ?? '');
             $ticket->update($changes);
+            app(ServiceTicketResolutionHistory::class)->record($ticket, $previousStatus, $previousResolution, $changes);
         }, 3);
 
         return redirect()

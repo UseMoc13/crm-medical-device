@@ -64,8 +64,8 @@
             <div class="ticket-workflow-resolution" id="ticketWorkflowResolutionWrap" hidden>
                 <label for="ticketWorkflowResolution">Service Resolution <span aria-hidden="true">*</span></label>
                 <textarea name="resolution" id="ticketWorkflowResolution" rows="4" maxlength="5000"
-                          placeholder="Describe the diagnosis, action taken and final service result...">{{ old('resolution', $serviceTicket->resolution) }}</textarea>
-                <small>Required to resolve or close the ticket.</small>
+                          placeholder="Describe the diagnosis, action taken and final service result...">{{ old('resolution') }}</textarea>
+                <small>Add a resolution entry for this workflow event. Previous records remain in Resolution History.</small>
             </div>
             <div class="ticket-workflow-dialog-actions">
                 <button type="button" class="btn" id="ticketWorkflowCancel">Cancel</button>
@@ -107,7 +107,7 @@
             wrap.hidden = !requiresResolution;
             resolution.required = requiresResolution;
             modal.hidden = false;
-            if (requiresResolution) resolution.focus();
+            if (requiresResolution) { resolution.value = ''; resolution.focus(); }
             else document.getElementById('ticketWorkflowCancel').focus();
         });
     });

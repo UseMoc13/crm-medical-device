@@ -4,7 +4,6 @@
 @section('title', 'Service Ticket Details')
 
 @section('content')
-@include('service-tickets._warranty_detail')
 
 @php
     $ticketNumber = $serviceTicket->ticket_number ?? '-';
@@ -132,6 +131,10 @@
 @endif
 
 @include('service-tickets._workflow')
+
+@include('service-tickets._warranty_detail')
+
+<div class="ticket-quick-actions"><a href="#ticket-service-parts" class="btn">View Service Parts &darr;</a></div>
 
 <div class="ticket-overview-grid">
 
@@ -312,6 +315,7 @@
 
 </div>
 
+<div class="ticket-three-column-grid">
 <section class="card ticket-device-card">
     <div class="card-head">
         <div>
@@ -509,11 +513,14 @@
     </div>
 </section>
 
+
+</div>
+
 <section class="card ticket-resolution-card">
     <div class="card-head">
         <div>
-            <h3>Resolution Information</h3>
-            <p>Service resolution and completion details.</p>
+            <h3>Latest Resolution</h3>
+            <p>Current resolution summary. All saved versions are listed in Resolution History below.</p>
         </div>
     </div>
 
@@ -556,7 +563,22 @@
     </div>
 </section>
 
-<section class="card ticket-parts-card">
+
+<section class="card ticket-resolution-history-card">
+    <div class="card-head"><div><h3>Resolution History</h3><p>Chronological record of each saved resolution and ticket completion event. Existing records are never overwritten.</p></div><span class="ticket-resolution-count">{{ $resolutionHistory->count() }} entries</span></div>
+    <div class="card-body">
+        @forelse($resolutionHistory as $log)
+            <div class="ticket-resolution-history-entry">
+                <div class="ticket-resolution-history-meta"><strong>{{ ucwords(str_replace('_', ' ', $log->status_from)) }} → {{ ucwords(str_replace('_', ' ', $log->status_to)) }}</strong><span>{{ \Illuminate\Support\Carbon::parse($log->created_at)->format('d M Y, H:i') }}</span></div>
+                <p>{{ $log->resolution }}</p>
+            </div>
+        @empty
+            <p class="ticket-resolution-history-empty">No resolution history has been recorded yet. New resolution updates will appear here after saving.</p>
+        @endforelse
+    </div>
+</section>
+
+<section class="card ticket-parts-card" id="ticket-service-parts">
     <div class="card-head">
         <div>
             <h3>Service Parts</h3>
@@ -572,6 +594,13 @@
     </div>
 
     <div class="card-body">
+        @if($serviceTicket->status !== 'in_progress')
+            <p class="ticket-parts-guidance">To add or edit Service Parts, first change the ticket status to <strong>In Progress</strong> using Service Ticket Workflow above. Parts already recorded remain visible below.</p>
+        @elseif($partProducts->isEmpty())
+            <p class="ticket-parts-guidance">No products are available. Register products before adding a Service Part.</p>
+        @else
+            <p class="ticket-parts-guidance">Select <strong>+ Add Service Part</strong> at the top right of this card to record a replacement product.</p>
+        @endif
 
         @if ($parts->isNotEmpty())
 

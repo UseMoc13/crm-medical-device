@@ -2099,4 +2099,22 @@
 .ticket-part-dialog .ticket-part-warning{padding:10px 12px;border-radius:7px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;margin-bottom:14px}
 .ticket-part-message{margin-top:12px;color:#64748b;font-size:11px;line-height:1.6}
 @media(max-width:600px){.ticket-part-form-grid{grid-template-columns:1fr}.ticket-part-field.full{grid-column:auto}.ticket-part-dialog-actions{flex-wrap:wrap}}
+
+/* Service ticket show v6: warranty, 3-column related cards, spare part guidance, resolution log */
+.ticket-warranty-detail-card{margin:0 0 18px}.ticket-warranty-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:18px}
+.ticket-warranty-detail-grid>div{display:flex;flex-direction:column;gap:7px;min-width:0}.ticket-warranty-detail-grid small{color:#64748b;font-size:12px}.ticket-warranty-detail-grid strong{font-size:13px;color:#17284f;overflow-wrap:anywhere}
+.ticket-three-column-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch;margin-bottom:18px}
+.ticket-three-column-grid>.card{min-width:0;margin-bottom:0;display:flex;flex-direction:column}.ticket-three-column-grid>.card>.card-body{flex:1;min-width:0}
+.ticket-three-column-grid .ticket-related-layout{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.ticket-three-column-grid .related-content,.ticket-three-column-grid .related-meta{width:100%;min-width:0;flex-basis:auto}
+.ticket-three-column-grid .related-meta{display:grid;grid-template-columns:1fr;gap:12px}
+.ticket-three-column-grid .related-meta>div{min-width:0}.ticket-three-column-grid .related-meta strong,.ticket-three-column-grid .related-content h4{overflow-wrap:anywhere;word-break:break-word}
+.ticket-three-column-grid .related-indicator{margin:0;align-self:flex-start}
+.ticket-quick-actions{display:flex;justify-content:flex-end;margin:0 0 15px}.ticket-parts-guidance{padding:12px 14px;margin:0 0 17px;border:1px solid #dbe7f2;background:#f7fafc;border-radius:8px;font-size:12px;line-height:1.65;color:#51617a}
+.ticket-resolution-history-card{margin:0 0 18px}.ticket-resolution-count{font-size:12px;color:#64748b}.ticket-resolution-history-entry{padding:14px 16px;border:1px solid #e2e8f0;border-radius:9px;margin-bottom:12px;background:#fff}
+.ticket-resolution-history-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#17284f}.ticket-resolution-history-meta span{color:#64748b}
+.ticket-resolution-history-entry p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.7;margin:10px 0 0;color:#334155}.ticket-resolution-history-empty{color:#64748b;font-size:13px}
+@media(max-width:1190px){.ticket-three-column-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ticket-warranty-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.ticket-three-column-grid{grid-template-columns:1fr}.ticket-warranty-detail-grid{grid-template-columns:1fr}}
+
 </style>
