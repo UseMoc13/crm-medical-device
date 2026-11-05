@@ -30,6 +30,7 @@ use App\Http\Controllers\ServiceHistoryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReportController;
 
+
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
     
@@ -41,15 +42,18 @@ Route::resource('contacts', ContactController::class);
 Route::resource('leads', LeadController::class);
 Route::resource('opportunities', OpportunityController::class);
 Route::resource('quotations', QuotationController::class);
-Route::post('/quotations/{quotation}/change-status', [QuotationController::class, 'changeStatus'])
-    ->whereUuid('quotation')
-    ->name('quotations.change-status');
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
 Route::resource('contracts', ContractController::class);
-Route::post('/deliveries/{delivery}/change-status', [DeliveryController::class, 'changeStatus'])->name('deliveries.change-status');
-Route::post('/deliveries/{delivery}/items', [DeliveryController::class, 'addItem'])->name('deliveries.items.store');
-Route::delete('/deliveries/{delivery}/items/{item}', [DeliveryController::class, 'removeItem'])->name('deliveries.items.destroy');
+Route::post('/deliveries/{delivery}/items', [DeliveryController::class, 'addItem'])
+    ->whereUuid('delivery')
+    ->name('deliveries.items.store');
+
+Route::delete('/deliveries/{delivery}/items/{item}', [DeliveryController::class, 'removeItem'])
+    ->whereUuid('delivery')
+    ->whereUuid('item')
+    ->name('deliveries.items.destroy');
+
 Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
@@ -202,12 +206,6 @@ Route::get('/opportunities/{opportunity}/items', [
     'items',
 ])->name('opportunities.items');
 
-Route::get('/sales-orders/export', [SalesOrderController::class, 'export'])->name('sales-orders.export');
-
-Route::get('/sales-orders/{salesOrder}/download', [SalesOrderController::class, 'download'])
-    ->whereUuid('salesOrder')
-    ->name('sales-orders.download');
-
 Route::resource('sales-orders', SalesOrderController::class)
     ->only(['index', 'show']);
 
@@ -249,3 +247,14 @@ Route::controller(AnnouncementManagementController::class)
             ->whereUuid('announcement')
             ->name('destroy');
     });
+Route::patch('/installations/{installation}/change-status', [InstallationController::class, 'changeStatus'])
+    ->whereUuid('installation')->name('installations.change-status');
+
+Route::patch('/installations/{installation}/checklists/{checklist}', [InstallationController::class, 'updateChecklist'])
+    ->whereUuid('installation')->whereUuid('checklist')->name('installations.checklists.update');
+
+Route::patch(
+    '/deliveries/{delivery}/change-status',
+    [DeliveryController::class, 'changeStatus']
+)->name('deliveries.change-status');
+

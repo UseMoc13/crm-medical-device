@@ -6,6 +6,9 @@
         str_replace(' ', '_', $installation->status)
     );
 
+    $checklistTotal = $installation->checklists->count();
+    $checklistDone = $installation->checklists->where('is_completed', true)->count();
+    $checklistPercent = $checklistTotal ? (int) round(100 * $checklistDone / $checklistTotal) : 0;
     $badgeClass = match ($status) {
         'scheduled' => 'warning',
         'in_progress' => 'info',
@@ -26,20 +29,36 @@
             &larr; Back
         </a>
 
-        <a
-            href="{{ route('installations.edit', $installation->installation_id) }}"
-            class="btn primary"
-        >
-            Edit Installation
-        </a>
+        @if(!in_array($installation->status, ['Completed', 'Cancelled']))
+            <a href="{{ route('installations.edit', $installation->installation_id) }}" class="btn primary">Edit Installation</a>
+        @endif
     </div>
 </div>
 
-@if (session('success'))
-    <div class="alert success">
-        {{ session('success') }}
+@if(session('success') || session('error') || $errors->any())
+    <div class="installation-toast {{ session('success') ? 'success' : 'danger' }}" role="alert" id="installationToast">
+        {{ session('success') ?? session('error') ?? $errors->first() }}
     </div>
 @endif
+
+<div class="card installation-progress-card">
+    <div class="card-head"><h2>Installation Progress</h2><span class="badge {{ $badgeClass }}">{{ $installation->status }}</span></div>
+    <div class="card-body">
+        <div class="installation-progress-heading"><strong>{{ $checklistDone }} / {{ $checklistTotal }} Checklist Completed</strong><strong>{{ $checklistPercent }}%</strong></div>
+        <div class="installation-progress-track" role="progressbar" aria-valuenow="{{ $checklistPercent }}" aria-valuemin="0" aria-valuemax="100"><div style="width: {{ $checklistPercent }}%"></div></div>
+        <div class="installation-status-actions">
+            @if($installation->status === 'Scheduled')
+                <button type="button" class="btn primary" data-installation-next="In Progress">Start Installation</button>
+                <button type="button" class="btn" data-installation-next="Cancelled">Cancel Installation</button>
+            @elseif($installation->status === 'In Progress')
+                <button type="button" class="btn primary" data-installation-next="Completed" @disabled($checklistTotal === 0 || $checklistDone !== $checklistTotal)>Complete Installation</button>
+                @if($checklistTotal === 0 || $checklistDone !== $checklistTotal)<span class="form-hint">Finish all checklist items before completion.</span>@endif
+            @else
+                <span class="form-hint">This installation is finalized. Status changes are disabled.</span>
+            @endif
+        </div>
+    </div>
+</div>
 
 <div class="card">
     <div class="card-head">
@@ -63,7 +82,11 @@
             <div class="detail-item">
                 <span class="detail-label">Delivery Number</span>
                 <span class="detail-value">
-                    {{ $installation->delivery?->delivery_number ?? '—' }}
+                    @if($installation->delivery)
+                        <a href="{{ route('deliveries.show', $installation->delivery_id) }}">{{ $installation->delivery->delivery_number }}</a>
+                    @else
+                        —
+                    @endif
                 </span>
             </div>
 
@@ -163,6 +186,14 @@
 
                                 <td>
                                     {{ $checklist->completed_at?->format('d M Y H:i') ?? '—' }}
+                                    @if($installation->status === 'In Progress')
+                                        <form method="POST" action="{{ route('installations.checklists.update', [$installation, $checklist]) }}" class="installation-checklist-action">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="is_completed" value="{{ $checklist->is_completed ? '0' : '1' }}">
+                                            <button type="submit" class="btn">{{ $checklist->is_completed ? 'Undo' : 'Mark Done' }}</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -180,274 +211,69 @@
     </div>
 </div>
 
-<style>
-    .page-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
+<div class="card">
+    <div class="card-head"><h2>Devices from Delivery</h2></div>
+    <div class="card-body">
+        @if($deliveryItems->isEmpty())
+            <p>No serialized devices found in the originating Delivery.</p>
+        @else
+            <div class="table-wrap">
+                <table class="checklist-table">
+                    <thead><tr><th>No.</th><th>Product</th><th>Serial Number</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach($deliveryItems as $item)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $item->serialNumber?->product?->product_name ?? '—' }}</td>
+                                <td>{{ $item->serialNumber?->serial_number ?? '—' }}</td>
+                                <td>{{ $item->serialNumber?->status ?? '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
 
-    .page-head h1 {
-        margin: 0 0 6px;
-        font-size: 26px;
-    }
+@if($installation->status === 'Scheduled')
+    <p class="form-hint">Change status to In Progress to start completing the installation checklist.</p>
+@elseif($installation->status === 'In Progress')
+    <p class="form-hint">Complete all {{ $installation->checklists->count() }} checklist items, then change status to Completed using Edit Installation.</p>
+@endif
 
-    .page-head p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-    .actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .card {
-        overflow: hidden;
-        margin-bottom: 22px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #fff;
-    }
-
-    .card-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 18px 22px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .card-head h2 {
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .card-body {
-        padding: 22px;
-    }
-
-    .detail-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px;
-    }
-
-    .detail-item {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .detail-item.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .detail-label {
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .detail-value {
-        color: #111827;
-        font-size: 14px;
-        overflow-wrap: anywhere;
-        white-space: pre-line;
-    }
-
-    .badge {
-        display: inline-block;
-        width: fit-content;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .badge.warning {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge.info {
-        background: #dbeafe;
-        color: #1d4ed8;
-    }
-
-    .badge.success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .badge.danger {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .badge.secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .checklist-count {
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .table-wrap {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .checklist-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-
-    .checklist-table th,
-    .checklist-table td {
-        padding: 13px 14px;
-        border: 1px solid #e5e7eb;
-        text-align: left;
-        vertical-align: middle;
-    }
-
-    .checklist-table th {
-        background: #f9fafb;
-        color: #374151;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .col-number {
-        width: 60px;
-        text-align: center !important;
-    }
-
-    .empty-state {
-        padding: 30px;
-        text-align: center;
-        color: #6b7280;
-    }
-
-    .empty-state h3 {
-        margin: 0 0 8px;
-        color: #374151;
-    }
-
-    .empty-state p {
-        margin: 0;
-    }
-
-    .btn {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px 16px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        background: #fff;
-        color: #374151;
-        text-decoration: none;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .btn.primary {
-        background: #15966f;
-        border-color: #15966f;
-        color: #fff;
-    }
-
-    .alert {
-        margin-bottom: 18px;
-        padding: 14px 16px;
-        border-radius: 8px;
-    }
-
-    .alert.success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    @media (max-width: 700px) {
-        .page-head {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .actions {
-            flex-wrap: wrap;
-        }
-
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .detail-item.full-width {
-            grid-column: auto;
-        }
-
-        .card-body {
-            padding: 16px;
-        }
-    }
-
-    .detail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    border-top: 1px solid #e5e7eb;
-    border-left: 1px solid #e5e7eb;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    min-width: 0;
-    padding: 18px 20px;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-    box-sizing: border-box;
-}
-
-.detail-item.full-width {
-    grid-column: 1 / -1;
-}
-
-.detail-label {
-    color: #6b7280;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.detail-value {
-    color: #111827;
-    font-size: 14px;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-    white-space: pre-line;
-}
-
-@media (max-width: 700px) {
-    .detail-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .detail-item.full-width {
-        grid-column: auto;
-    }
-
-    .detail-item {
-        padding: 15px 16px;
-    }
-}
-</style>
+<div class="installation-modal-backdrop" id="installationStatusModal" hidden>
+    <div class="installation-modal" role="dialog" aria-modal="true" aria-labelledby="installationModalTitle">
+        <h3 id="installationModalTitle">Confirm Status Change</h3>
+        <p id="installationModalMessage"></p>
+        <form method="POST" action="{{ route('installations.change-status', $installation) }}">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="status" id="installationNextStatus">
+            <div class="installation-modal-actions">
+                <button type="button" class="btn" id="installationModalCancel">Back</button>
+                <button type="submit" class="btn primary">Confirm Change</button>
+            </div>
+        </form>
+    </div>
+</div>
+@include('installations._style', ['page' => 'show'])
+<script>
+(() => {
+    const modal = document.getElementById('installationStatusModal');
+    const value = document.getElementById('installationNextStatus');
+    const message = document.getElementById('installationModalMessage');
+    document.querySelectorAll('[data-installation-next]').forEach(button => button.addEventListener('click', () => {
+        value.value = button.dataset.installationNext;
+        message.textContent = 'Change installation status to ' + value.value + '?';
+        modal.hidden = false;
+    }));
+    const close = () => { modal.hidden = true; value.value = ''; };
+    document.getElementById('installationModalCancel').addEventListener('click', close);
+    modal.addEventListener('click', event => { if(event.target === modal) close(); });
+    document.addEventListener('keydown', event => { if(event.key === 'Escape') close(); });
+    const toast = document.getElementById('installationToast');
+    if(toast) toast.addEventListener('animationend', event => { if(event.animationName === 'installation-toast-fade') toast.remove(); });
+})();
+</script>
 @endsection

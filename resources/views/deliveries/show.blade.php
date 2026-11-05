@@ -71,6 +71,8 @@
         <p id="deliveryConfirmText"></p>
         <form method="POST" action="{{ route('deliveries.change-status', $delivery->delivery_id) }}" id="deliveryStatusForm">
             @csrf
+            {{-- HTTP method MUST stay PATCH; delivery statuses belong only in the status field. --}}
+            <input type="hidden" name="_method" id="deliveryHttpMethod" value="PATCH">
             <input type="hidden" name="status" id="deliveryNextStatus">
             <div class="delivery-confirm-actions">
                 <button type="button" class="btn" id="deliveryCancel">Cancel</button>
@@ -86,14 +88,28 @@
     const title = document.getElementById('deliveryConfirmTitle');
     const message = document.getElementById('deliveryConfirmText');
     const next = document.getElementById('deliveryNextStatus');
+    const form = document.getElementById('deliveryStatusForm');
+    const httpMethod = document.getElementById('deliveryHttpMethod');
+    const allowed = new Set(['in_transit', 'delivered', 'cancelled']);
     const close = () => { modal.hidden = true; };
     document.querySelectorAll('[data-delivery-action]').forEach(button => {
         button.addEventListener('click', () => {
             title.textContent = button.dataset.deliveryTitle;
             message.textContent = button.dataset.deliveryText;
-            next.value = button.dataset.deliveryAction;
+            const status = button.dataset.deliveryAction;
+            if (!allowed.has(status)) return;
+            next.value = status;
+            httpMethod.value = 'PATCH';
             modal.hidden = false;
         });
+    });
+    form.addEventListener('submit', (event) => {
+        // Prevent accidental mutation of Laravel's HTTP method spoofing value.
+        httpMethod.value = 'PATCH';
+        if (!allowed.has(next.value)) {
+            event.preventDefault();
+            return;
+        }
     });
     document.getElementById('deliveryCancel').addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
@@ -359,6 +375,23 @@
         </div>
     </div>
 
+</div>
+
+
+<div class="card information-card">
+    <div class="card-head"><div><h3>Installation Follow-up</h3><p>Schedule device setup after the customer receives the shipment.</p></div></div>
+    <div class="card-body">
+        @if($delivery->status === 'delivered')
+            @php($existingInstallation = \App\Models\Installation::where('delivery_id', $delivery->delivery_id)->first())
+            @if($existingInstallation)
+                <a class="btn primary" href="{{ route('installations.show', $existingInstallation) }}">View Installation</a>
+            @else
+                <a class="btn primary" href="{{ route('installations.create', ['delivery_id' => $delivery->delivery_id]) }}">+ Schedule Installation</a>
+            @endif
+        @else
+            <p>Confirm the Delivery as Delivered before scheduling Installation.</p>
+        @endif
+    </div>
 </div>
 
 @include('deliveries._style')
