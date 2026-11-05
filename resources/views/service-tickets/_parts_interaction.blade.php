@@ -19,11 +19,11 @@
                 </div>
                 <div class="ticket-part-field">
                     <label for="ticketPartQuantity">Quantity *</label>
-                    <input id="ticketPartQuantity" name="quantity" type="number" min="1" step="1" max="100000" value="1" required>
+                    <input id="ticketPartQuantity" name="quantity" type="text" inputmode="numeric" pattern="[0-9]+" maxlength="6" value="1" autocomplete="off" required>
                 </div>
                 <div class="ticket-part-field">
                     <label for="ticketPartPrice">Unit Price *</label>
-                    <input id="ticketPartPrice" name="unit_price" type="number" min="0" step="0.01" max="999999999.99" value="0" required>
+                    <div class="ticket-price-input-wrap"><span class="ticket-price-prefix"> Rp</span><input id="ticketPartPriceDisplay" type="text" inputmode="numeric" autocomplete="off" value="0" aria-label="Unit price in rupiah" required><input id="ticketPartPrice" name="unit_price" type="hidden" value="0"></div>
                 </div>
                 <div class="ticket-part-field full">
                     <label for="ticketPartNotes">Notes</label>
@@ -60,12 +60,44 @@
     const form = document.getElementById('ticketPartForm');
     const addUrl = @json(route('service-tickets.parts.store', $serviceTicket));
     const methodInput = document.getElementById('ticketPartMethod');
+    const quantityInput = document.getElementById('ticketPartQuantity');
+    const priceDisplay = document.getElementById('ticketPartPriceDisplay');
+    const priceRaw = document.getElementById('ticketPartPrice');
+    const asDigits = value => String(value ?? '').replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+    const formatIDR = value => (Number(value || 0)).toLocaleString('id-ID', {maximumFractionDigits: 0});
+    const setPrice = value => {
+        const digits = asDigits(value).slice(0, 9);
+        priceRaw.value = digits === '' ? '' : digits;
+        priceDisplay.value = digits === '' ? '' : formatIDR(digits);
+    };
+    const selectAll = input => { input.select(); };
+    [quantityInput, priceDisplay].forEach(input => {
+        input.addEventListener('focus', () => selectAll(input));
+        input.addEventListener('click', () => selectAll(input));
+    });
+    quantityInput.addEventListener('input', () => { quantityInput.value = asDigits(quantityInput.value).slice(0, 6); });
+    priceDisplay.addEventListener('input', () => setPrice(priceDisplay.value));
+    form.addEventListener('submit', event => {
+        if (!/^[1-9]\d*$/.test(quantityInput.value) || Number(quantityInput.value) > 100000) {
+            event.preventDefault(); quantityInput.setCustomValidity('Quantity must be between 1 and 100000.');
+            quantityInput.reportValidity(); return;
+        }
+        quantityInput.setCustomValidity('');
+        if (priceRaw.value === '' || Number(priceRaw.value) > 999999999) {
+            event.preventDefault(); priceDisplay.setCustomValidity('Enter a valid unit price (0–999,999,999).');
+            priceDisplay.reportValidity(); return;
+        }
+        priceDisplay.setCustomValidity('');
+    });
+    quantityInput.addEventListener('input', () => quantityInput.setCustomValidity(''));
+    priceDisplay.addEventListener('input', () => priceDisplay.setCustomValidity(''));
+    setPrice(0);
     const close = () => { formModal.hidden = true; deleteModal.hidden = true; };
     document.querySelectorAll('.ticket-part-close').forEach(btn => btn.addEventListener('click', close));
     for (const modal of [formModal, deleteModal]) modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
     document.querySelectorAll('.ticket-part-open').forEach(btn => btn.addEventListener('click', () => {
-        form.reset(); form.action = addUrl; methodInput.disabled = true;
+        form.reset(); form.action = addUrl; methodInput.disabled = true; setPrice(0);
         document.getElementById('ticketPartFormTitle').textContent = 'Add Service Part';
         formModal.hidden = false;
     }));
@@ -74,7 +106,7 @@
         document.getElementById('ticketPartFormTitle').textContent = 'Edit Service Part';
         document.getElementById('ticketPartProduct').value = btn.dataset.product;
         document.getElementById('ticketPartQuantity').value = btn.dataset.quantity;
-        document.getElementById('ticketPartPrice').value = btn.dataset.price;
+        setPrice(Math.round(Number(btn.dataset.price || '0')));
         document.getElementById('ticketPartNotes').value = btn.dataset.notes || '';
         formModal.hidden = false;
     }));
