@@ -17,8 +17,4 @@
     <div class="card-body"><p>Service can still be performed outside warranty coverage.</p></div>
 </div>
 @endif
-<style>
-.ticket-warranty-detail-card{margin-bottom:18px}.ticket-warranty-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:18px}
-.ticket-warranty-detail-grid>div{display:flex;flex-direction:column;gap:7px}.ticket-warranty-detail-grid small{color:#64748b;font-size:12px}.ticket-warranty-detail-grid strong{font-size:13px;color:#17284f}
-@media(max-width:650px){.ticket-warranty-detail-grid{grid-template-columns:1fr}}
-</style>
+

@@ -1,6 +1,4 @@
-<style>
-.device-customer-filter-hint{display:block;margin-top:7px;color:#64748b;font-size:11px;line-height:1.5}
-</style>
+
 <script>
 (() => {
   const customer = document.getElementById('customer_id');
