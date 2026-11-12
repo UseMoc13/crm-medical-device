@@ -14,12 +14,24 @@ class ContractController extends Controller
     /**
      * Menampilkan list contract.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $contracts = Contract::with('salesOrder')
-            ->orderByDesc('created_at')
-            ->paginate(10);
-
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:120'],
+            'status' => ['nullable', Rule::in(['draft', 'active', 'expired', 'terminated'])],
+            'contract_type' => ['nullable', Rule::in(['Sales Contract', 'Service Agreement', 'Maintenance Contract', 'Rental Agreement', 'Distribution Agreement', 'Other'])],
+        ]);
+        $query = Contract::query()->with('salesOrder');
+        if ($search = trim($filters['search'] ?? '')) {
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('contract_number', 'ilike', "%{$escaped}%")
+                    ->orWhereHas('salesOrder', fn ($order) => $order->where('sales_order_number', 'ilike', "%{$escaped}%"));
+            });
+        }
+        if (! empty($filters['status'])) $query->where('status', $filters['status']);
+        if (! empty($filters['contract_type'])) $query->where('contract_type', $filters['contract_type']);
+        $contracts = $query->orderByDesc('created_at')->orderByDesc('contract_id')->paginate(10)->withQueryString();
         return view('contracts.index', compact('contracts'));
     }
 
@@ -183,13 +195,6 @@ class ContractController extends Controller
                 Rule::unique('contracts', 'sales_order_id')
                     ->ignore($contract->contract_id, 'contract_id'),
             ],
-            'contract_number' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('contracts', 'contract_number')
-                    ->ignore($contract->contract_id, 'contract_id'),
-            ],
             'start_date' => [
                 'required',
                 'date',
@@ -214,14 +219,21 @@ class ContractController extends Controller
                 'required',
                 Rule::in(['draft', 'active', 'expired', 'terminated']),
             ],
-            'document_path' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+            'document' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
         ]);
 
-        $contract->update($validated);
+        $oldDocument = $contract->document_path;
+        $newDocument = $request->hasFile('document') ? $request->file('document')->store('contracts', 'local') : null;
+        unset($validated['document']);
+        if ($newDocument) $validated['document_path'] = $newDocument;
+        try {
+            $contract->update($validated);
+        } catch (\Throwable $e) {
+            if ($newDocument) Storage::disk('local')->delete($newDocument);
+            throw $e;
+        }
+        // Clean up the replaced file only after DB update succeeds.
+        if ($newDocument && $oldDocument && $oldDocument !== $newDocument) Storage::disk('local')->delete($oldDocument);
 
         return redirect()
             ->route('contracts.index')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Services\CrmRoleAccessCatalog as Catalog;
+use App\Services\CrmWorkflowAccess as Workflow;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -147,7 +148,8 @@ class RoleController extends Controller
         $role = DB::transaction(function () use ($validated, $request) {
             $role = Role::create($validated);
             if (! $role->role_id) $role = Role::where('role_name', $validated['role_name'])->firstOrFail();
-            $this->syncPermissions($role, $this->requestedAccess($request, $validated['role_name']));
+            $access = $this->requestedAccess($request, $validated['role_name']);
+            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access));
             return $role;
         });
 
@@ -219,7 +221,8 @@ class RoleController extends Controller
         }
         DB::transaction(function () use ($role, $validated, $request) {
             $role->update($validated);
-            $this->syncPermissions($role, $this->requestedAccess($request, $validated['role_name']));
+            $access = $this->requestedAccess($request, $validated['role_name']);
+            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access));
         });
 
 
@@ -283,7 +286,26 @@ class RoleController extends Controller
                 }
             }
         }
-        return ['accessPages'=>Catalog::PAGES, 'accessActions'=>Catalog::ACTIONS,
+        $workflowKeys = $role
+            ? DB::table('role_permissions as rp')
+                ->join('permissions as p', 'p.permission_id', '=', 'rp.permission_id')
+                ->where('rp.role_id', $role->role_id)
+                ->where('p.module', 'crm_workflow')
+                ->pluck('p.permission_name')->all()
+            : [];
+        $workflowSelected = [];
+        foreach (Workflow::ACTIONS as $slug => $action) {
+            if (in_array(Workflow::key($slug), $workflowKeys, true)) {
+                $workflowSelected[] = $slug;
+            }
+        }
+        $workflowTemplates = [];
+        foreach (['admin','sales','warehouse','delivery_staff','technician','finance','management'] as $templateName) {
+            $workflowTemplates[$templateName] = Workflow::permittedByPages(Catalog::template($templateName));
+        }
+        return ['workflowActions'=>Workflow::ACTIONS, 'workflowSelected'=>$workflowSelected,
+            'workflowTemplates'=>$workflowTemplates,
+            'accessPages'=>Catalog::PAGES, 'accessActions'=>Catalog::ACTIONS,
             'accessSelected'=>$selected, 'accessTemplates'=>['admin'=>'Admin','sales'=>'Sales','warehouse'=>'Warehouse','delivery_staff'=>'Delivery Staff','technician'=>'Technician','finance'=>'Finance','management'=>'Management'],
             'defaultTemplate'=>Catalog::templateForRole($role?->role_name ?? ''),
             'templateOptions'=>collect(['admin','sales','warehouse','delivery_staff','technician','finance','management'])->mapWithKeys(fn ($key) => [$key => Catalog::template($key)])->all()];
@@ -300,7 +322,7 @@ class RoleController extends Controller
         ]);
         if ($input['access_mode'] === 'template') {
             if (empty($input['access_template'])) throw \Illuminate\Validation\ValidationException::withMessages(['access_template'=>'Select a CRM role template.']);
-            return Catalog::template($input['access_template']);
+            return $this->includeViewForActions(Catalog::template($input['access_template']));
         }
         $chosen = $input['page_access'] ?? [];
         foreach ($chosen as $slug => $actions) {
@@ -311,10 +333,51 @@ class RoleController extends Controller
             $actions = array_values(array_unique($chosen[$slug] ?? []));
             if ($actions) $out[$slug] = $actions;
         }
-        return $out;
+        return $this->includeViewForActions($out);
     }
 
-    private function syncPermissions(Role $role, array $access): void
+    // Backend invariant: a page cannot be configured with Create/Edit/Delete
+    // while View is absent, including crafted POST requests and templates.
+    private function includeViewForActions(array $access): array
+    {
+        foreach ($access as $page => $actions) {
+            if (! is_array($actions) || ! $actions) continue;
+            $actions = array_values(array_unique($actions));
+            if (array_intersect($actions, ['create', 'update', 'delete']) && ! in_array('view', $actions, true)) {
+                array_unshift($actions, 'view');
+            }
+            $access[$page] = $actions;
+        }
+        return $access;
+    }
+
+    private function requestedWorkflowAccess(Request $request, array $pageAccess): array
+    {
+        if ($request->input('access_mode') === 'template') {
+            return Workflow::permittedByPages($pageAccess);
+        }
+        $input = $request->validate([
+            'workflow_access' => ['nullable', 'array'],
+            'workflow_access.*' => ['string'],
+        ]);
+        $chosen = array_values(array_unique($input['workflow_access'] ?? []));
+        $possible = Workflow::permittedByPages($pageAccess);
+        foreach ($chosen as $slug) {
+            if (! isset(Workflow::ACTIONS[$slug])) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'workflow_access' => 'Unknown workflow permission was selected.',
+                ]);
+            }
+            if (! in_array($slug, $possible, true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'workflow_access' => 'Workflow permission requires the corresponding page action.',
+                ]);
+            }
+        }
+        return $chosen;
+    }
+
+    private function syncPermissions(Role $role, array $access, array $workflowAccess): void
     {
         if (! DB::table('permissions')->where('permission_name', Catalog::key('customers','view'))->exists()) {
             throw new \RuntimeException('A6.2 migration has not been run. Run php artisan migrate before editing roles.');
@@ -333,9 +396,11 @@ class RoleController extends Controller
                 }
             }
         }
-        $keys = array_unique(array_merge($keys, $base));
+        $keys = array_unique(array_merge($keys, $base,
+            array_map(fn (string $slug) => Workflow::key($slug), $workflowAccess)));
         $managed = array_merge(
             DB::table('permissions')->where('module', 'crm_page')->pluck('permission_id')->all(),
+            DB::table('permissions')->where('module', 'crm_workflow')->pluck('permission_id')->all(),
             DB::table('permissions')->whereIn('permission_name', [
                 'customer_lead.access','sales_crm.access','catalog.access','catalog.manage','inventory.access',
                 'delivery.access','installation.access','service.access','billing.access','reporting.access',
@@ -352,7 +417,7 @@ class RoleController extends Controller
         DB::table('audit_logs')->insert([
             'audit_log_id'=>(string) Str::uuid(), 'user_id'=>Auth::id(),
             'action'=>'UPDATE', 'table_name'=>'role_permissions', 'record_id'=>$role->role_id,
-            'old_value'=>null, 'new_value'=>json_encode(['page_access'=>$access]), 'created_at'=>now(),
+            'old_value'=>null, 'new_value'=>json_encode(['page_access'=>$access, 'workflow_access'=>$workflowAccess]), 'created_at'=>now(),
         ]);
     }
 

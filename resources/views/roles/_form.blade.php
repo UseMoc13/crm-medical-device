@@ -3,6 +3,11 @@
     $chosen = old('page_access', $accessSelected ?? []);
     $initialMode = old('access_mode', 'custom');
     $initialTemplate = old('access_template', $defaultTemplate ?? '');
+    $workflowChosen = old('workflow_access', $workflowSelected ?? []);
+    $workflowGroups = [];
+    foreach (($workflowActions ?? []) as $slug => $item) {
+        $workflowGroups[$item['group']][$slug] = $item;
+    }
     $groups = [];
     foreach ($accessPages as $slug => $page) {
         $key = $page['group'];
@@ -61,7 +66,32 @@
                                     </div>
                                 </div>
                             @endforeach
-                            <p class="role-help role-scope-note">Workflow permissions currently use Edit as a minimum. Detailed action permissions and data scope are implemented in a later phase.</p>
+                            <div class="role-workflow-section">
+                                <div class="role-section-heading">
+                                    <h4>Workflow Action Permissions</h4>
+                                    <p>Grant specific actions separately. Page Create/Edit/Delete access is still required.</p>
+                                </div>
+                                @foreach($workflowGroups as $group => $items)
+                                    <div class="role-workflow-group">
+                                        <div class="role-workflow-group-title">{{ $group }}</div>
+                                        @foreach($items as $slug => $item)
+                                            <label class="role-workflow-row">
+                                                <input type="checkbox" name="workflow_access[]"
+                                                    data-workflow-slug="{{ $slug }}"
+                                                    data-workflow-page="{{ $item['page'] }}"
+                                                    data-workflow-action="{{ $item['action'] }}"
+                                                    value="{{ $slug }}"
+                                                    @checked(in_array($slug, $workflowChosen, true))>
+                                                <span class="role-workflow-text">
+                                                    <strong>{{ $item['label'] }}</strong>
+                                                    <small>Requires {{ $accessPages[$item['page']]['label'] ?? $item['page'] }}: {{ $item['action'] === 'update' ? 'Edit' : ucfirst($item['action']) }}</small>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                                <p class="role-help">Data Scope and record ownership restrictions are handled in the next audited phase.</p>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -137,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const templateInput = document.getElementById('access_template');
   const boxes = [...editor.querySelectorAll('input[data-role-page]')];
   const selectPages = [...editor.querySelectorAll('input[data-select-page]')];
+  const workflowBoxes = [...editor.querySelectorAll('input[data-workflow-slug]')];
+  const workflowTemplates = @json($workflowTemplates ?? []);
   const mode = () => editor.querySelector('input[name="access_mode"]:checked')?.value || 'custom';
   function customSelection() {
     const chosen = {};
@@ -157,7 +189,18 @@ document.addEventListener('DOMContentLoaded', function () {
       if (count) count.textContent = checked + ' permissions';
     });
   }
+  function reconcileWorkflows() {
+    const templateMode = mode() === 'template';
+    workflowBoxes.forEach(w => {
+      const permitted = boxes.some(b => b.dataset.rolePage === w.dataset.workflowPage
+        && b.dataset.roleAction === w.dataset.workflowAction && b.checked);
+      // Template mode uses implied workflow grants; custom mode supports toggles.
+      w.disabled = templateMode || !permitted;
+      if (!permitted && !templateMode) w.checked = false;
+    });
+  }
   function updatePreview() {
+    reconcileWorkflows();
     const selection = selectedAccess();
     const included = Object.entries(pages).filter(([slug]) => (selection[slug] || []).length);
     const total = included.reduce((n,[slug]) => n + (selection[slug] || []).length,0);
@@ -184,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('crm-template-area').hidden=!isTemplate;
     document.getElementById('crm-custom-area').hidden=isTemplate;
     boxes.forEach(el => el.disabled=isTemplate);
+    // Selection in Template mode is derived server-side from chosen template.
     updatePreview();
   }
   selectPages.forEach(el => el.addEventListener('change', () => { boxes.filter(b => b.dataset.rolePage === el.dataset.selectPage).forEach(b => b.checked=el.checked);updatePreview(); }));
@@ -196,9 +240,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!templateInput.value) { templateInput.focus();return; }
     const selected=templates[templateInput.value]||{};
     boxes.forEach(el=>el.checked=(selected[el.dataset.rolePage]||[]).includes(el.dataset.roleAction));
+    const wfSelected = workflowTemplates[templateInput.value] || [];
+    workflowBoxes.forEach(w => w.checked = wfSelected.includes(w.dataset.workflowSlug));
     const custom=radios.find(el=>el.value==='custom');custom.checked=true;setMode();
   });
   boxes.forEach(el => el.addEventListener('change',updatePreview));
+  workflowBoxes.forEach(w => w.addEventListener('change',updatePreview));
   radios.forEach(el => el.addEventListener('change',setMode));
   templateInput.addEventListener('change',updatePreview);
   roleName.addEventListener('input',updatePreview);

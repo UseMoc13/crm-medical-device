@@ -80,6 +80,13 @@ class EnsureCrmAuthenticated
         if ($pagePermission !== null && ! $permissions->allows($user, $pagePermission)) {
             abort(403, 'Your roles do not allow this page/action.');
         }
+        // A6.8: named workflow action is an independent grant, never a bypass
+        // of the existing module/page guard or Controller workflow validation.
+        $workflowPermission = \App\Services\CrmWorkflowAccess::forRoute($name);
+        if ($workflowPermission !== null && ! $permissions->allows($user, $workflowPermission)) {
+            abort(403, 'Your roles do not allow this workflow action.');
+        }
+
         return $next($request);
     }
 }

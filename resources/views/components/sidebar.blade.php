@@ -34,6 +34,7 @@
     @php
     $crmViewer = auth()->user();
     $crmAcl = app(\App\Services\CrmPermissionResolver::class);
+    $crmNav = app(\App\Services\CrmNavigationAccess::class);
     $crmSuperAdmin = $crmAcl->isSuperAdmin($crmViewer);
     $crmAdmin = $crmAcl->hasRole($crmViewer, 'Admin');
 @endphp
@@ -111,12 +112,12 @@
              CUSTOMER & LEAD
         ================================================== --}}
 
-@if($crmAcl->allows($crmViewer, 'customer_lead.access'))
+        @if($crmNav->anyView($crmViewer, ['customers','contacts','leads']))
         <div class="nav-group">
             Customer & Lead
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'customer_lead.access'))
+        @if($crmNav->canView($crmViewer, 'customers'))
 <a
             href="{{ route('customers.index') }}"
             class="{{ request()->routeIs('customers.*') ? 'active' : '' }}"
@@ -129,7 +130,7 @@
 @endif
 
 
-        @if($crmAcl->allows($crmViewer, 'customer_lead.access'))
+        @if($crmNav->canView($crmViewer, 'contacts'))
 <a
             href="{{ route('contacts.index') }}"
             class="{{ request()->routeIs('contacts.*') ? 'active' : '' }}"
@@ -142,7 +143,7 @@
 @endif
 
 
-        @if($crmAcl->allows($crmViewer, 'customer_lead.access'))
+        @if($crmNav->canView($crmViewer, 'leads'))
 <a
             href="{{ route('leads.index') }}"
             class="{{ request()->routeIs('leads.*') ? 'active' : '' }}"
@@ -161,12 +162,12 @@
              SALES CRM
         ================================================== --}}
 
-@if($crmAcl->allows($crmViewer, 'sales_crm.access'))
+        @if($crmNav->anyView($crmViewer, ['opportunities','quotations','sales_orders','contracts']))
         <div class="nav-group">
             Sales CRM
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'sales_crm.access'))
+        @if($crmNav->canView($crmViewer, 'opportunities'))
 <a
             href="{{ route('opportunities.index') }}"
             class="{{ request()->routeIs('opportunities.*') ? 'active' : '' }}"
@@ -177,7 +178,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'sales_crm.access'))
+        @if($crmNav->canView($crmViewer, 'quotations'))
 <a
             href="{{ route('quotations.index') }}"
             class="{{ request()->routeIs('quotations.*') ? 'active' : '' }}"
@@ -189,7 +190,7 @@
 @endif
 
         
-        @if($crmAcl->allows($crmViewer, 'sales_crm.access'))
+        @if($crmNav->canView($crmViewer, 'sales_orders'))
 <a
             href="{{ route('sales-orders.index') }}"
             class="{{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"
@@ -201,7 +202,7 @@
 @endif
 
 
-        @if($crmAcl->allows($crmViewer, 'sales_crm.access'))
+        @if($crmNav->canView($crmViewer, 'contracts'))
 <a
             href="{{ route('contracts.index') }}"
             class="{{ request()->routeIs('contracts.*') ? 'active' : '' }}"
@@ -220,12 +221,12 @@
              PRODUCT & INVENTORY
         ================================================== --}}
 
-@if(($crmAcl->allows($crmViewer, 'catalog.access') || $crmAcl->allows($crmViewer, 'inventory.access')))
+@if($crmNav->anyView($crmViewer, ['products','product_categories','brands','warehouses','inventories','stock_movements','serial_numbers']))
         <div class="nav-group">
             Product & Inventory
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'catalog.access'))
+        @if($crmNav->canView($crmViewer, 'products'))
 <a
             href="{{ route('products.index') }}"
             class="{{ request()->routeIs('products.*') ? 'active' : '' }}"
@@ -236,7 +237,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'catalog.access'))
+        @if($crmNav->canView($crmViewer, 'product_categories'))
 <a
             href="{{ route('product-categories.index') }}"
             class="{{ request()->routeIs('product-categories.*') ? 'active' : '' }}"
@@ -247,7 +248,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'catalog.access'))
+        @if($crmNav->canView($crmViewer, 'brands'))
 <a
             href="{{ route('brands.index') }}"
             class="{{ request()->routeIs('brands.*') ? 'active' : '' }}"
@@ -258,7 +259,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'inventory.access'))
+        @if($crmNav->canView($crmViewer, 'warehouses'))
 <a
             href="{{ route('warehouses.index') }}"
             class="{{ request()->routeIs('warehouses.*') ? 'active' : '' }}"
@@ -269,7 +270,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'inventory.access'))
+        @if($crmNav->canView($crmViewer, 'inventories'))
 <a
             href="{{ route('inventories.index') }}"
             class="{{ request()->routeIs('inventories.*') ? 'active' : '' }}"
@@ -280,7 +281,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'inventory.access'))
+        @if($crmNav->canView($crmViewer, 'stock_movements'))
 <a
             href="{{ route('stock-movements.index') }}"
             class="{{ request()->routeIs('stock-movements.*') ? 'active' : '' }}"
@@ -291,7 +292,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'inventory.access'))
+        @if($crmNav->canView($crmViewer, 'serial_numbers'))
 <a
             href="{{ route('serial-numbers.index') }}"
             class="{{ request()->routeIs('serial-numbers.*') ? 'active' : '' }}"
@@ -309,12 +310,12 @@
              INSTALLATION & WARRANTY
         ================================================== --}}
 
-@if(($crmAcl->allows($crmViewer, 'delivery.access') || $crmAcl->allows($crmViewer, 'installation.access') || $crmAcl->allows($crmViewer, 'service.access')))
+@if($crmNav->anyView($crmViewer, ['deliveries','installations','warranties']))
         <div class="nav-group">
             Installation & Warranty
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'delivery.access'))
+        @if($crmNav->canView($crmViewer, 'deliveries'))
 <a
             href="{{ route('deliveries.index') }}"
             class="{{ request()->routeIs('deliveries.*') ? 'active' : '' }}"
@@ -327,7 +328,7 @@
 @endif
 
 
-        @if($crmAcl->allows($crmViewer, 'installation.access'))
+        @if($crmNav->canView($crmViewer, 'installations'))
 <a href="{{ route('installations.index') }}"
             class="{{ request()->routeIs('installations.*') ? 'active' : '' }}"
             data-label="Installations">
@@ -337,7 +338,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'service.access'))
+        @if($crmNav->canView($crmViewer, 'warranties'))
 <a href="{{ route('warranties.index') }}"
             class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}"
             data-label="Warranty">
@@ -354,12 +355,12 @@
              SERVICE & MAINTENANCE
         ================================================== --}}
 
-@if($crmAcl->allows($crmViewer, 'service.access'))
+        @if($crmNav->anyView($crmViewer, ['service_tickets','maintenance','service_history']))
         <div class="nav-group">
             Service & Maintenance
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'service.access'))
+        @if($crmNav->canView($crmViewer, 'service_tickets'))
 <a href="{{ route('service-tickets.index') }}"
             class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}"
             data-label="service-tickets">
@@ -369,7 +370,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'service.access'))
+        @if($crmNav->canView($crmViewer, 'maintenance'))
 <a href="{{ route('maintenance.index') }}"
             class="{{ request()->routeIs('maintenance.*') ? 'active' : '' }}"
             data-label="Maintenance">
@@ -379,7 +380,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'service.access'))
+        @if($crmNav->canView($crmViewer, 'service_history'))
 <a href="{{ route('service-history.index') }}"
             class="{{ request()->routeIs('service-history.*') ? 'active' : '' }}"
             data-label="Service History">
@@ -396,12 +397,12 @@
              BILLING & REPORTING
         ================================================== --}}
 
-@if(($crmAcl->allows($crmViewer, 'billing.access') || $crmAcl->allows($crmViewer, 'reporting.access')))
+@if($crmNav->anyView($crmViewer, ['invoices','reports']))
         <div class="nav-group">
             Billing & Reporting
         </div>
 
-        @if($crmAcl->allows($crmViewer, 'billing.access'))
+        @if($crmNav->canView($crmViewer, 'invoices'))
 <a href="{{ route('invoices.index') }}"
             class="{{ request()->routeIs('invoices.*') ? 'active' : '' }}"
             data-label="Invoices">
@@ -411,7 +412,7 @@
         </a>
 @endif
 
-        @if($crmAcl->allows($crmViewer, 'reporting.access'))
+        @if($crmNav->canView($crmViewer, 'reports'))
 <a href="{{ route('reports.index') }}"
             class="{{ request()->routeIs('reports.*') ? 'active' : '' }}"
             data-label="Reports">
@@ -428,13 +429,13 @@
              ADMINISTRATION
         ================================================== --}}
 
-@if(($crmSuperAdmin || $crmAdmin))
+@if($crmSuperAdmin || $crmAdmin)
         <div class="nav-group">
             Administration
         </div>
 
 
-        @if($crmAcl->allows($crmViewer, 'announcements.manage'))
+        @if($crmNav->canView($crmViewer, 'announcement_management'))
 <a
             href="{{ route('announcement-management.index') }}"
             class="{{ request()->routeIs('announcement-management.*') ? 'active' : '' }}"

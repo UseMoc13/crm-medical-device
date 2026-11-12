@@ -44,6 +44,31 @@ final class CrmRoleAccessCatalog
             foreach ($config['prefixes'] as $prefix) {
                 if (! str_starts_with($name, $prefix)) continue;
                 $method = substr($name, strlen($prefix));
+                // Special nested POST endpoints must follow their actual CRUD intent,
+                // rather than falling through to update. Keep this list explicit.
+                $exactActions = [
+                    'sales_orders.from_quotation' => 'create',
+                    'opportunities.items.create' => 'create',
+                    'opportunities.items.store' => 'create',
+                    'opportunities.items.edit' => 'update',
+                    'opportunities.items.update' => 'update',
+                    'opportunities.items.destroy' => 'delete',
+                    'stock_movements.correction.create' => 'create',
+                    'stock_movements.correction.store' => 'create',
+                    'deliveries.items.store' => 'create',
+                    'deliveries.items.destroy' => 'delete',
+                    'maintenance.records.create' => 'create',
+                    'maintenance.records.store' => 'create',
+                    'maintenance.records.edit' => 'update',
+                    'maintenance.records.update' => 'update',
+                    'maintenance.records.destroy' => 'delete',
+                ];
+                // Convert the route name to the canonical catalogue slug when
+                // route aliases use dashes, e.g. sales-orders.*.
+                $canonical = $page . '.' . $method;
+                if (isset($exactActions[$canonical])) {
+                    return self::key($page, $exactActions[$canonical]);
+                }
                 if ($method === '') return null;
                 $read = ['index', 'show', 'items', 'download', 'export', 'export.invoices'];
                 $create = ['create', 'store'];

@@ -55,4 +55,16 @@
 @media(max-width:900px){.role-detail-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.role-form-card-body{padding:16px!important}.role-editor-modes{grid-template-columns:1fr}.role-form-card-head{flex-wrap:wrap}.role-detail-info-grid{grid-template-columns:1fr}.role-detail-field.wide{grid-column:auto}.role-matrix-intro{flex-direction:column}.role-module-head{flex-wrap:wrap}.role-form-footer{padding:15px;flex-wrap:wrap}.role-form-footer .btn{flex:1;text-align:center;justify-content:center}}
 @media(max-width:480px){.role-preview-panel{padding:18px}}
+
+/* A6.8: permission-specific workflow checkboxes, scoped to Roles editor. */
+.role-workflow-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border, #e2e8f0); }
+.role-workflow-group { margin: 12px 0 18px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; overflow: hidden; }
+.role-workflow-group-title { background: var(--surface-secondary, #f8fafc); padding: 10px 14px; font-size: 12px; font-weight: 700; color: #334155; }
+.role-workflow-row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 11px 14px; border-top: 1px solid var(--border, #e2e8f0); cursor: pointer; }
+.role-workflow-row input[type="checkbox"] { position: static !important; opacity: 1 !important; appearance: auto !important; flex: 0 0 16px; width: 16px !important; height: 16px !important; margin: 0; accent-color: #0f9a7a; }
+.role-workflow-row input:disabled { cursor: not-allowed; opacity: .45 !important; }
+.role-workflow-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.role-workflow-text strong { font-size: 12px; font-weight: 600; color: #263346; }
+.role-workflow-text small { font-size: 11px; color: #64748b; }
+
 </style>

@@ -54,7 +54,12 @@
         @endif
         <div class="role-detail-permission-grid">
         @foreach($groupedPages as $group)
-            @php $groupCount = collect($group['pages'])->sum(fn ($page, $slug) => count($accessSelected[$slug] ?? [])); @endphp
+            @php
+                $groupCount = 0;
+                foreach ($group['pages'] as $slug => $page) {
+                    $groupCount += count($accessSelected[$slug] ?? []);
+                }
+            @endphp
             <div class="role-detail-module">
                 <div class="role-detail-module-title"><span>{{ $group['label'] }}</span><span class="role-detail-module-count">{{ $groupCount }} permissions enabled</span></div>
                 <div class="role-detail-matrix-wrap"><table class="role-detail-matrix"><thead><tr><th scope="col">Page / Feature</th>@foreach($accessActions as $action)<th scope="col">{{ $action === 'update' ? 'Edit' : ucfirst($action) }}</th>@endforeach</tr></thead><tbody>
