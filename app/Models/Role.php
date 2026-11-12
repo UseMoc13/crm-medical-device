@@ -29,6 +29,19 @@ class Role extends Model
 
     public function users()
     {
+        return $this->belongsToMany(
+            User::class,
+            'user_roles',
+            'role_id',
+            'user_id',
+            'role_id',
+            'user_id'
+        )->withPivot(['user_role_id', 'is_primary', 'assigned_by', 'created_at']);
+    }
+
+    /** Legacy primary-role membership, for any older code still needing it. */
+    public function primaryUsers()
+    {
         return $this->hasMany(User::class, 'role_id', 'role_id');
     }
 

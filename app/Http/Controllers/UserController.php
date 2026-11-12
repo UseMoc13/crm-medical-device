@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Branch;
+use App\Services\UserRoleAssignmentService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -18,6 +20,7 @@ class UserController extends Controller
         $query = User::query()
             ->with([
                 'role',
+                'roles',
                 'branch',
             ]);
 
@@ -63,10 +66,7 @@ class UserController extends Controller
 
         if ($request->filled('role_id')) {
 
-            $query->where(
-                'role_id',
-                $request->role_id
-            );
+            $query->whereHas('roles', fn ($q) => $q->where('roles.role_id', $request->role_id));
         }
 
 
@@ -254,7 +254,11 @@ class UserController extends Controller
         ]);
 
 
-        User::create($validated);
+        DB::transaction(function () use ($validated) {
+            $user = User::create($validated);
+            $user = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
+            app(UserRoleAssignmentService::class)->syncPrimary($user, $validated['role_id']);
+        });
 
 
         return redirect()
@@ -396,9 +400,14 @@ class UserController extends Controller
         }
 
 
-        $user->update(
-            $validated
-        );
+        DB::transaction(function () use ($user, $validated) {
+            $locked = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
+            $newPrimaryRoleId = $validated['role_id'];
+            // Do not update role_id before the privileged-role check.
+            unset($validated['role_id']);
+            $locked->update($validated);
+            app(UserRoleAssignmentService::class)->syncPrimary($locked, $newPrimaryRoleId);
+        });
 
 
         return redirect()
@@ -439,7 +448,15 @@ class UserController extends Controller
         }
 
 
-        $user->delete();
+        // Existing references to users in other CRM tables remain protected
+        // by their database foreign keys. A2 does not change deletion policy.
+        try {
+            $user->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('users.index')->with(
+                'error', 'User cannot be deleted while referenced by CRM records. Deactivate the account instead.'
+            );
+        }
 
 
         return redirect()

@@ -252,6 +252,17 @@
 
 
                 <div class="detail-item">
+                    <span>Additional Roles</span>
+                    <strong>
+                        @forelse($user->roles->where('pivot.is_primary', false) as $additionalRole)
+                            <span style="display:inline-block; margin:2px 5px 2px 0; padding:5px 9px; border-radius:9px; background:#eff6ff; color:#1d4ed8; font-size:12px;">{{ $additionalRole->role_name }}</span>
+                        @empty
+                            <span class="muted">None</span>
+                        @endforelse
+                    </strong>
+                </div>
+
+                <div class="detail-item">
 
                     <span>
                         Branch
@@ -395,7 +406,7 @@
 
                     <p>
 
-                        This user's role determines its category
+                        This user's primary role determines its main category
                         within the CRM system. CRM records such as
                         customers and leads can be assigned to this user.
 

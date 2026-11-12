@@ -471,6 +471,9 @@
 
                                 </span>
 
+                                @foreach($user->roles->where('pivot.is_primary', false) as $additionalRole)
+                                    <span class="user-role-badge" title="Additional Role" style="margin-left:6px; opacity:.82;">+ {{ $additionalRole->role_name }}</span>
+                                @endforeach
                             @else
 
                                 <span class="muted">

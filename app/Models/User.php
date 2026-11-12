@@ -52,6 +52,30 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
     }
 
+    /** Primary role compatibility for legacy CRM views: role(). */
+    public function roles()
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'user_roles',
+            'user_id',
+            'role_id',
+            'user_id',
+            'role_id'
+        )->withPivot(['user_role_id', 'is_primary', 'assigned_by', 'created_at']);
+    }
+
+    public function primaryRoleAssignment()
+    {
+        return $this->hasOne(UserRole::class, 'user_id', 'user_id')
+            ->where('is_primary', true);
+    }
+
+    public function roleAssignments()
+    {
+        return $this->hasMany(UserRole::class, 'user_id', 'user_id');
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'branch_id');
