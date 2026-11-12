@@ -184,7 +184,7 @@ class ServiceTicketController extends Controller
             'ticketWarrantyCoverage' => app(ServiceWarrantyCoverage::class)->forSerial((string) $serviceTicket->serial_number_id),
             'serviceTicket' => $serviceTicket,
             'resolutionHistory' => DB::table('service_ticket_resolution_logs')->where('service_ticket_id', $serviceTicket->getKey())->orderByDesc('created_at')->orderByDesc('resolution_log_id')->get(),
-            'partProducts' => \App\Models\Product::query()->orderBy('product_name')->get(['product_id', 'product_name', 'product_code']),
+            'partProducts' => \App\Models\Product::query()->orderBy('product_name')->get(['product_id', 'product_name', 'product_code', 'price']),
         ]);
     }
 

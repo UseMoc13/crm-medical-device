@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ServiceTicket;
 use App\Models\ServiceTicketPart;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +18,22 @@ class ServiceTicketPartController extends Controller
         return [
             'product_id' => ['required', 'uuid', 'exists:products,product_id'],
             'quantity' => ['required', 'integer', 'min:1', 'max:100000'],
-            'unit_price' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    /** The price is authoritative from Product Master; never accept a price from the form. */
+    private function productPrice(string $productId): string
+    {
+        $product = Product::query()->whereKey($productId)->firstOrFail();
+        if ($product->price === null || !is_numeric($product->price)
+            || (float) $product->price < 0 || (float) $product->price > 999999999.99) {
+            throw ValidationException::withMessages([
+                'product_id' => 'The selected product has no valid master price. Update its price in Products first.',
+            ]);
+        }
+
+        return number_format((float) $product->price, 2, '.', '');
     }
 
     private function editable(ServiceTicket $ticket): void
@@ -42,7 +56,7 @@ class ServiceTicketPartController extends Controller
             $part->service_ticket_id = $ticket->getKey();
             $part->product_id = $data['product_id'];
             $part->quantity = (int) $data['quantity'];
-            $part->unit_price = $data['unit_price'];
+            $part->unit_price = $this->productPrice($data['product_id']);
             $part->notes = $data['notes'] ?? null;
             $part->save();
         }, 3);
@@ -58,7 +72,12 @@ class ServiceTicketPartController extends Controller
             $this->editable($ticket);
             $record = ServiceTicketPart::query()->whereKey($part)
                 ->where('service_ticket_id', $ticket->getKey())->lockForUpdate()->firstOrFail();
-            $record->update($data);
+            $record->update([
+                'product_id' => $data['product_id'],
+                'quantity' => (int) $data['quantity'],
+                'unit_price' => $this->productPrice($data['product_id']),
+                'notes' => $data['notes'] ?? null,
+            ]);
         }, 3);
         return redirect()->route('service-tickets.show', $serviceTicket)
             ->with('success', 'Service part updated successfully.');

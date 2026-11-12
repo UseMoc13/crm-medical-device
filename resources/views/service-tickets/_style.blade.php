@@ -2121,7 +2121,7 @@
 /* Service Parts — quantity and Indonesian Rupiah input */
 .ticket-part-field .ticket-price-input-wrap { position:relative; display:flex; align-items:center; min-width:0; }
 .ticket-part-field .ticket-price-prefix { position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#64748b;font-size:13px;pointer-events:none; }
-.ticket-part-field #ticketPartPriceDisplay { width:100%;padding-left:37px;box-sizing:border-box;font-variant-numeric:tabular-nums; }
+.ticket-part-field #ticketPartPriceDisplay { width:100%;padding-left:37px;box-sizing:border-box;font-variant-numeric:tabular-nums;background:#f8fafc;color:#334155;cursor:default; }
 .ticket-part-field #ticketPartQuantity { font-variant-numeric:tabular-nums; }
 .ticket-part-field .ticket-price-hint { display:block;margin-top:6px;color:#64748b;font-size:11px;line-height:1.4; }
 </style>
