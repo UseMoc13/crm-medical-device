@@ -1,234 +1,150 @@
-{{--
-    Form bersama untuk Add / Edit Maintenance Record.
-    Variabel: $maintenance, $users, $results, $record (opsional)
---}}
+{{-- Shared Maintenance Schedule form for Create and Edit. The Record form is maintenance.records._form. --}}
 @php
-    $isEdit = isset($record) && $record;
-    $serial = $maintenance->serialNumber;
-
-    $performedAt = old(
-        'performed_at',
-        $isEdit
-            ? $record->performed_at?->format('Y-m-d\TH:i')
-            : now()->format('Y-m-d\TH:i')
-    );
+    $isEdit = isset($maintenance) && $maintenance !== null;
+    $selectedSerial = (string) old('serial_number_id', $isEdit ? $maintenance->serial_number_id : request('serial_number_id', ''));
+    $selectedUser = (string) old('user_id', $isEdit ? $maintenance->user_id : '');
+    $selectedType = (string) old('maintenance_type', $isEdit ? $maintenance->maintenance_type : '');
+    $selectedStatus = (string) old('status', $isEdit ? $maintenance->status : 'Scheduled');
+    $scheduledDate = old('scheduled_date', $isEdit ? $maintenance->scheduled_date?->format('Y-m-d') : '');
+    $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : '');
 @endphp
 
-<form
-    method="POST"
-    action="{{ $isEdit
-        ? route('maintenance.records.update', [$maintenance->maintenance_schedule_id, $record->maintenance_record_id])
-        : route('maintenance.records.store', $maintenance->maintenance_schedule_id) }}"
->
+<form method="POST" action="{{ $isEdit ? route('maintenance.update', $maintenance->maintenance_schedule_id) : route('maintenance.store') }}" id="maintenanceScheduleForm">
     @csrf
     @if($isEdit)
         @method('PUT')
     @endif
 
     <div class="mt-form-layout">
-
         <div class="mt-form-main">
-
             <div class="mt-section first">
-                <h4>Activity Information</h4>
-                <p>Record when the maintenance was performed and who performed it.</p>
+                <h4>Device & Maintenance Details</h4>
+                <p>Select the medical device and planned maintenance activity.</p>
             </div>
 
             <div class="mt-field">
-                <label for="performed_at">
-                    Performed At <span class="required">*</span>
-                </label>
-
-                <input
-                    type="datetime-local"
-                    id="performed_at"
-                    name="performed_at"
-                    value="{{ $performedAt }}"
-                    required
-                >
-
-                @error('performed_at')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
+                <label for="serial_number_id">Device Serial Number <span class="required">*</span></label>
+                <select id="serial_number_id" name="serial_number_id" required>
+                    <option value="">Select a registered device</option>
+                    @foreach($serialNumbers as $serial)
+                        <option value="{{ $serial->serial_number_id }}"
+                                data-serial="{{ $serial->serial_number }}"
+                                data-product="{{ $serial->product?->product_name ?? 'Unknown Product' }}"
+                                data-customer="{{ $serial->customer?->customer_name ?? 'Unassigned' }}"
+                                @selected($selectedSerial === (string) $serial->serial_number_id)>
+                            {{ $serial->serial_number }} — {{ $serial->product?->product_name ?? 'Unknown Product' }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('serial_number_id') <span class="mt-error">{{ $message }}</span> @enderror
             </div>
 
             <div class="mt-field">
-                <label for="user_id">
-                    Performed By <span class="required">*</span>
-                </label>
+                <label for="maintenance_type">Maintenance Type <span class="required">*</span></label>
+                <select id="maintenance_type" name="maintenance_type" required>
+                    <option value="">Select maintenance type</option>
+                    @foreach($types as $type)
+                        <option value="{{ $type }}" @selected($selectedType === (string) $type)>{{ $type }}</option>
+                    @endforeach
+                </select>
+                @error('maintenance_type') <span class="mt-error">{{ $message }}</span> @enderror
+            </div>
 
-                <select id="user_id" name="user_id" required>
-                    <option value="">Select technician</option>
+            <div class="mt-section">
+                <h4>Schedule & Assignment</h4>
+                <p>Choose the planned date, responsible technician, and current status.</p>
+            </div>
 
+            <div class="mt-field">
+                <label for="scheduled_date">Scheduled Date <span class="required">*</span></label>
+                <input type="date" id="scheduled_date" name="scheduled_date" value="{{ $scheduledDate }}" required>
+                @error('scheduled_date') <span class="mt-error">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mt-field">
+                <label for="user_id">Assigned Technician</label>
+                <select id="user_id" name="user_id">
+                    <option value="">Unassigned</option>
                     @foreach($users as $user)
-                        <option
-                            value="{{ $user->user_id }}"
-                            data-name="{{ $user->name }}"
-                            @selected(old('user_id', $isEdit ? $record->user_id : $maintenance->user_id) == $user->user_id)
-                        >
+                        <option value="{{ $user->user_id }}"
+                                data-name="{{ $user->name }}"
+                                @selected($selectedUser === (string) $user->user_id)>
                             {{ $user->name }}
                         </option>
                     @endforeach
                 </select>
-
-                @error('user_id')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
+                <span class="mt-hint">Assign a technician before starting maintenance.</span>
+                @error('user_id') <span class="mt-error">{{ $message }}</span> @enderror
             </div>
 
             <div class="mt-field">
-                <label for="result">
-                    Result <span class="required">*</span>
-                </label>
-
-                <select id="result" name="result" required>
-                    <option value="">Select result</option>
-
-                    @foreach($results as $result)
-                        <option
-                            value="{{ $result }}"
-                            @selected(old('result', $isEdit ? $record->result : null) === $result)
-                        >
-                            {{ $result }}
-                        </option>
+                <label for="status">Status <span class="required">*</span></label>
+                <select id="status" name="status" required>
+                    @foreach($statuses as $status)
+                        <option value="{{ $status }}" @selected($selectedStatus === (string) $status)>{{ $status }}</option>
                     @endforeach
                 </select>
-
-                @error('result')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="mt-section">
-                <h4>Device Condition & Work Performed</h4>
-                <p>Describe the condition of the device and the work that was carried out.</p>
-            </div>
-
-            <div class="mt-field">
-                <label for="condition_before">Condition Before</label>
-                <textarea
-                    id="condition_before"
-                    name="condition_before"
-                    rows="3"
-                    placeholder="Device condition before maintenance..."
-                >{{ old('condition_before', $isEdit ? $record->condition_before : '') }}</textarea>
-                @error('condition_before')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="mt-field">
-                <label for="action_taken">Action Taken</label>
-                <textarea
-                    id="action_taken"
-                    name="action_taken"
-                    rows="3"
-                    placeholder="Cleaning, part replacement, calibration steps..."
-                >{{ old('action_taken', $isEdit ? $record->action_taken : '') }}</textarea>
-                @error('action_taken')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="mt-field">
-                <label for="condition_after">Condition After</label>
-                <textarea
-                    id="condition_after"
-                    name="condition_after"
-                    rows="3"
-                    placeholder="Device condition after maintenance..."
-                >{{ old('condition_after', $isEdit ? $record->condition_after : '') }}</textarea>
-                @error('condition_after')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
+                <span class="mt-hint">New schedules normally begin as Scheduled. Use the workflow on the detail page to advance status.</span>
+                @error('status') <span class="mt-error">{{ $message }}</span> @enderror
             </div>
 
             <div class="mt-field">
                 <label for="notes">Notes</label>
-                <textarea
-                    id="notes"
-                    name="notes"
-                    rows="3"
-                    placeholder="Additional notes..."
-                >{{ old('notes', $isEdit ? $record->notes : '') }}</textarea>
-                @error('notes')
-                    <span class="mt-error">{{ $message }}</span>
-                @enderror
+                <textarea id="notes" name="notes" rows="4" placeholder="Maintenance plan or additional instructions...">{{ $scheduleNotes }}</textarea>
+                @error('notes') <span class="mt-error">{{ $message }}</span> @enderror
             </div>
-
-            @if($maintenance->status !== 'Completed' && $maintenance->status !== 'Cancelled')
-                <label class="mt-check">
-                    <input
-                        type="checkbox"
-                        name="complete_schedule"
-                        value="1"
-                        @checked(old('complete_schedule'))
-                    >
-                    Mark the maintenance schedule as Completed
-                </label>
-            @endif
 
             <div class="mt-form-actions">
-                <a
-                    href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}"
-                    class="btn"
-                >
-                    Cancel
-                </a>
-
-                <button type="submit" class="btn primary">
-                    {{ $isEdit ? 'Save Changes' : 'Save Record' }}
-                </button>
+                <a href="{{ $isEdit ? route('maintenance.show', $maintenance->maintenance_schedule_id) : route('maintenance.index') }}" class="btn">Cancel</a>
+                <button type="submit" class="btn primary">{{ $isEdit ? 'Save Changes' : 'Create Maintenance Schedule' }}</button>
             </div>
-
         </div>
 
-        {{-- SCHEDULE SUMMARY --}}
         <aside class="mt-preview">
-
-            <div class="mt-preview-label">MAINTENANCE SCHEDULE</div>
+            <div class="mt-preview-label">MAINTENANCE PREVIEW</div>
             <div class="mt-preview-icon">MT</div>
-            <div class="mt-preview-title">{{ $maintenance->maintenance_type }}</div>
-            <div class="mt-preview-caption">Maintenance Type</div>
-
+            <div class="mt-preview-title">{{ $isEdit ? 'Edit Schedule' : 'New Schedule' }}</div>
+            <div class="mt-preview-caption">Maintenance Schedule</div>
             <div class="mt-preview-divider"></div>
 
-            <div class="mt-preview-item">
-                <span>Device Serial Number</span>
-                <strong>{{ $serial?->serial_number ?? '-' }}</strong>
-            </div>
-
-            <div class="mt-preview-item">
-                <span>Product</span>
-                <strong>{{ $serial?->product?->product_name ?? 'Unknown Product' }}</strong>
-            </div>
-
-            <div class="mt-preview-item">
-                <span>Customer</span>
-                <strong>{{ $serial?->customer?->customer_name ?? '-' }}</strong>
-            </div>
-
-            <div class="mt-preview-item">
-                <span>Scheduled Date</span>
-                <strong>{{ $maintenance->scheduled_date?->format('d M Y') ?? '-' }}</strong>
-            </div>
-
-            <div class="mt-preview-item">
-                <span>Schedule Status</span>
-                <strong>{{ $maintenance->status }}</strong>
-            </div>
+            <div class="mt-preview-item"><span>Serial Number</span><strong id="mtPreviewSerial">Not selected</strong></div>
+            <div class="mt-preview-item"><span>Product</span><strong id="mtPreviewProduct">Not selected</strong></div>
+            <div class="mt-preview-item"><span>Customer</span><strong id="mtPreviewCustomer">Not selected</strong></div>
+            <div class="mt-preview-item"><span>Maintenance Type</span><strong id="mtPreviewType">Not selected</strong></div>
+            <div class="mt-preview-item"><span>Scheduled Date</span><strong id="mtPreviewDate">Not scheduled</strong></div>
+            <div class="mt-preview-item"><span>Technician</span><strong id="mtPreviewUser">Unassigned</strong></div>
+            <div class="mt-preview-item"><span>Status</span><strong id="mtPreviewStatus">Scheduled</strong></div>
 
             <div class="mt-preview-divider"></div>
-
             <div class="mt-preview-note">
-                <strong>Record Guidelines</strong>
-                <p>
-                    Describe the device condition before and after the work so
-                    the service history stays complete and traceable.
-                </p>
+                <strong>Schedule Guidelines</strong>
+                <p>Confirm the device and planned activity. Maintenance records are entered separately after scheduling.</p>
             </div>
-
         </aside>
-
     </div>
 </form>
+
+<script>
+(() => {
+    const get = (id) => document.getElementById(id);
+    const fields = ['serial_number_id', 'maintenance_type', 'scheduled_date', 'user_id', 'status'];
+    const refresh = () => {
+        const serial = get('serial_number_id')?.selectedOptions[0];
+        const user = get('user_id')?.selectedOptions[0];
+        const type = get('maintenance_type')?.selectedOptions[0];
+        const status = get('status')?.selectedOptions[0];
+        get('mtPreviewSerial').textContent = serial?.dataset.serial || 'Not selected';
+        get('mtPreviewProduct').textContent = serial?.dataset.product || 'Not selected';
+        get('mtPreviewCustomer').textContent = serial?.dataset.customer || 'Not selected';
+        get('mtPreviewType').textContent = type?.value ? type.textContent.trim() : 'Not selected';
+        get('mtPreviewDate').textContent = get('scheduled_date')?.value || 'Not scheduled';
+        get('mtPreviewUser').textContent = user?.value ? (user.dataset.name || user.textContent.trim()) : 'Unassigned';
+        get('mtPreviewStatus').textContent = status?.value || 'Scheduled';
+    };
+    fields.forEach(id => {
+        get(id)?.addEventListener('change', refresh);
+        get(id)?.addEventListener('input', refresh);
+    });
+    refresh();
+})();
+</script>
