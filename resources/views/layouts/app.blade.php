@@ -19,6 +19,12 @@
 .crm-toast-error .crm-toast-symbol{background:#fff0f0;color:#bb3841}.crm-toast div{flex:1;min-width:0}.crm-toast strong{display:block;color:#17284f;font-size:13px}.crm-toast p{margin:4px 0 0;color:#52617a;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
 .crm-toast-close{border:none;background:transparent;color:#8590a0;font-size:21px;cursor:pointer;padding:0 4px}.crm-toast.is-leaving{opacity:0;transform:translateY(-10px);transition:.25s}
 @keyframes crmToastIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+/* Always-visible sign-out button for CRM authentication */
+.crm-signout-form{margin:0;display:flex;align-items:center;flex-shrink:0}
+.crm-signout-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 13px;border:1px solid #d4dee9;background:#fff;border-radius:9px;color:#17284f;font:600 12px/1.3 inherit;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .18s,border-color .18s,color .18s}
+.crm-signout-btn:hover,.crm-signout-btn:focus-visible{background:#fff1f2;border-color:#f0b7bc;color:#b42335}
+.crm-signout-btn:focus-visible{outline:2px solid #2ba7a0;outline-offset:2px}
+@media(max-width:520px){.crm-signout-btn{padding:9px 10px}.crm-signout-label{display:none}.top-actions{gap:10px}}
 </style>
 
 </head>
@@ -67,10 +73,19 @@
                         </div>
 
                     </div>
-                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                    {{-- POST logout with CSRF; never use a GET link for session termination. --}}
+                    @auth
+                    <form action="{{ route('logout') }}" method="POST" class="crm-signout-form">
                         @csrf
-                        <button type="submit" title="Sign out" style="border:1px solid #dce5ee;background:#fff;color:#17284f;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:12px;font-weight:600;">Sign out</button>
+                        <button type="submit" class="crm-signout-btn" title="Sign out of CRM" aria-label="Sign out of CRM">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 17l5-5-5-5M15 12H3"/>
+                                <path d="M12 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6"/>
+                            </svg>
+                            <span class="crm-signout-label">Sign out</span>
+                        </button>
                     </form>
+                    @endauth
 
                 </div>
 

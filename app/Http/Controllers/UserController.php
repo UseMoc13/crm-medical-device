@@ -172,7 +172,10 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->assertSuperAdminActor();
         $roles = Role::query()
+            ->where('is_system', false)
+            ->whereRaw('LOWER(role_name) <> ?', ['super admin'])
             ->orderBy('role_name')
             ->get([
                 'role_id',
@@ -210,6 +213,9 @@ class UserController extends Controller
                 'uuid',
                 'exists:roles,role_id',
             ],
+
+            'additional_role_ids' => ['sometimes', 'array', 'max:20'],
+            'additional_role_ids.*' => ['required', 'uuid', 'distinct', 'exists:roles,role_id'],
 
             'branch_id' => [
                 'nullable',
@@ -256,14 +262,22 @@ class UserController extends Controller
         ]);
 
 
+        $this->assertSuperAdminActor();
         $this->assertNotProtectedRole((string) $validated['role_id']);
+        $additionalRoleIds = $validated['additional_role_ids'] ?? [];
+        unset($validated['additional_role_ids']);
 
-        DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated, $additionalRoleIds) {
             $user = new User();
             $user->forceFill(array_merge($validated, ['user_id' => (string) Str::uuid()]));
             $user->save();
             $user = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
-            app(UserRoleAssignmentService::class)->syncPrimary($user, $validated['role_id']);
+            app(UserRoleAssignmentService::class)->syncAssignments(
+                $user,
+                (string) $validated['role_id'],
+                $additionalRoleIds,
+                (string) auth()->id()
+            );
         });
 
 
@@ -284,6 +298,7 @@ class UserController extends Controller
         $user->load([
             'role',
             'branch',
+            'roles',
         ]);
 
 
@@ -299,8 +314,12 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->assertSuperAdminActor();
         $this->assertNotProtectedUser($user);
+        $user->load('roles');
         $roles = Role::query()
+            ->where('is_system', false)
+            ->whereRaw('LOWER(role_name) <> ?', ['super admin'])
             ->orderBy('role_name')
             ->get([
                 'role_id',
@@ -342,6 +361,9 @@ class UserController extends Controller
                 'uuid',
                 'exists:roles,role_id',
             ],
+
+            'additional_role_ids' => ['sometimes', 'array', 'max:20'],
+            'additional_role_ids.*' => ['required', 'uuid', 'distinct', 'exists:roles,role_id'],
 
             'branch_id' => [
                 'nullable',
@@ -407,17 +429,21 @@ class UserController extends Controller
         }
 
 
+        $this->assertSuperAdminActor();
         $this->assertNotProtectedUser($user);
         $this->assertNotProtectedRole((string) $validated['role_id']);
+        $additionalRoleIds = $validated['additional_role_ids'] ?? [];
+        unset($validated['additional_role_ids']);
 
-        DB::transaction(function () use ($user, $validated) {
+        DB::transaction(function () use ($user, $validated, $additionalRoleIds) {
             $locked = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
             $this->assertNotProtectedUser($locked);
-            $newPrimaryRoleId = $validated['role_id'];
-            // Do not update role_id before the privileged-role check.
+            $newPrimaryRoleId = (string) $validated['role_id'];
             unset($validated['role_id']);
             $locked->update($validated);
-            app(UserRoleAssignmentService::class)->syncPrimary($locked, $newPrimaryRoleId);
+            app(UserRoleAssignmentService::class)->syncAssignments(
+                $locked, $newPrimaryRoleId, $additionalRoleIds, (string) auth()->id()
+            );
         });
 
 
@@ -438,6 +464,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->assertSuperAdminActor();
         $this->assertNotProtectedUser($user);
         /*
         |--------------------------------------------------------------------------
@@ -478,6 +505,13 @@ class UserController extends Controller
                 'User berhasil dihapus.'
             );
     }
+    private function assertSuperAdminActor(): void
+    {
+        abort_unless(auth()->check()
+            && app(CrmPermissionResolver::class)->isSuperAdmin(auth()->user()),
+            403, 'Only Super Admin can manage user role assignments.');
+    }
+
     private function assertNotProtectedUser(User $user): void
     {
         if (app(CrmPermissionResolver::class)->isSuperAdmin($user)) {

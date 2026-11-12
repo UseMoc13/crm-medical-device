@@ -71,4 +71,10 @@ class UserRoleAssignmentService
             $user->save();
         }
     }
+
+    /** A5: authoritative full-role sync for privileged User CRUD. */
+    public function syncAssignments(User $user, string $primaryId, array $additionalIds, string $actorId): void
+    {
+        app(CrmRoleAssignmentService::class)->sync($user, $primaryId, $additionalIds, $actorId);
+    }
 }

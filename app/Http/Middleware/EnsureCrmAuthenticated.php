@@ -66,8 +66,20 @@ class EnsureCrmAuthenticated
             abort(403, 'Administration access is required.');
         }
 
-        // WARNING: operational modules remain authentication-only for now.
-        // Data-scoped authorization is introduced after permission seeding.
+        // A6.1: deny module entry when no explicit grant exists. This is
+        // independent of widget visibility and applies to all HTTP methods.
+        // Actual row-level access and per-action workflow policies follow in A6.2.
+        $required = \App\Services\CrmModuleAccess::permissionForRoute($name);
+        if ($required !== null && ! $permissions->allows($user, $required)) {
+            abort(403, 'Your roles do not allow access to this CRM module.');
+        }
+
+        // A6.2 granular page access: module admission remains mandatory,
+        // and each route also requires the matching page/action grant.
+        $pagePermission = \App\Services\CrmRoleAccessCatalog::forRoute($name);
+        if ($pagePermission !== null && ! $permissions->allows($user, $pagePermission)) {
+            abort(403, 'Your roles do not allow this page/action.');
+        }
         return $next($request);
     }
 }

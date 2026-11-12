@@ -31,28 +31,6 @@
 </div>
 
 
-@if(session('success'))
-
-<div class="alert success">
-
-    {{ session('success') }}
-
-</div>
-
-@endif
-
-
-@if(session('error'))
-
-<div class="alert error">
-
-    {{ session('error') }}
-
-</div>
-
-@endif
-
-
 <div class="card">
 
     <div class="card-head">
@@ -1278,6 +1256,18 @@
     }
 
 }
+
+
+/* A6.3: consistent thin dividers; wrapper is the only external outline. */
+.table-wrap.roles-table-wrap {border:1px solid #e5eaf1 !important; border-radius:10px; overflow:hidden auto !important;}
+.table-wrap.roles-table-wrap table.roles-table {border:0 !important; border-collapse:collapse !important;}
+.table-wrap.roles-table-wrap .roles-table thead th {border:0 !important; border-bottom:1px solid #e5eaf1 !important; background:#f8fafc !important; padding:12px 13px;}
+.table-wrap.roles-table-wrap .roles-table thead th + th {border-left:1px solid #f0f3f8 !important;}
+.table-wrap.roles-table-wrap .roles-table tbody td {border:0 !important; border-bottom:1px solid #edf1f5 !important; padding:12px 13px; height:auto !important;}
+.table-wrap.roles-table-wrap .roles-table tbody td + td {border-left:1px solid #f5f6f9 !important;}
+.table-wrap.roles-table-wrap .roles-table tbody tr:last-child td {border-bottom:0 !important;}
+.table-wrap.roles-table-wrap .roles-table .role-user-badge,
+.table-wrap.roles-table-wrap .roles-table .role-user-badge.empty {display:inline-flex !important; width:auto !important; height:auto !important; min-height:0 !important; max-height:26px !important; min-width:0 !important; padding:4px 9px !important; border-radius:6px !important; line-height:1.25 !important; font-size:11px !important; margin:0 !important; vertical-align:middle !important;}
 
 </style>
 

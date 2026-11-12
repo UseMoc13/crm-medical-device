@@ -35,15 +35,6 @@
 </div>
 
 
-@if(session('success'))
-
-    <div class="alert success">
-        {{ session('success') }}
-    </div>
-
-@endif
-
-
 <div class="role-detail-grid">
 
     {{-- MAIN INFORMATION --}}
@@ -433,4 +424,5 @@
 
 </style>
 
+<div class="card" style="margin-top:20px"><div class="card-head"><div><h3>Module & Page Permissions</h3><p>Effective page permissions assigned to this role.</p></div></div><div class="card-body"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left">Page</th><th>View</th><th>Create</th><th>Edit</th><th>Delete</th></tr></thead><tbody>@foreach($accessPages as $slug => $page)<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0">{{ $page['label'] }}</td>@foreach($accessActions as $action)<td style="text-align:center;border-bottom:1px solid #e2e8f0">{{ in_array($action, $accessSelected[$slug] ?? [], true) ? '✓' : '—' }}</td>@endforeach</tr>@endforeach</tbody></table></div></div></div>
 @endsection

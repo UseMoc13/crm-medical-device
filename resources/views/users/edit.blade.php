@@ -212,6 +212,25 @@
                     </div>
 
 
+{{-- Additional roles: Super Admin-only management (A5). --}}
+<div class="form-group" style="margin-top: 18px;">
+    <label>Additional Roles <span style="font-weight:normal; color:#64748b;">(Optional)</span></label>
+    <div style="border:1px solid #dce4eb; border-radius:10px; padding:12px 15px; display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:10px;">
+        @foreach($roles as $additionalRole)
+            <label class="crm-additional-role-choice" data-crm-role-id="{{ $additionalRole->role_id }}" style="display:flex;align-items:center;gap:9px;margin:0;font-weight:500;cursor:pointer;">
+                <input type="checkbox" name="additional_role_ids[]" value="{{ $additionalRole->role_id }}"
+                    @checked(in_array((string) $additionalRole->role_id, array_map('strval', old('additional_role_ids', $user->roles->filter(fn ($role) => ! (bool) $role->pivot->is_primary)->pluck('role_id')->all()))))
+                    style="width:16px;height:16px;flex:none;">
+                <span>{{ $additionalRole->role_name }}</span>
+            </label>
+        @endforeach
+    </div>
+    <span class="form-hint">Only assign roles for duties this employee actually performs. Do not select the Primary Role again.</span>
+    @error('additional_role_ids') <span class="form-error">{{ $message }}</span> @enderror
+    @error('additional_role_ids.*') <span class="form-error">{{ $message }}</span> @enderror
+</div>
+
+
                     {{-- Branch --}}
 
                     <div class="form-group">
@@ -1034,6 +1053,27 @@ document.addEventListener(
     }
 );
 
+</script>
+
+
+<script>
+// A6.1: Prevent selecting the Primary Role again as Additional Role.
+document.addEventListener('DOMContentLoaded', function () {
+    const primary = document.getElementById('role_id');
+    if (!primary) return;
+    const choices = document.querySelectorAll('.crm-additional-role-choice');
+    function syncAdditionalRoles() {
+        choices.forEach(function (choice) {
+            const duplicate = primary.value !== '' && choice.dataset.crmRoleId === primary.value;
+            const checkbox = choice.querySelector('input[type="checkbox"]');
+            if (duplicate && checkbox) checkbox.checked = false;
+            choice.hidden = duplicate;
+            choice.style.display = duplicate ? 'none' : 'flex';
+        });
+    }
+    primary.addEventListener('change', syncAdditionalRoles);
+    syncAdditionalRoles();
+});
 </script>
 
 @endsection
