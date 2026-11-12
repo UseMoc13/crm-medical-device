@@ -11,8 +11,6 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
-    {{-- Global Laravel paginator SVG sizing; intentionally shared by all modules. --}}
-    @include('components._pagination_style')
 
 <style>
 .crm-toast-area{position:fixed;left:50%;right:auto;top:20px;transform:translateX(-50%);z-index:50000;display:grid;gap:10px;width:min(390px,calc(100vw - 36px));pointer-events:none}
@@ -45,7 +43,7 @@
                     ☰
                 </button>
 
-                
+
 
                 <div class="top-actions">
 
@@ -60,15 +58,19 @@
                     <div class="profile">
 
                         <div class="avatar">
-                            A
+                            {{ strtoupper(substr(auth()->user()->name ?? "U", 0, 1)) }}
                         </div>
 
                         <div class="profile-info">
-                            <strong>Administrator</strong>
-                            <small>Administrator</small>
+                            <strong>{{ auth()->user()->name ?? "User" }}</strong>
+                            <small>{{ auth()->user()?->roles()->wherePivot("is_primary", true)->first()?->role_name ?? "Staff" }}</small>
                         </div>
 
                     </div>
+                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                        @csrf
+                        <button type="submit" title="Sign out" style="border:1px solid #dce5ee;background:#fff;color:#17284f;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:12px;font-weight:600;">Sign out</button>
+                    </form>
 
                 </div>
 
