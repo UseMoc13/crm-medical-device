@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Branch;
 use App\Services\UserRoleAssignmentService;
+use App\Services\CrmPermissionResolver;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -254,8 +256,12 @@ class UserController extends Controller
         ]);
 
 
+        $this->assertNotProtectedRole((string) $validated['role_id']);
+
         DB::transaction(function () use ($validated) {
-            $user = User::create($validated);
+            $user = new User();
+            $user->forceFill(array_merge($validated, ['user_id' => (string) Str::uuid()]));
+            $user->save();
             $user = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
             app(UserRoleAssignmentService::class)->syncPrimary($user, $validated['role_id']);
         });
@@ -293,6 +299,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->assertNotProtectedUser($user);
         $roles = Role::query()
             ->orderBy('role_name')
             ->get([
@@ -400,8 +407,12 @@ class UserController extends Controller
         }
 
 
+        $this->assertNotProtectedUser($user);
+        $this->assertNotProtectedRole((string) $validated['role_id']);
+
         DB::transaction(function () use ($user, $validated) {
             $locked = User::query()->whereKey($user->user_id)->lockForUpdate()->firstOrFail();
+            $this->assertNotProtectedUser($locked);
             $newPrimaryRoleId = $validated['role_id'];
             // Do not update role_id before the privileged-role check.
             unset($validated['role_id']);
@@ -427,6 +438,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->assertNotProtectedUser($user);
         /*
         |--------------------------------------------------------------------------
         | Prevent deleting user that is still referenced
@@ -465,5 +477,24 @@ class UserController extends Controller
                 'success',
                 'User berhasil dihapus.'
             );
+    }
+    private function assertNotProtectedUser(User $user): void
+    {
+        if (app(CrmPermissionResolver::class)->isSuperAdmin($user)) {
+            abort(403, 'Super Admin accounts are protected from ordinary User CRUD.');
+        }
+    }
+
+    private function assertNotProtectedRole(string $roleId): void
+    {
+        $protected = Role::query()->whereKey($roleId)
+            ->where(function ($query) {
+                $query->where('is_system', true)
+                    ->orWhereRaw('LOWER(role_name) = ?', ['super admin']);
+            })->exists();
+
+        if ($protected) {
+            abort(403, 'Assigning protected system roles through User CRUD is not allowed.');
+        }
     }
 }

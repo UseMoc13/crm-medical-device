@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
@@ -136,6 +137,10 @@ class RoleController extends Controller
         ]);
 
 
+        if (strcasecmp(trim($validated['role_name']), 'Super Admin') === 0) {
+            abort(403, 'The protected Super Admin role can only be provisioned using the authorized bootstrap process.');
+        }
+
         Role::create($validated);
 
 
@@ -247,5 +252,11 @@ class RoleController extends Controller
                 'success',
                 'Role berhasil dihapus.'
             );
+    }
+    private function assertNotProtected(Role $role): void
+    {
+        if ($role->is_system || strcasecmp((string) $role->role_name, 'Super Admin') === 0) {
+            abort(403, 'Protected system roles cannot be edited or deleted.');
+        }
     }
 }

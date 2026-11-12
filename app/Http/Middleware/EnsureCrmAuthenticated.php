@@ -2,21 +2,17 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CrmPermissionResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Transitional access guard for A3. A complete permission + data-scope
- * authorization layer is required before production deployment.
- */
+/** Transitional A4 guard: authentication + protected administration routes. */
 class EnsureCrmAuthenticated
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Login has to remain accessible to guests. Logout verifies session
-        // in its controller. Only these exact paths are public in web routes.
         if ($request->is('login')) {
             return $next($request);
         }
@@ -39,33 +35,39 @@ class EnsureCrmAuthenticated
             return $next($request);
         }
 
-        // Temporary hardening while A4 permissions are not yet implemented.
-        // Never grant Super Admin powers based on UI form input alone.
+        $permissions = app(CrmPermissionResolver::class);
+        $user = $request->user();
         $name = (string) ($request->route()?->getName() ?? '');
-        if ($name !== '') {
-            $isAdmin = $request->user()->roles()
-                ->whereRaw('LOWER(roles.role_name) IN (?, ?)', ['admin', 'super admin'])
-                ->exists();
-            $isSuperAdmin = $request->user()->roles()
-                ->whereRaw('LOWER(roles.role_name) = ?', ['super admin'])
-                ->exists();
 
-            if (str_starts_with($name, 'users.')) {
-                if (! $isAdmin) {
-                    abort(403, 'Administration access is required.');
-                }
-                if (! in_array($name, ['users.index', 'users.show'], true) && ! $isSuperAdmin) {
-                    abort(403, 'User management changes are restricted until RBAC policies are ready.');
-                }
-            }
-            if (str_starts_with($name, 'roles.') && ! $isSuperAdmin) {
-                abort(403, 'Role management changes are restricted until RBAC policies are ready.');
-            }
-            if (str_starts_with($name, 'announcement-management.') && ! $isAdmin) {
+        // Reserved role configuration remains exclusive to the protected
+        // Super Admin, even when an ordinary role receives a similarly named
+        // permission later. Does not grant access to other CRM modules.
+        if (str_starts_with($name, 'roles.') && ! $permissions->isSuperAdmin($user)) {
+            abort(403, 'Role management requires Super Admin.');
+        }
+
+        if (str_starts_with($name, 'users.')) {
+            $isAdministrator = $permissions->isSuperAdmin($user)
+                || $permissions->hasRole($user, 'Admin');
+            if (! $isAdministrator) {
                 abort(403, 'Administration access is required.');
+            }
+            // Keep ordinary Admin read-only until protected user-granting
+            // policies and explicit permission matrix are completed.
+            if (! in_array($name, ['users.index', 'users.show'], true)
+                && ! $permissions->isSuperAdmin($user)) {
+                abort(403, 'User management changes require Super Admin during A4.');
             }
         }
 
+        if (str_starts_with($name, 'announcement-management.')
+            && ! $permissions->isSuperAdmin($user)
+            && ! $permissions->hasRole($user, 'Admin')) {
+            abort(403, 'Administration access is required.');
+        }
+
+        // WARNING: operational modules remain authentication-only for now.
+        // Data-scoped authorization is introduced after permission seeding.
         return $next($request);
     }
 }
