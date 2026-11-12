@@ -149,7 +149,7 @@ class RoleController extends Controller
             $role = Role::create($validated);
             if (! $role->role_id) $role = Role::where('role_name', $validated['role_name'])->firstOrFail();
             $access = $this->requestedAccess($request, $validated['role_name']);
-            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access));
+            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access), $this->requestedScopeAccess($request));
             return $role;
         });
 
@@ -222,7 +222,7 @@ class RoleController extends Controller
         DB::transaction(function () use ($role, $validated, $request) {
             $role->update($validated);
             $access = $this->requestedAccess($request, $validated['role_name']);
-            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access));
+            $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access), $this->requestedScopeAccess($request));
         });
 
 
@@ -303,7 +303,22 @@ class RoleController extends Controller
         foreach (['admin','sales','warehouse','delivery_staff','technician','finance','management'] as $templateName) {
             $workflowTemplates[$templateName] = Workflow::permittedByPages(Catalog::template($templateName));
         }
-        return ['workflowActions'=>Workflow::ACTIONS, 'workflowSelected'=>$workflowSelected,
+        // A6.10: Load explicit scopes for supported user_id-based subjects only.
+        // Unconfigured NULL grants remain NULL; never interpret them as all.
+        $scopePages = ['customers','leads','opportunities','activities','service_tickets','installations','maintenance'];
+        $scopeSelected = [];
+        if ($role) {
+            $storedScopes = DB::table('role_permissions as rp')
+                ->join('permissions as p', 'p.permission_id', '=', 'rp.permission_id')
+                ->where('rp.role_id', $role->role_id)
+                ->where('p.module', 'crm_page')
+                ->pluck('rp.data_scope', 'p.permission_name');
+            foreach ($scopePages as $slug) {
+                $scopeSelected[$slug] = $storedScopes->get(Catalog::key($slug, 'view'));
+            }
+        }
+        return ['scopePages'=>$scopePages, 'scopeSelected'=>$scopeSelected,
+            'workflowActions'=>Workflow::ACTIONS, 'workflowSelected'=>$workflowSelected,
             'workflowTemplates'=>$workflowTemplates,
             'accessPages'=>Catalog::PAGES, 'accessActions'=>Catalog::ACTIONS,
             'accessSelected'=>$selected, 'accessTemplates'=>['admin'=>'Admin','sales'=>'Sales','warehouse'=>'Warehouse','delivery_staff'=>'Delivery Staff','technician'=>'Technician','finance'=>'Finance','management'=>'Management'],
@@ -377,7 +392,40 @@ class RoleController extends Controller
         return $chosen;
     }
 
-    private function syncPermissions(Role $role, array $access, array $workflowAccess): void
+    /**
+     * A6.10 config-only: Only scopes on audited page View permissions.
+     * Template mode preserves stored scopes, it never silently promotes NULL to all.
+     * Custom mode applies explicitly submitted values, including blank=unconfigured.
+     */
+    private function requestedScopeAccess(Request $request): ?array
+    {
+        if ($request->input('access_mode') === 'template') return null;
+        $validated = $request->validate([
+            'page_scopes' => ['nullable', 'array'],
+            'page_scopes.*' => ['nullable', 'string', 'in:all,branch,own,assigned'],
+        ]);
+        $supported = [
+            'customers' => ['all','branch','own'],
+            'leads' => ['all','branch','own'],
+            'opportunities' => ['all','branch','own'],
+            'activities' => ['all','branch','own'],
+            'service_tickets' => ['all','branch','assigned'],
+            'installations' => ['all','branch','assigned'],
+            'maintenance' => ['all','branch','assigned'],
+        ];
+        $out = [];
+        foreach (($validated['page_scopes'] ?? []) as $page => $scope) {
+            if (! isset($supported[$page]) || ($scope !== null && ! in_array($scope, $supported[$page], true))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'page_scopes' => 'Unsupported data scope for this page.',
+                ]);
+            }
+            $out[$page] = $scope;
+        }
+        return $out;
+    }
+
+    private function syncPermissions(Role $role, array $access, array $workflowAccess, ?array $pageScopes): void
     {
         if (! DB::table('permissions')->where('permission_name', Catalog::key('customers','view'))->exists()) {
             throw new \RuntimeException('A6.2 migration has not been run. Run php artisan migrate before editing roles.');
@@ -408,11 +456,29 @@ class RoleController extends Controller
             ])->pluck('permission_id')->all()
         );
         $desired = DB::table('permissions')->whereIn('permission_name', $keys)->pluck('permission_id')->all();
+        // Preserve scope of every existing permission when rebuilding the grants.
+        // Without this, editing a role destroys previously configured data scopes.
+        $existingScopeById = DB::table('role_permissions')
+            ->where('role_id', $role->role_id)
+            ->pluck('data_scope', 'permission_id')
+            ->all();
+        $pageViewIds = [];
+        foreach (['customers','leads','opportunities','activities','service_tickets','installations','maintenance'] as $slug) {
+            $id = DB::table('permissions')->where('permission_name', Catalog::key($slug, 'view'))->value('permission_id');
+            if ($id) $pageViewIds[(string)$id] = $slug;
+        }
         DB::table('role_permissions')->where('role_id', $role->role_id)->whereIn('permission_id', $managed)->delete();
-        foreach ($desired as $pid) DB::table('role_permissions')->insert([
-            'role_permission_id'=>(string) Str::uuid(), 'role_id'=>$role->role_id,
-            'permission_id'=>$pid, 'data_scope'=>null, 'created_at'=>now(),
-        ]);
+        foreach ($desired as $pid) {
+            $scope = $existingScopeById[(string)$pid] ?? null;
+            if ($pageScopes !== null && isset($pageViewIds[(string)$pid])) {
+                $slug = $pageViewIds[(string)$pid];
+                if (array_key_exists($slug, $pageScopes)) $scope = $pageScopes[$slug];
+            }
+            DB::table('role_permissions')->insert([
+                'role_permission_id'=>(string) Str::uuid(), 'role_id'=>$role->role_id,
+                'permission_id'=>$pid, 'data_scope'=>$scope, 'created_at'=>now(),
+            ]);
+        }
         // This change is security-sensitive, always audited.
         DB::table('audit_logs')->insert([
             'audit_log_id'=>(string) Str::uuid(), 'user_id'=>Auth::id(),

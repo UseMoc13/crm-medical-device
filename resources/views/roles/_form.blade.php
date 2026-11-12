@@ -4,6 +4,7 @@
     $initialMode = old('access_mode', 'custom');
     $initialTemplate = old('access_template', $defaultTemplate ?? '');
     $workflowChosen = old('workflow_access', $workflowSelected ?? []);
+    $chosenScopes = old('page_scopes', $scopeSelected ?? []);
     $workflowGroups = [];
     foreach (($workflowActions ?? []) as $slug => $item) {
         $workflowGroups[$item['group']][$slug] = $item;
@@ -58,9 +59,41 @@
                                         <div class="role-matrix-scroll">
                                             <table class="role-matrix"><thead><tr><th scope="col">Page / Feature</th>@foreach($accessActions as $action)<th scope="col">{{ $action === 'update' ? 'Edit' : ucfirst($action) }}</th>@endforeach<th scope="col" class="role-all-heading">All CRUD</th></tr></thead>
                                                 <tbody>@foreach($group['pages'] as $slug => $page)
-                                                    <tr data-page-row="{{ $slug }}"><th scope="row">{{ $page['label'] }}</th>@foreach($accessActions as $action)
-                                                        <td><label class="role-checkbox-cell"><input type="checkbox" data-role-page="{{ $slug }}" data-role-action="{{ $action }}" name="page_access[{{ $slug }}][]" value="{{ $action }}" @checked(in_array($action, $chosen[$slug] ?? [], true)) aria-label="{{ $page['label'] }}: {{ $action === 'update' ? 'Edit' : ucfirst($action) }}"><span class="role-check-visual" aria-hidden="true"></span></label></td>
-                                                    @endforeach<td class="role-all-cell"><label class="role-checkbox-cell"><input type="checkbox" data-select-page="{{ $slug }}" aria-label="Select all CRUD for {{ $page['label'] }}"><span class="role-check-visual" aria-hidden="true"></span></label></td></tr>
+                                                    <tr data-page-row="{{ $slug }}">
+                                                        <th scope="row" class="role-page-cell">
+                                                            <div class="role-page-title">{{ $page['label'] }}</div>
+                                                            <div class="role-page-caption">Configure page-level access for this screen.</div>
+                                                            @if(in_array($slug, $scopePages ?? [], true))
+                                                                @php
+                                                                    $scopeOptions = in_array($slug, ['service_tickets','installations','maintenance'], true)
+                                                                        ? ['' => 'Not configured', 'assigned' => 'Assigned to me', 'branch' => 'Same branch', 'all' => 'All permitted records']
+                                                                        : ['' => 'Not configured', 'own' => 'Owned by me', 'branch' => 'Same branch', 'all' => 'All permitted records'];
+                                                                @endphp
+                                                                <label class="role-scope-field" for="scope-{{ $slug }}">
+                                                                    <span>View scope</span>
+                                                                    <select id="scope-{{ $slug }}" name="page_scopes[{{ $slug }}]" class="role-scope-select" data-scope-page="{{ $slug }}" aria-label="Data scope for {{ $page['label'] }}">
+                                                                        @foreach($scopeOptions as $scopeKey => $scopeLabel)
+                                                                            <option value="{{ $scopeKey }}" @selected((string)($chosenScopes[$slug] ?? '') === (string)$scopeKey)>{{ $scopeLabel }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </label>
+                                                            @endif
+                                                        </th>
+                                                        @foreach($accessActions as $action)
+                                                            <td>
+                                                                <label class="role-checkbox-cell">
+                                                                    <input type="checkbox" data-role-page="{{ $slug }}" data-role-action="{{ $action }}" name="page_access[{{ $slug }}][]" value="{{ $action }}" @checked(in_array($action, $chosen[$slug] ?? [], true)) aria-label="{{ $page['label'] }}: {{ $action === 'update' ? 'Edit' : ucfirst($action) }}">
+                                                                    <span class="role-check-visual" aria-hidden="true"></span>
+                                                                </label>
+                                                            </td>
+                                                        @endforeach
+                                                        <td class="role-all-cell">
+                                                            <label class="role-checkbox-cell">
+                                                                <input type="checkbox" data-select-page="{{ $slug }}" aria-label="Select all CRUD for {{ $page['label'] }}">
+                                                                <span class="role-check-visual" aria-hidden="true"></span>
+                                                            </label>
+                                                        </td>
+                                                    </tr>
                                                 @endforeach</tbody></table>
                                         </div>
                                     </div>
@@ -90,7 +123,7 @@
                                         @endforeach
                                     </div>
                                 @endforeach
-                                <p class="role-help">Data Scope and record ownership restrictions are handled in the next audited phase.</p>
+                                <p class="role-help">A6.10 scopes are configuration-only. They do not filter records until the next enforcement phase; unconfigured scopes are never treated as All.</p>
                             </div>
                         </div>
                     </section>
@@ -158,98 +191,240 @@
 document.addEventListener('DOMContentLoaded', function () {
   const editor = document.getElementById('role-editor');
   if (!editor) return;
+
   const pages = @json($accessPages);
-  const actions = @json($accessActions);
   const templates = @json($templateOptions);
+  const workflowTemplates = @json($workflowTemplates ?? []);
   const roleName = document.getElementById('role_name');
   const roleDescription = document.getElementById('description');
-  const radios = [...document.querySelectorAll('input[name="access_mode"]')];
+  const radios = [...editor.querySelectorAll('input[name="access_mode"]')];
   const templateInput = document.getElementById('access_template');
   const boxes = [...editor.querySelectorAll('input[data-role-page]')];
   const selectPages = [...editor.querySelectorAll('input[data-select-page]')];
   const workflowBoxes = [...editor.querySelectorAll('input[data-workflow-slug]')];
-  const workflowTemplates = @json($workflowTemplates ?? []);
+  const scopeSelects = [...editor.querySelectorAll('select[data-scope-page]')];
   const mode = () => editor.querySelector('input[name="access_mode"]:checked')?.value || 'custom';
+
+  function pageBoxes(pageSlug) {
+    return boxes.filter((el) => el.dataset.rolePage === pageSlug);
+  }
+
+  function actionBox(pageSlug, action) {
+    return boxes.find((el) => el.dataset.rolePage === pageSlug && el.dataset.roleAction === action) || null;
+  }
+
   function customSelection() {
     const chosen = {};
-    boxes.forEach(el => { if (el.checked) (chosen[el.dataset.rolePage] ||= []).push(el.dataset.roleAction); });
+    boxes.forEach((el) => {
+      if (el.checked) {
+        (chosen[el.dataset.rolePage] ||= []).push(el.dataset.roleAction);
+      }
+    });
     return chosen;
   }
-  function selectedAccess() { return mode() === 'template' ? (templates[templateInput.value] || {}) : customSelection(); }
+
+  function selectedAccess() {
+    return mode() === 'template' ? (templates[templateInput.value] || {}) : customSelection();
+  }
+
+  function syncPageRules(pageSlug, changedAction = null) {
+    const viewBox = actionBox(pageSlug, 'view');
+    const related = pageBoxes(pageSlug);
+    const nonView = related.filter((el) => el.dataset.roleAction !== 'view');
+    if (!viewBox) return;
+
+    if (changedAction && changedAction !== 'view') {
+      const trigger = actionBox(pageSlug, changedAction);
+      if (trigger?.checked) {
+        viewBox.checked = true;
+      }
+    }
+
+    if (changedAction === 'view' && !viewBox.checked) {
+      nonView.forEach((el) => { el.checked = false; });
+    }
+
+    if (nonView.some((el) => el.checked)) {
+      viewBox.checked = true;
+    }
+  }
+
+  function syncAllPageRules() {
+    Object.keys(pages).forEach((slug) => syncPageRules(slug));
+  }
+
   function updateCheckboxHeaders() {
-    selectPages.forEach(el => {
-      const children = boxes.filter(b => b.dataset.rolePage === el.dataset.selectPage);
-      const selected = children.filter(b => b.checked).length;
-      el.checked = selected === children.length;
+    selectPages.forEach((el) => {
+      const children = pageBoxes(el.dataset.selectPage);
+      const selected = children.filter((b) => b.checked).length;
+      el.checked = children.length > 0 && selected === children.length;
       el.indeterminate = selected > 0 && selected < children.length;
     });
-    editor.querySelectorAll('[data-module]').forEach(el => {
-      const checked = el.querySelectorAll('input[data-role-page]:checked').length;
-      const count = el.querySelector('[data-module-count]');
-      if (count) count.textContent = checked + ' permissions';
+
+    editor.querySelectorAll('[data-module]').forEach((moduleEl) => {
+      const checked = moduleEl.querySelectorAll('input[data-role-page]:checked').length;
+      const count = moduleEl.querySelector('[data-module-count]');
+      if (count) {
+        count.textContent = checked ? `${checked} permissions` : '0 permissions';
+      }
     });
   }
+
+  function updateScopeAvailability() {
+    scopeSelects.forEach((select) => {
+      const pageSlug = select.dataset.scopePage;
+      const viewBox = actionBox(pageSlug, 'view');
+      const isEnabled = mode() === 'custom' && !!viewBox?.checked;
+      select.disabled = !isEnabled;
+      select.closest('.role-scope-field')?.classList.toggle('is-disabled', !isEnabled);
+    });
+  }
+
   function reconcileWorkflows() {
     const templateMode = mode() === 'template';
-    workflowBoxes.forEach(w => {
-      const permitted = boxes.some(b => b.dataset.rolePage === w.dataset.workflowPage
+    workflowBoxes.forEach((w) => {
+      const permitted = boxes.some((b) => b.dataset.rolePage === w.dataset.workflowPage
         && b.dataset.roleAction === w.dataset.workflowAction && b.checked);
-      // Template mode uses implied workflow grants; custom mode supports toggles.
       w.disabled = templateMode || !permitted;
-      if (!permitted && !templateMode) w.checked = false;
+      if (!permitted && !templateMode) {
+        w.checked = false;
+      }
     });
   }
+
   function updatePreview() {
+    syncAllPageRules();
     reconcileWorkflows();
+    updateScopeAvailability();
+
     const selection = selectedAccess();
     const included = Object.entries(pages).filter(([slug]) => (selection[slug] || []).length);
-    const total = included.reduce((n,[slug]) => n + (selection[slug] || []).length,0);
+    const total = included.reduce((n, [slug]) => n + (selection[slug] || []).length, 0);
+
     document.getElementById('previewRoleName').textContent = roleName.value.trim() || 'New Role';
     document.getElementById('previewRoleInitial').textContent = (roleName.value.trim().charAt(0) || 'R').toUpperCase();
     document.getElementById('previewRoleDescription').textContent = roleDescription.value.trim() || 'No description provided.';
     document.getElementById('previewPages').textContent = included.length;
     document.getElementById('previewActions').textContent = total;
     document.getElementById('previewMode').textContent = mode() === 'template' ? 'CRM Template' : 'Custom Permissions';
-    const templateLabel = mode() === 'template' && templateInput.value ? (templateInput.selectedOptions[0]?.textContent.trim() || '') : '';
+
+    const templateLabel = mode() === 'template' && templateInput.value
+      ? (templateInput.selectedOptions[0]?.textContent.trim() || '')
+      : '';
+
     document.getElementById('previewTemplate').textContent = templateLabel || '—';
     document.getElementById('previewTemplateRow').hidden = mode() !== 'template';
-    document.getElementById('previewRoleSubtitle').textContent = mode() === 'template' ? 'CRM template-based access' : 'Custom CRM permissions';
+    document.getElementById('previewRoleSubtitle').textContent = mode() === 'template'
+      ? 'CRM template-based access'
+      : 'Custom CRM permissions';
+
     const groups = {};
-    included.forEach(([slug,config]) => { (groups[config.group] ||= {label:config.group_label, pages:[], count:0}).pages.push(config.label); groups[config.group].count += selection[slug].length; });
+    included.forEach(([slug, config]) => {
+      (groups[config.group] ||= { label: config.group_label, pages: [], count: 0 }).pages.push(config.label);
+      groups[config.group].count += selection[slug].length;
+    });
+
     const target = document.getElementById('previewModules');
     target.replaceChildren();
-    if (!Object.keys(groups).length) { const e = document.createElement('p');e.className='role-preview-empty';e.textContent='No permissions selected yet.'; target.append(e); }
-    Object.values(groups).forEach(group => { const block=document.createElement('div');block.className='role-preview-module';const heading=document.createElement('div');heading.className='role-preview-module-head';const title=document.createElement('strong');title.textContent=group.label;const count=document.createElement('span');count.textContent=group.count+' permissions';heading.append(title,count); const listing=document.createElement('p');listing.textContent=group.pages.join(' · ');block.append(heading,listing);target.append(block); });
+    if (!Object.keys(groups).length) {
+      const empty = document.createElement('p');
+      empty.className = 'role-preview-empty';
+      empty.textContent = 'No permissions selected yet.';
+      target.append(empty);
+    }
+
+    Object.values(groups).forEach((group) => {
+      const block = document.createElement('div');
+      block.className = 'role-preview-module';
+      const heading = document.createElement('div');
+      heading.className = 'role-preview-module-head';
+      const title = document.createElement('strong');
+      title.textContent = group.label;
+      const count = document.createElement('span');
+      count.textContent = `${group.count} permissions`;
+      heading.append(title, count);
+
+      const listing = document.createElement('p');
+      listing.textContent = group.pages.join(' · ');
+      block.append(heading, listing);
+      target.append(block);
+    });
+
     updateCheckboxHeaders();
   }
+
   function setMode() {
-    const isTemplate=mode()==='template';
-    document.getElementById('crm-template-area').hidden=!isTemplate;
-    document.getElementById('crm-custom-area').hidden=isTemplate;
-    boxes.forEach(el => el.disabled=isTemplate);
-    // Selection in Template mode is derived server-side from chosen template.
+    const isTemplate = mode() === 'template';
+    document.getElementById('crm-template-area').hidden = !isTemplate;
+    document.getElementById('crm-custom-area').hidden = isTemplate;
+    boxes.forEach((el) => { el.disabled = isTemplate; });
     updatePreview();
   }
-  selectPages.forEach(el => el.addEventListener('change', () => { boxes.filter(b => b.dataset.rolePage === el.dataset.selectPage).forEach(b => b.checked=el.checked);updatePreview(); }));
-  editor.querySelectorAll('[data-module-all]').forEach(el => el.addEventListener('click', () => { const module=editor.querySelector('[data-module="'+el.dataset.moduleAll+'"]'); module?.querySelectorAll('input[data-role-page]').forEach(b=>b.checked=true);updatePreview(); }));
-  editor.querySelectorAll('[data-module-clear]').forEach(el => el.addEventListener('click', () => { const module=editor.querySelector('[data-module="'+el.dataset.moduleClear+'"]'); module?.querySelectorAll('input[data-role-page]').forEach(b=>b.checked=false);updatePreview(); }));
-  editor.querySelectorAll('.role-module-toggle').forEach(btn => btn.addEventListener('click', () => { const body=document.getElementById(btn.getAttribute('aria-controls'));const expanded=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',String(!expanded));body.hidden=expanded; }));
-  document.getElementById('expandModules').addEventListener('click',()=>editor.querySelectorAll('.role-module-toggle').forEach(btn=>{btn.setAttribute('aria-expanded','true');document.getElementById(btn.getAttribute('aria-controls')).hidden=false;}));
-  document.getElementById('collapseModules').addEventListener('click',()=>editor.querySelectorAll('.role-module-toggle').forEach(btn=>{btn.setAttribute('aria-expanded','false');document.getElementById(btn.getAttribute('aria-controls')).hidden=true;}));
-  document.getElementById('copyTemplate').addEventListener('click', () => {
-    if (!templateInput.value) { templateInput.focus();return; }
-    const selected=templates[templateInput.value]||{};
-    boxes.forEach(el=>el.checked=(selected[el.dataset.rolePage]||[]).includes(el.dataset.roleAction));
-    const wfSelected = workflowTemplates[templateInput.value] || [];
-    workflowBoxes.forEach(w => w.checked = wfSelected.includes(w.dataset.workflowSlug));
-    const custom=radios.find(el=>el.value==='custom');custom.checked=true;setMode();
+
+  selectPages.forEach((el) => el.addEventListener('change', () => {
+    pageBoxes(el.dataset.selectPage).forEach((b) => { b.checked = el.checked; });
+    syncPageRules(el.dataset.selectPage);
+    updatePreview();
+  }));
+
+  editor.querySelectorAll('[data-module-all]').forEach((el) => el.addEventListener('click', () => {
+    const module = editor.querySelector(`[data-module="${el.dataset.moduleAll}"]`);
+    module?.querySelectorAll('input[data-role-page]').forEach((b) => { b.checked = true; });
+    updatePreview();
+  }));
+
+  editor.querySelectorAll('[data-module-clear]').forEach((el) => el.addEventListener('click', () => {
+    const module = editor.querySelector(`[data-module="${el.dataset.moduleClear}"]`);
+    module?.querySelectorAll('input[data-role-page]').forEach((b) => { b.checked = false; });
+    updatePreview();
+  }));
+
+  editor.querySelectorAll('.role-module-toggle').forEach((btn) => btn.addEventListener('click', () => {
+    const body = document.getElementById(btn.getAttribute('aria-controls'));
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    if (body) body.hidden = expanded;
+  }));
+
+  document.getElementById('expandModules').addEventListener('click', () => {
+    editor.querySelectorAll('.role-module-toggle').forEach((btn) => {
+      btn.setAttribute('aria-expanded', 'true');
+      const body = document.getElementById(btn.getAttribute('aria-controls'));
+      if (body) body.hidden = false;
+    });
   });
-  boxes.forEach(el => el.addEventListener('change',updatePreview));
-  workflowBoxes.forEach(w => w.addEventListener('change',updatePreview));
-  radios.forEach(el => el.addEventListener('change',setMode));
-  templateInput.addEventListener('change',updatePreview);
-  roleName.addEventListener('input',updatePreview);
-  roleDescription.addEventListener('input',updatePreview);
+
+  document.getElementById('collapseModules').addEventListener('click', () => {
+    editor.querySelectorAll('.role-module-toggle').forEach((btn) => {
+      btn.setAttribute('aria-expanded', 'false');
+      const body = document.getElementById(btn.getAttribute('aria-controls'));
+      if (body) body.hidden = true;
+    });
+  });
+
+  document.getElementById('copyTemplate').addEventListener('click', () => {
+    if (!templateInput.value) {
+      templateInput.focus();
+      return;
+    }
+    const selected = templates[templateInput.value] || {};
+    boxes.forEach((el) => { el.checked = (selected[el.dataset.rolePage] || []).includes(el.dataset.roleAction); });
+    const wfSelected = workflowTemplates[templateInput.value] || [];
+    workflowBoxes.forEach((w) => { w.checked = wfSelected.includes(w.dataset.workflowSlug); });
+    const custom = radios.find((el) => el.value === 'custom');
+    if (custom) custom.checked = true;
+    setMode();
+  });
+
+  boxes.forEach((el) => el.addEventListener('change', () => {
+    syncPageRules(el.dataset.rolePage, el.dataset.roleAction);
+    updatePreview();
+  }));
+  workflowBoxes.forEach((w) => w.addEventListener('change', updatePreview));
+  radios.forEach((el) => el.addEventListener('change', setMode));
+  templateInput.addEventListener('change', updatePreview);
+  roleName.addEventListener('input', updatePreview);
+  roleDescription.addEventListener('input', updatePreview);
   setMode();
 });
 </script>
