@@ -269,4 +269,27 @@
 .mt-followup-action { display:flex; justify-content:space-between; align-items:center; gap:16px; }
 .mt-followup-action .btn { flex-shrink:0; white-space:nowrap; }
 @media(max-width:700px){.mt-followup-action{flex-direction:column;align-items:stretch}}
+
+/* NEXT PREVENTIVE (v19) */
+.mt-recurrence-links { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.mt-recurrence-links .btn { white-space:nowrap; }
+@media (max-width:720px) { .mt-recurrence-links { justify-content:flex-start; } }
+
+/* =====================================================
+   MAINTENANCE v20 — DUE DATE MONITORING (read-only)
+   Scoped to Maintenance; other module styles unchanged.
+===================================================== */
+.mt-due-overview { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0 0 18px; }
+.mt-due-card { display:flex; flex-direction:column; gap:5px; min-width:0; padding:15px 18px; background:#fff; border:1px solid #e0e7ef; border-radius:12px; text-decoration:none; transition:box-shadow .15s,border-color .15s; }
+.mt-due-card:hover,.mt-due-card.is-active { border-color:#2ba7a0; box-shadow:0 4px 14px rgba(23,40,79,.07); }
+.mt-due-title { font-size:12px; font-weight:650; color:#596579; }
+.mt-due-card strong { font-size:23px; line-height:1.3; color:#17284f; }
+.mt-due-card small { font-size:11px; line-height:1.5; color:#8a94a6; }
+.mt-due-card.soon strong { color:#946200; }
+.mt-due-card.overdue strong { color:#c03939; }
+.mt-due-tag { display:inline-flex; align-items:center; margin-top:5px; padding:3px 7px; border-radius:5px; font-size:10px; font-weight:700; }
+.mt-due-tag.today { background:#e9f1fb; color:#285b96; }
+.mt-due-tag.soon { background:#fff5dc; color:#906300; }
+@media (max-width:760px) { .mt-due-overview { grid-template-columns:1fr; gap:9px; } }
+
 </style>

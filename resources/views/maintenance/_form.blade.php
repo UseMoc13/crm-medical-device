@@ -2,18 +2,23 @@
 @php
     $isEdit = isset($maintenance) && $maintenance !== null;
     $followupSource = $followupSource ?? null;
-    $selectedSerial = (string) old('serial_number_id', $isEdit ? $maintenance->serial_number_id : ($followupSource?->serial_number_id ?? request('serial_number_id', '')));
-    $selectedUser = (string) old('user_id', $isEdit ? $maintenance->user_id : ($followupSource?->user_id ?? ''));
-    $selectedType = (string) old('maintenance_type', $isEdit ? $maintenance->maintenance_type : ($followupSource ? 'Corrective' : ''));
+    $recurringSource = $recurringSource ?? null;
+    $selectedSerial = (string) old('serial_number_id', $isEdit ? $maintenance->serial_number_id : ($followupSource?->serial_number_id ?? $recurringSource?->serial_number_id ?? request('serial_number_id', '')));
+    $selectedUser = (string) old('user_id', $isEdit ? $maintenance->user_id : ($followupSource?->user_id ?? $recurringSource?->user_id ?? ''));
+    $selectedType = (string) old('maintenance_type', $isEdit ? $maintenance->maintenance_type : ($followupSource ? 'Corrective' : ($recurringSource ? 'Preventive' : '')));
     $selectedStatus = (string) old('status', $isEdit ? $maintenance->status : 'Scheduled');
-    $scheduledDate = old('scheduled_date', $isEdit ? $maintenance->scheduled_date?->format('Y-m-d') : '');
-    $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : ($followupSource ? 'Follow-up required after ' . $followupSource->maintenance_type . ' maintenance (latest result: ' . ($followupSource->records()->orderByDesc('performed_at')->first()?->result ?? 'Unknown') . ').' : ''));
+    $scheduledDate = old('scheduled_date', $isEdit ? $maintenance->scheduled_date?->format('Y-m-d') : ($recurringSuggestedDate ?? ''));
+    $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : ($followupSource ? 'Follow-up required after ' . $followupSource->maintenance_type . ' maintenance (latest result: ' . ($followupSource->records()->orderByDesc('performed_at')->first()?->result ?? 'Unknown') . ').' : ($recurringSource ? 'Next periodic preventive visit after previous completed preventive maintenance.' : '')));
 @endphp
 
 <form method="POST" action="{{ $isEdit ? route('maintenance.update', $maintenance->maintenance_schedule_id) : route('maintenance.store') }}" id="maintenanceScheduleForm">
     @csrf
     @if(!$isEdit && $followupSource)
         <input type="hidden" name="followup_from" value="{{ $followupSource->maintenance_schedule_id }}">
+    @endif
+    @if(!$isEdit && $recurringSource)
+        <input type="hidden" name="recurring_from" value="{{ $recurringSource->maintenance_schedule_id }}">
+        <input type="hidden" name="recurring_months" value="{{ $recurringMonths }}">
     @endif
     @if($isEdit)
         @method('PUT')

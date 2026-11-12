@@ -34,6 +34,15 @@
     </div>
 @endif
 
+@if($recurringSource)
+    <div class="mt-followup-notice" role="status">
+        <strong>Next Preventive Maintenance · {{ $recurringMonths }} months</strong>
+        <p>Scheduling the next preventive visit for device <b>{{ $recurringSource->serialNumber?->serial_number }}</b>.
+        Suggested date: <b>{{ $recurringSuggestedDate }}</b> (calculated from the previous scheduled date).
+        You may adjust the date before saving. The completed maintenance record remains unchanged.</p>
+    </div>
+@endif
+
 @if($followupSource)
     <div class="mt-followup-notice" role="status">
         <strong>Follow-up Maintenance</strong>

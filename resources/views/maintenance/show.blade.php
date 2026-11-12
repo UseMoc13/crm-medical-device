@@ -189,6 +189,33 @@
 </section>
 @endif
 
+{{-- NEXT PREVENTIVE MAINTENANCE --}}
+@if($canScheduleNextPreventive)
+<section class="card mt-block">
+    <div class="card-head"><div>
+        <h3>Next Preventive Maintenance</h3>
+        <p>Schedule the next periodic inspection without changing this completed record.</p>
+    </div></div>
+    <div class="card-body">
+        <div class="mt-followup-action">
+            <div>
+                <strong>Preventive cycle</strong>
+                <p>The last result was {{ $lastRecord?->result }}. Choose an interval and confirm the next appointment date.</p>
+            </div>
+            @if($nextPreventiveSchedule)
+                <a class="btn" href="{{ route('maintenance.show', $nextPreventiveSchedule->getKey()) }}">View Next Preventive Schedule</a>
+            @else
+                <div class="mt-recurrence-links" aria-label="Choose next preventive interval">
+                    @foreach([3, 6, 12] as $months)
+                        <a class="btn" href="{{ route('maintenance.create', ['recurring_from' => $maintenance->getKey(), 'recurring_months' => $months]) }}">+ {{ $months }} Months</a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- DEVICE --}}
 <section class="card mt-block">
     <div class="card-head">

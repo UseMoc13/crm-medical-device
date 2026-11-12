@@ -77,12 +77,22 @@ class MaintenanceController extends Controller
             });
         }
 
-        // Filter status (termasuk status virtual "overdue").
+        // Virtual due-date filters apply only to open schedules.
+        // Inclusive 7-day window: tomorrow through 7 days from today.
         $status = $request->input('status');
+        $today = today()->toDateString();
+        $dueSoonEnd = today()->addDays(7)->toDateString();
 
         if ($status === 'overdue') {
             $query->whereIn('status', self::OPEN_STATUSES)
-                ->whereDate('scheduled_date', '<', today()->toDateString());
+                ->whereDate('scheduled_date', '<', $today);
+        } elseif ($status === 'due_today') {
+            $query->whereIn('status', self::OPEN_STATUSES)
+                ->whereDate('scheduled_date', '=', $today);
+        } elseif ($status === 'due_soon') {
+            $query->whereIn('status', self::OPEN_STATUSES)
+                ->whereDate('scheduled_date', '>', $today)
+                ->whereDate('scheduled_date', '<=', $dueSoonEnd);
         } elseif (in_array($status, self::STATUSES, true)) {
             $query->where('status', $status);
         }
@@ -123,7 +133,16 @@ class MaintenanceController extends Controller
             'completed' => (int) ($counts['Completed'] ?? 0),
             'overdue' => MaintenanceSchedule::query()
                 ->whereIn('status', self::OPEN_STATUSES)
-                ->whereDate('scheduled_date', '<', today()->toDateString())
+                ->whereDate('scheduled_date', '<', $today)
+                ->count(),
+            'due_today' => MaintenanceSchedule::query()
+                ->whereIn('status', self::OPEN_STATUSES)
+                ->whereDate('scheduled_date', '=', $today)
+                ->count(),
+            'due_soon' => MaintenanceSchedule::query()
+                ->whereIn('status', self::OPEN_STATUSES)
+                ->whereDate('scheduled_date', '>', $today)
+                ->whereDate('scheduled_date', '<=', $dueSoonEnd)
                 ->count(),
         ];
 
@@ -143,6 +162,30 @@ class MaintenanceController extends Controller
     public function create(Request $request): View|RedirectResponse
     {
         $followupSource = null;
+        $recurringSource = null;
+        $recurringMonths = null;
+        $recurringSuggestedDate = null;
+        $request->validate([
+            'recurring_from' => ['nullable', 'uuid', 'prohibited_with:followup_from'],
+            'recurring_months' => ['required_with:recurring_from', 'nullable', 'integer', Rule::in([3, 6, 12])],
+            'followup_from' => ['nullable', 'uuid', 'prohibited_with:recurring_from'],
+        ]);
+        if ($request->filled('recurring_from')) {
+            $recurringSource = MaintenanceSchedule::query()->with(['serialNumber.product', 'records'])
+                ->findOrFail($request->input('recurring_from'));
+            if (! $this->eligibleForNextPreventive($recurringSource)) {
+                return redirect()->route('maintenance.show', $recurringSource->getKey())
+                    ->with('error', 'Only Completed Preventive maintenance with a passing result can schedule the next preventive visit.');
+            }
+            if ($this->nextPreventiveExists($recurringSource)) {
+                return redirect()->route('maintenance.show', $recurringSource->getKey())
+                    ->with('error', 'A next preventive maintenance schedule already exists for this source.');
+            }
+            $recurringMonths = (int) $request->input('recurring_months');
+            $recurringSuggestedDate = $recurringSource->scheduled_date
+                ? $recurringSource->scheduled_date->copy()->addMonthsNoOverflow($recurringMonths)->toDateString()
+                : today()->addMonthsNoOverflow($recurringMonths)->toDateString();
+        }
         if ($request->filled('followup_from')) {
             $request->validate(['followup_from' => ['required', 'uuid']]);
             $followupSource = MaintenanceSchedule::query()
@@ -161,6 +204,9 @@ class MaintenanceController extends Controller
 
         return view('maintenance.create', array_merge($this->formData(), [
             'followupSource' => $followupSource,
+            'recurringSource' => $recurringSource,
+            'recurringMonths' => $recurringMonths,
+            'recurringSuggestedDate' => $recurringSuggestedDate,
         ]));
     }
 
@@ -172,10 +218,16 @@ class MaintenanceController extends Controller
         $validated = $request->validate($this->scheduleRules());
 
         $validated['status'] = 'Scheduled';
+        $request->validate([
+            'followup_from' => ['nullable', 'uuid', 'prohibited_with:recurring_from'],
+            'recurring_from' => ['nullable', 'uuid', 'prohibited_with:followup_from'],
+            'recurring_months' => ['required_with:recurring_from', 'nullable', 'integer', Rule::in([3, 6, 12])],
+        ]);
         $sourceId = $request->input('followup_from');
-        $request->validate(['followup_from' => ['nullable', 'uuid']]);
+        $recurringId = $request->input('recurring_from');
+        $recurringMonths = (int) $request->input('recurring_months');
 
-        $maintenance = DB::transaction(function () use ($validated, $sourceId): MaintenanceSchedule {
+        $maintenance = DB::transaction(function () use ($validated, $sourceId, $recurringId, $recurringMonths): MaintenanceSchedule {
             if ($sourceId) {
                 // Lock source to serialize competing follow-up creation requests.
                 $source = MaintenanceSchedule::query()->whereKey($sourceId)
@@ -199,12 +251,33 @@ class MaintenanceController extends Controller
                 $marker = $this->followupMarker($source->getKey());
                 $validated['notes'] = $marker . ($validated['notes'] ? "\n" . $validated['notes'] : '');
             }
+            if ($recurringId) {
+                // Lock the source schedule to prevent duplicate concurrent requests.
+                $source = MaintenanceSchedule::query()->whereKey($recurringId)->lockForUpdate()->firstOrFail();
+                if (! $this->eligibleForNextPreventive($source)) {
+                    throw ValidationException::withMessages([
+                        'recurring_from' => 'Only Completed Preventive maintenance with a passing result is eligible.',
+                    ]);
+                }
+                if ($this->nextPreventiveExists($source)) {
+                    throw ValidationException::withMessages([
+                        'recurring_from' => 'A next preventive maintenance schedule already exists for this source.',
+                    ]);
+                }
+                if ($validated['serial_number_id'] !== $source->serial_number_id || $validated['maintenance_type'] !== 'Preventive') {
+                    throw ValidationException::withMessages([
+                        'serial_number_id' => 'The next preventive schedule must use the original device and Preventive type.',
+                    ]);
+                }
+                $marker = $this->nextPreventiveMarker($source->getKey(), $recurringMonths);
+                $validated['notes'] = $marker . ($validated['notes'] ? "\n" . $validated['notes'] : '');
+            }
             return MaintenanceSchedule::create($validated);
         }, 3);
 
         return redirect()
             ->route('maintenance.show', $maintenance->maintenance_schedule_id)
-            ->with('success', $sourceId ? 'Follow-up maintenance schedule successfully created.' : 'Maintenance schedule successfully created.');
+            ->with('success', $recurringId ? 'Next preventive maintenance schedule successfully created.' : ($sourceId ? 'Follow-up maintenance schedule successfully created.' : 'Maintenance schedule successfully created.'));
     }
 
     /**
@@ -235,6 +308,12 @@ class MaintenanceController extends Controller
                 ->orderBy('created_at')->first()
             : null;
 
+        $canScheduleNextPreventive = $this->eligibleForNextPreventive($maintenance);
+        $nextPreventiveSchedule = $canScheduleNextPreventive
+            ? MaintenanceSchedule::query()->where('notes', 'like', '[NEXT PREVENTIVE SOURCE: ' . $maintenance->getKey() . ' | %')
+                ->orderBy('created_at')->first()
+            : null;
+
         return view('maintenance.show', [
             'maintenance' => $maintenance,
             'records' => $records,
@@ -242,6 +321,8 @@ class MaintenanceController extends Controller
             'results' => self::RESULTS,
             'canFollowup' => $canFollowup,
             'followupSchedule' => $followupSchedule,
+            'canScheduleNextPreventive' => $canScheduleNextPreventive,
+            'nextPreventiveSchedule' => $nextPreventiveSchedule,
         ]);
     }
 
@@ -291,6 +372,12 @@ class MaintenanceController extends Controller
                 $validated['maintenance_type'] !== $schedule->maintenance_type
             )) {
                 throw ValidationException::withMessages(['serial_number_id' => 'Device and maintenance type cannot be changed after records exist.']);
+            }
+            // Preserve a recurrence or follow-up link if the new schedule is edited.
+            if (preg_match('/\A\[NEXT PREVENTIVE SOURCE: [0-9a-f-]{36} \| (?:3|6|12) MONTHS\]/i', (string) $schedule->notes, $matches)) {
+                $marker = $matches[0];
+                $userNotes = preg_replace('/\A\[NEXT PREVENTIVE SOURCE: [0-9a-f-]{36} \| (?:3|6|12) MONTHS\]\s*/i', '', (string) ($validated['notes'] ?? ''));
+                $validated['notes'] = $marker . ($userNotes !== '' ? "\n" . $userNotes : '');
             }
             // Preserve the source marker on follow-up schedules during edits.
             if (preg_match('/\A\[FOLLOW-UP SOURCE: ([0-9a-f-]{36})\]/i', (string) $schedule->notes, $matches)) {
@@ -483,6 +570,28 @@ class MaintenanceController extends Controller
             ->orderByDesc('maintenance_record_id')->first();
         return $latest !== null
             && in_array($latest->result, ['Requires Follow-up', 'Failed'], true);
+    }
+
+    private function nextPreventiveMarker(string $sourceId, int $months): string
+    {
+        return '[NEXT PREVENTIVE SOURCE: ' . $sourceId . ' | ' . $months . ' MONTHS]';
+    }
+
+    private function nextPreventiveExists(MaintenanceSchedule $source): bool
+    {
+        return MaintenanceSchedule::query()
+            ->where('notes', 'like', '[NEXT PREVENTIVE SOURCE: ' . $source->getKey() . ' | %')
+            ->exists();
+    }
+
+    private function eligibleForNextPreventive(MaintenanceSchedule $source): bool
+    {
+        if ($source->status !== 'Completed' || $source->maintenance_type !== 'Preventive') {
+            return false;
+        }
+        $latest = $source->records()->orderByDesc('performed_at')
+            ->orderByDesc('maintenance_record_id')->first();
+        return $latest !== null && in_array($latest->result, ['Passed', 'Passed with Notes'], true);
     }
 
     private function formData(): array

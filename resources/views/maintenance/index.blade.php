@@ -21,6 +21,25 @@
 </div>
 
 
+{{-- DUE-DATE MONITORING: 7-day window, informational only. --}}
+<div class="mt-due-overview" role="group" aria-label="Maintenance due date monitoring">
+    <a href="{{ route('maintenance.index', ['status' => 'due_today']) }}" class="mt-due-card {{ request('status') === 'due_today' ? 'is-active' : '' }}">
+        <span class="mt-due-title">Due Today</span>
+        <strong>{{ number_format($summary['due_today']) }}</strong>
+        <small>Open schedules planned for today</small>
+    </a>
+    <a href="{{ route('maintenance.index', ['status' => 'due_soon']) }}" class="mt-due-card soon {{ request('status') === 'due_soon' ? 'is-active' : '' }}">
+        <span class="mt-due-title">Due Soon · 7 Days</span>
+        <strong>{{ number_format($summary['due_soon']) }}</strong>
+        <small>Tomorrow through the next 7 days</small>
+    </a>
+    <a href="{{ route('maintenance.index', ['status' => 'overdue']) }}" class="mt-due-card overdue {{ request('status') === 'overdue' ? 'is-active' : '' }}">
+        <span class="mt-due-title">Overdue</span>
+        <strong>{{ number_format($summary['overdue']) }}</strong>
+        <small>Open schedules past their due date</small>
+    </a>
+</div>
+
 {{-- SUMMARY --}}
 <div class="mt-summary">
     <a href="{{ route('maintenance.index') }}" class="mt-summary-card">
@@ -95,6 +114,8 @@
                         </option>
                     @endforeach
 
+                    <option value="due_today" @selected(request('status') === 'due_today')>Due Today</option>
+                    <option value="due_soon" @selected(request('status') === 'due_soon')>Due Soon (7 Days)</option>
                     <option value="overdue" @selected(request('status') === 'overdue')>Overdue</option>
                 </select>
             </div>
@@ -144,7 +165,7 @@
                 @endif
 
                 @if(request('status'))
-                    <span class="mt-chip">Status: {{ ucfirst(request('status')) }}</span>
+                    <span class="mt-chip">Status: {{ match(request('status')) { 'due_today' => 'Due Today', 'due_soon' => 'Due Soon (7 Days)', 'overdue' => 'Overdue', default => request('status') } }}</span>
                 @endif
 
                 @if(request('type'))
@@ -179,6 +200,10 @@
                         @php
                             $serial = $maintenance->serialNumber;
                             $overdue = $maintenance->isOverdue();
+                            $openSchedule = in_array($maintenance->status, ['Scheduled', 'In Progress'], true);
+                            $dueToday = $openSchedule && $maintenance->scheduled_date?->isToday();
+                            $dueSoon = $openSchedule && ! $dueToday && ! $overdue
+                                && $maintenance->scheduled_date?->between(today()->addDay(), today()->addDays(7), true);
                         @endphp
 
                         <tr>
@@ -212,11 +237,11 @@
                                 {{ $maintenance->scheduled_date?->format('d M Y') ?? '-' }}
 
                                 @if($overdue)
-                                    <div>
-                                        <span class="mt-overdue-tag">
-                                            OVERDUE {{ $maintenance->scheduled_date->diffInDays(today()) }}d
-                                        </span>
-                                    </div>
+                                    <div><span class="mt-overdue-tag">OVERDUE {{ (int) $maintenance->scheduled_date->diffInDays(today()) }}d</span></div>
+                                @elseif($dueToday)
+                                    <div><span class="mt-due-tag today">DUE TODAY</span></div>
+                                @elseif($dueSoon)
+                                    <div><span class="mt-due-tag soon">DUE SOON · {{ (int) today()->diffInDays($maintenance->scheduled_date) }}d</span></div>
                                 @endif
                             </td>
 
