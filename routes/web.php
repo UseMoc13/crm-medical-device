@@ -24,6 +24,7 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\ServiceTicketController;
+use App\Http\Controllers\ServiceTicketWorkLogController;
 use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ServiceHistoryController;
@@ -58,6 +59,10 @@ Route::resource('deliveries', DeliveryController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('installations', InstallationController::class);
 Route::resource('warranties', WarrantyController::class);
+// Technician progress notes; independent from resolution or stock movements.
+Route::post('/service-tickets/{serviceTicket}/work-logs', [ServiceTicketWorkLogController::class, 'store'])
+    ->whereUuid('serviceTicket')->name('service-tickets.work-logs.store');
+
 Route::resource('service-tickets', ServiceTicketController::class);
 
 Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
@@ -282,3 +287,9 @@ Route::patch('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Control
     ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.update');
 Route::delete('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Controllers\ServiceTicketPartController::class, 'destroy'])
     ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.destroy');
+
+// Maintenance status workflow (dedicated PATCH endpoint; existing CRUD is preserved).
+Route::patch('/maintenance/{maintenance}/change-status',
+    [\App\Http\Controllers\MaintenanceWorkflowController::class, 'changeStatus'])
+    ->whereUuid('maintenance')
+    ->name('maintenance.change-status');

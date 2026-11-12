@@ -11,6 +11,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    {{-- Global Laravel paginator SVG sizing; intentionally shared by all modules. --}}
+    @include('components._pagination_style')
 
 <style>
 .crm-toast-area{position:fixed;left:50%;right:auto;top:20px;transform:translateX(-50%);z-index:50000;display:grid;gap:10px;width:min(390px,calc(100vw - 36px));pointer-events:none}

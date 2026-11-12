@@ -134,7 +134,7 @@
 
 @include('service-tickets._warranty_detail')
 
-<div class="ticket-quick-actions"><a href="#ticket-service-parts" class="btn">View Service Parts &darr;</a></div>
+<div class="ticket-quick-actions"><a href="#ticket-work-logs" class="btn">Technician Work Log &darr;</a><a href="#ticket-service-parts" class="btn">View Service Parts &darr;</a></div>
 
 <div class="ticket-overview-grid">
 
@@ -515,6 +515,8 @@
 
 
 </div>
+
+@include('service-tickets._work_logs')
 
 <section class="card ticket-resolution-card">
     <div class="card-head">

@@ -122,6 +122,12 @@
             </div>
 
             <div class="sh-stat">
+                <span>Technician Work Logs / Resolutions</span>
+                <strong>{{ $stats['work_logs'] }} / {{ $stats['resolutions'] }}</strong>
+                <small>Individual updates included in the timeline</small>
+            </div>
+
+            <div class="sh-stat">
                 <span>Open Tickets</span>
                 <strong>{{ $stats['open_tickets'] }}</strong>
                 <small>Tickets not yet resolved or closed</small>
@@ -165,7 +171,7 @@
                         {{ $schedule->scheduled_date?->format('d M Y') }}
                         · {{ $schedule->user?->name ?? 'Unassigned' }}
                         @if($schedule->isOverdue())
-                            · <span style="color:#c03939;font-weight:700">Overdue</span>
+                            · <span class="sh-overdue">Overdue</span>
                         @endif
                     </small>
                 </div>
@@ -189,7 +195,7 @@
     <div class="card-head">
         <div>
             <h3>Service Timeline</h3>
-            <p>All service tickets and maintenance records, newest first.</p>
+            <p>Service tickets, technician work logs, resolution updates, and maintenance records, newest first.</p>
         </div>
     </div>
 
@@ -205,6 +211,8 @@
 
                     @php
                         $isTicket = $event['type'] === 'ticket';
+                        $typeLabel = ['ticket' => 'Service Ticket', 'maintenance' => 'Maintenance', 'work_log' => 'Work Log', 'resolution' => 'Resolution'][$event['type']] ?? 'Service Event';
+                        $typeClass = 'sh-type-' . str_replace('_', '-', $event['type']);
                         $outcomeLabel = ucwords(str_replace('_', ' ', (string) $event['outcome']));
                         $outcomeClass = \Illuminate\Support\Str::slug(str_replace('_', '-', (string) $event['outcome']));
                     @endphp
@@ -216,8 +224,8 @@
 
                             <div class="sh-event-head">
                                 <div class="sh-event-ref">
-                                    <span class="sh-badge {{ $isTicket ? 'sh-type-ticket' : 'sh-type-maintenance' }}">
-                                        {{ $isTicket ? 'Service Ticket' : 'Maintenance' }}
+                                    <span class="sh-badge {{ $typeClass }}">
+                                        {{ $typeLabel }}
                                     </span>
 
                                     <strong class="sh-link">{{ $event['reference'] }}</strong>
@@ -252,7 +260,7 @@
 
                             <div class="sh-event-foot">
                                 <a href="{{ $event['url'] }}">
-                                    {{ $isTicket ? 'Open service ticket →' : 'Open maintenance schedule →' }}
+                                    {{ $event['type'] === 'maintenance' ? 'Open maintenance schedule →' : 'Open service ticket →' }}
                                 </a>
                             </div>
 
@@ -275,6 +283,6 @@
     </div>
 </section>
 
-@include('service-history._styles')
+@include('service-history._style')
 
 @endsection

@@ -2124,4 +2124,22 @@
 .ticket-part-field #ticketPartPriceDisplay { width:100%;padding-left:37px;box-sizing:border-box;font-variant-numeric:tabular-nums;background:#f8fafc;color:#334155;cursor:default; }
 .ticket-part-field #ticketPartQuantity { font-variant-numeric:tabular-nums; }
 .ticket-part-field .ticket-price-hint { display:block;margin-top:6px;color:#64748b;font-size:11px;line-height:1.4; }
+
+/* ================== SERVICE TICKET / SHOW / TECHNICIAN WORK LOG ================== */
+.ticket-worklog-card{margin-top:20px}.ticket-worklog-count{font-size:12px;color:#64748b;font-weight:600}
+.ticket-worklog-card .ticket-worklog-form{border:1px solid #e5eaf1;background:#f8fafc;border-radius:10px;padding:18px;margin-bottom:20px}
+.ticket-worklog-inputs{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px}
+.ticket-worklog-inputs>div{min-width:0}.ticket-worklog-inputs label{display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:7px}
+.ticket-worklog-inputs select,.ticket-worklog-inputs textarea{box-sizing:border-box;width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#17284f;font:inherit;font-size:13px;padding:10px 12px}
+.ticket-worklog-inputs textarea{resize:vertical;min-height:90px;line-height:1.6}
+.ticket-worklog-inputs :is(select,textarea):focus{outline:none;border-color:#16856a;box-shadow:0 0 0 3px #16856a1c}
+.ticket-worklog-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.ticket-worklog-actions span,.ticket-worklog-hint{font-size:12px;color:#64748b;line-height:1.6}
+.ticket-worklog-list{display:grid;gap:12px;margin-top:16px}
+.ticket-worklog-entry{padding:15px 17px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.ticket-worklog-entry-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:9px}
+.ticket-worklog-type{display:inline-flex;padding:5px 9px;background:#e7f5ee;color:#166b4b;border-radius:99px;font-size:11px;font-weight:700}
+.ticket-worklog-entry-head time,.ticket-worklog-entry small{color:#64748b;font-size:11px}
+.ticket-worklog-entry p{white-space:pre-wrap;overflow-wrap:anywhere;color:#26364f;font-size:13px;line-height:1.65;margin:0 0 8px}
+@media(max-width:720px){.ticket-worklog-inputs{grid-template-columns:1fr}.ticket-worklog-actions{align-items:stretch}.ticket-worklog-actions .btn{width:100%}}
 </style>

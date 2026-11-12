@@ -41,6 +41,6 @@
     </div>
 </div>
 
-@include('maintenance._styles')
+@include('maintenance._style')
 
 @endsection

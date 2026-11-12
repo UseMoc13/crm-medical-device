@@ -53,6 +53,14 @@
     </div>
 
     <div class="sh-summary-card">
+        <span>Technician Work Logs</span>
+        <strong>{{ number_format($summary['work_logs']) }}</strong>
+    </div>
+    <div class="sh-summary-card">
+        <span>Resolution Updates</span>
+        <strong>{{ number_format($summary['resolutions']) }}</strong>
+    </div>
+    <div class="sh-summary-card">
         <span>Devices Serviced</span>
         <strong>{{ number_format($summary['devices']) }}</strong>
     </div>
@@ -105,6 +113,8 @@
                     <option value="">All Types</option>
                     <option value="ticket" @selected(request('type') === 'ticket')>Service Ticket</option>
                     <option value="maintenance" @selected(request('type') === 'maintenance')>Maintenance</option>
+                    <option value="work_log" @selected(request('type') === 'work_log')>Technician Work Log</option>
+                    <option value="resolution" @selected(request('type') === 'resolution')>Resolution History</option>
                 </select>
             </div>
 
@@ -158,7 +168,7 @@
                 @endif
 
                 @if(request('type'))
-                    <span class="sh-chip">Type: {{ request('type') === 'ticket' ? 'Service Ticket' : 'Maintenance' }}</span>
+                    <span class="sh-chip">Type: {{ ['ticket' => 'Service Ticket', 'maintenance' => 'Maintenance', 'work_log' => 'Technician Work Log', 'resolution' => 'Resolution History'][request('type')] ?? request('type') }}</span>
                 @endif
 
                 @if(request('customer_id'))
@@ -200,14 +210,18 @@
 
                         @php
                             $isTicket = $event->event_type === 'ticket';
+                            $isMaintenance = $event->event_type === 'maintenance';
+                            $typeLabel = ['ticket' => 'Service Ticket', 'maintenance' => 'Maintenance', 'work_log' => 'Work Log', 'resolution' => 'Resolution'][$event->event_type] ?? 'Service Event';
+                            $typeClass = 'sh-type-' . str_replace('_', '-', $event->event_type);
                             $date = \Carbon\Carbon::parse($event->event_date);
 
                             $outcomeLabel = ucwords(str_replace('_', ' ', (string) $event->outcome));
                             $outcomeClass = \Illuminate\Support\Str::slug(str_replace('_', '-', (string) $event->outcome));
 
-                            $sourceUrl = $isTicket
-                                ? route('service-tickets.show', $event->source_id)
-                                : route('maintenance.show', $event->parent_id);
+                            $sourceUrl = $isMaintenance
+                                ? route('maintenance.show', $event->parent_id)
+                                : route('service-tickets.show', $isTicket ? $event->source_id : $event->parent_id);
+                            if ($event->event_type === 'work_log') $sourceUrl .= '#ticket-work-logs';
                         @endphp
 
                         <tr>
@@ -222,14 +236,14 @@
                             </td>
 
                             <td>
-                                <span class="sh-badge {{ $isTicket ? 'sh-type-ticket' : 'sh-type-maintenance' }}">
-                                    {{ $isTicket ? 'Service Ticket' : 'Maintenance' }}
+                                <span class="sh-badge {{ $typeClass }}">
+                                    {{ $typeLabel }}
                                 </span>
                             </td>
 
                             <td>
                                 <a href="{{ $sourceUrl }}" class="sh-link">
-                                    {{ $isTicket ? $event->reference : $event->reference . ' Maintenance' }}
+                                    {{ $isMaintenance ? $event->reference . ' Maintenance' : $event->reference }}
                                 </a>
 
                                 @if(filled($event->summary))
@@ -265,7 +279,7 @@
                                     <a
                                         href="{{ $sourceUrl }}"
                                         class="sh-icon-btn view"
-                                        title="{{ $isTicket ? 'View Service Ticket' : 'View Maintenance' }}"
+                                        title="{{ $isMaintenance ? 'View Maintenance' : 'View Service Ticket' }}"
                                         aria-label="View source record"
                                     >
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -309,6 +323,7 @@
             </table>
         </div>
 
+        {{-- Use the same centered pagination as other CRM modules (global v13/v14). --}}
         @if($events->hasPages())
             <div class="pagination">
                 {{ $events->links() }}
@@ -326,6 +341,6 @@
     </div>
 </div>
 
-@include('service-history._styles')
+@include('service-history._style')
 
 @endsection

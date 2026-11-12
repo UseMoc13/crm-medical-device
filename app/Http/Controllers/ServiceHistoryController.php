@@ -27,7 +27,7 @@ class ServiceHistoryController extends Controller
     public function index(Request $request): View
     {
         $request->validate([
-            'type' => ['nullable', 'in:ticket,maintenance'],
+            'type' => ['nullable', 'in:ticket,maintenance,work_log,resolution'],
             'customer_id' => ['nullable', 'uuid'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
@@ -88,6 +88,8 @@ class ServiceHistoryController extends Controller
             'total' => DB::query()->fromSub($this->eventsQuery(), 'h')->count(),
             'tickets' => DB::table('service_tickets')->count(),
             'maintenance' => DB::table('maintenance_records')->count(),
+            'work_logs' => DB::table('service_ticket_work_logs')->count(),
+            'resolutions' => DB::table('service_ticket_resolution_logs')->count(),
             'devices' => DB::query()
                 ->fromSub($this->eventsQuery(), 'h')
                 ->distinct()
@@ -169,6 +171,47 @@ class ServiceHistoryController extends Controller
             ]);
         }
 
+        // Fetch child events in bulk to avoid N+1 queries. Work logs and resolutions
+        // have their own timestamps and should appear as separate timeline events.
+        $ticketIds = $tickets->pluck('service_ticket_id');
+        $ticketLookup = $tickets->keyBy('service_ticket_id');
+        $workLogs = $ticketIds->isEmpty() ? collect() : DB::table('service_ticket_work_logs')
+            ->whereIn('service_ticket_id', $ticketIds)->orderBy('created_at')->get();
+        $resolutionLogs = $ticketIds->isEmpty() ? collect() : DB::table('service_ticket_resolution_logs')
+            ->whereIn('service_ticket_id', $ticketIds)->orderBy('created_at')->get();
+
+        foreach ($workLogs as $log) {
+            $ticket = $ticketLookup->get($log->service_ticket_id);
+            if (!$ticket) continue;
+            $events->push([
+                'type' => 'work_log',
+                'date' => Carbon::parse($log->created_at),
+                'reference' => $ticket->ticket_number,
+                'title' => ucwords(str_replace('_', ' ', (string) $log->entry_type)),
+                'description' => $log->notes,
+                'outcome' => $log->status_snapshot,
+                'technician' => $ticket->user?->name,
+                'url' => route('service-tickets.show', $ticket->service_ticket_id) . '#ticket-work-logs',
+                'details' => ['Ticket' => $ticket->title],
+            ]);
+        }
+
+        foreach ($resolutionLogs as $log) {
+            $ticket = $ticketLookup->get($log->service_ticket_id);
+            if (!$ticket) continue;
+            $events->push([
+                'type' => 'resolution',
+                'date' => Carbon::parse($log->created_at),
+                'reference' => $ticket->ticket_number,
+                'title' => 'Resolution / Status Update',
+                'description' => $log->resolution,
+                'outcome' => $log->status_to,
+                'technician' => $ticket->user?->name,
+                'url' => route('service-tickets.show', $ticket->service_ticket_id),
+                'details' => ['Transition' => ucwords(str_replace('_', ' ', (string) $log->status_from)) . ' → ' . ucwords(str_replace('_', ' ', (string) $log->status_to))],
+            ]);
+        }
+
         foreach ($records as $record) {
             $events->push([
                 'type' => 'maintenance',
@@ -191,6 +234,8 @@ class ServiceHistoryController extends Controller
 
         $stats = [
             'total' => $events->count(),
+            'work_logs' => $workLogs->count(),
+            'resolutions' => $resolutionLogs->count(),
             'tickets' => $tickets->count(),
             'open_tickets' => $tickets->whereNotIn('status', ['resolved', 'closed'])->count(),
             'maintenance' => $records->count(),
@@ -248,6 +293,38 @@ class ServiceHistoryController extends Controller
                 'mr.user_id AS user_id',
             ]);
 
-        return $tickets->unionAll($maintenance);
+        $workLogs = DB::table('service_ticket_work_logs as wl')
+            ->join('service_tickets as st', 'st.service_ticket_id', '=', 'wl.service_ticket_id')
+            ->select([
+                DB::raw("'work_log'::text AS event_type"),
+                'wl.work_log_id AS source_id',
+                'st.service_ticket_id AS parent_id',
+                'wl.created_at AS event_date',
+                'st.ticket_number AS reference',
+                'wl.notes AS summary',
+                'wl.status_snapshot AS outcome',
+                'wl.entry_type AS detail',
+                'st.serial_number_id AS serial_number_id',
+                'st.customer_id AS customer_id',
+                'st.user_id AS user_id',
+            ]);
+
+        $resolutions = DB::table('service_ticket_resolution_logs as rl')
+            ->join('service_tickets as st', 'st.service_ticket_id', '=', 'rl.service_ticket_id')
+            ->select([
+                DB::raw("'resolution'::text AS event_type"),
+                'rl.resolution_log_id AS source_id',
+                'st.service_ticket_id AS parent_id',
+                'rl.created_at AS event_date',
+                'st.ticket_number AS reference',
+                'rl.resolution AS summary',
+                'rl.status_to AS outcome',
+                'rl.status_from AS detail',
+                'st.serial_number_id AS serial_number_id',
+                'st.customer_id AS customer_id',
+                'st.user_id AS user_id',
+            ]);
+
+        return $tickets->unionAll($maintenance)->unionAll($workLogs)->unionAll($resolutions);
     }
 }

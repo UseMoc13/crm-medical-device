@@ -43,6 +43,8 @@
     <div class="alert error">{{ session('error') }}</div>
 @endif
 
+@include('maintenance._workflow')
+
 {{-- OVERVIEW --}}
 <div class="mt-grid">
 
@@ -467,6 +469,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-@include('maintenance._styles')
+@include('maintenance._style')
 
 @endsection
