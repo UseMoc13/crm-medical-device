@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MaintenanceRecord;
+use App\Services\MaintenanceWorkflowRules;
 use App\Models\MaintenanceSchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,35 +25,10 @@ class MaintenanceWorkflowController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $allowed = [
-                'Scheduled' => ['In Progress', 'Cancelled'],
-                'In Progress' => ['Completed', 'Cancelled'],
-            ];
             $next = $data['status'];
-            if (!in_array($next, $allowed[$schedule->status] ?? [], true)) {
-                throw ValidationException::withMessages([
-                    'status' => 'This maintenance status transition is not allowed.',
-                ]);
-            }
-
             $recordCount = MaintenanceRecord::query()
                 ->where('maintenance_schedule_id', $schedule->getKey())->count();
-
-            if ($next === 'In Progress' && !$schedule->user_id) {
-                throw ValidationException::withMessages([
-                    'status' => 'Assign a technician before starting maintenance.',
-                ]);
-            }
-            if ($next === 'Completed' && $recordCount === 0) {
-                throw ValidationException::withMessages([
-                    'status' => 'Add at least one maintenance record before completing maintenance.',
-                ]);
-            }
-            if ($next === 'Cancelled' && $recordCount > 0) {
-                throw ValidationException::withMessages([
-                    'status' => 'A schedule with maintenance records cannot be cancelled.',
-                ]);
-            }
+            MaintenanceWorkflowRules::assertTransition($schedule, $next, $recordCount);
 
             $schedule->status = $next;
             $schedule->save();

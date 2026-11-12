@@ -79,12 +79,9 @@
 
             <div class="mt-field">
                 <label for="status">Status <span class="required">*</span></label>
-                <select id="status" name="status" required>
-                    @foreach($statuses as $status)
-                        <option value="{{ $status }}" @selected($selectedStatus === (string) $status)>{{ $status }}</option>
-                    @endforeach
-                </select>
-                <span class="mt-hint">New schedules normally begin as Scheduled. Use the workflow on the detail page to advance status.</span>
+                <input type="text" value="{{ $isEdit ? $maintenance->status : 'Scheduled' }}" readonly aria-label="Current maintenance status">
+                <input type="hidden" id="status" name="status" value="{{ $isEdit ? $maintenance->status : 'Scheduled' }}">
+                <span class="mt-hint">Status changes are managed from the Maintenance Workflow on the detail page.</span>
                 @error('status') <span class="mt-error">{{ $message }}</span> @enderror
             </div>
 

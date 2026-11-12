@@ -241,4 +241,25 @@
 .mt-workflow-danger { background:#c94a4a!important; color:#fff!important; border-color:#c94a4a!important; }
 @media(max-width:700px) { .mt-workflow-card .card-head { flex-direction:column; } .mt-workflow-actions .btn { flex:1 1 auto; text-align:center; } }
 
+
+/* ---------- Maintenance confirmation / protected actions ---------- */
+.mt-confirm-open { overflow:hidden; }
+.mt-confirm-modal { position:fixed; inset:0; z-index:12000; display:none; align-items:center; justify-content:center; padding:18px; }
+.mt-confirm-modal.open { display:flex; }
+.mt-confirm-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.5); backdrop-filter:blur(2px); }
+.mt-confirm-dialog { position:relative; z-index:1; width:min(430px,100%); padding:28px 26px 22px; border-radius:14px; border:1px solid #e4e8ef; background:#fff; box-shadow:0 22px 65px rgba(23,40,79,.22); text-align:center; outline:none; }
+.mt-confirm-x { position:absolute; right:14px; top:10px; padding:4px 7px; border:0; background:none; color:#8b95a5; cursor:pointer; font-size:23px; line-height:1; }
+.mt-confirm-x:hover { color:#17284f; }
+.mt-confirm-icon { display:grid; place-items:center; width:58px; height:58px; margin:0 auto 15px; border-radius:50%; background:#fff0f0; color:#cb4149; font-size:30px; font-weight:700; }
+.mt-confirm-icon-warning { background:#fff4e5; color:#c27a24; }
+.mt-confirm-dialog h3 { margin:0 0 9px; color:#17284f; font-size:18px; line-height:1.45; }
+.mt-confirm-dialog p { margin:0; color:#67758a; font-size:13px; line-height:1.7; white-space:normal; }
+.mt-confirm-device { margin:16px 0 0; padding:11px 12px; border:1px solid #e5eaf2; border-radius:9px; background:#f8fafc; color:#334155; font-size:12px; overflow-wrap:anywhere; }
+.mt-confirm-buttons { display:flex; justify-content:center; gap:9px; margin-top:22px; }
+.mt-confirm-buttons .btn { min-width:110px; padding:10px 15px; font-weight:600; }
+.mt-confirm-buttons .btn.danger { background:#d9534f; border-color:#d9534f; color:#fff; }
+.mt-confirm-buttons .btn.danger:hover { background:#c7403b; }
+.mt-confirm-buttons .btn[hidden] { display:none; }
+@media (max-width:480px) { .mt-confirm-dialog { padding:25px 18px 18px; } .mt-confirm-buttons { flex-wrap:wrap; } }
+
 </style>

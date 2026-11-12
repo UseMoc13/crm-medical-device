@@ -43,6 +43,7 @@
                 <td class="mt-col-actions">
                     <div class="mt-actions">
 
+                        @if($maintenance->status === 'In Progress')
                         <a
                             href="{{ route('maintenance.records.edit', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                             class="mt-icon-btn edit"
@@ -55,28 +56,18 @@
                             </svg>
                         </a>
 
-                        <form
-                            method="POST"
-                            action="{{ route('maintenance.records.destroy', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
-                            onsubmit="return confirm('Delete this maintenance record?');"
-                        >
-                            @csrf
-                            @method('DELETE')
-
-                            <button
-                                type="submit"
-                                class="mt-icon-btn delete"
-                                title="Delete Maintenance Record"
-                                aria-label="Delete maintenance record"
-                            >
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M3 6h18"/>
-                                    <path d="M8 6V4h8v2"/>
-                                    <path d="m19 6-1 14H6L5 6"/>
-                                    <path d="M10 11v5M14 11v5"/>
-                                </svg>
-                            </button>
-                        </form>
+                        <button type="button" class="mt-icon-btn delete"
+                                data-mt-delete-action="{{ route('maintenance.records.destroy', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
+                                data-mt-delete-title="Delete Maintenance Record"
+                                data-mt-delete-message="Delete the maintenance record from {{ $row->performed_at?->format('d M Y, H:i') ?? 'this date' }}? This action cannot be undone."
+                                title="Delete Maintenance Record" aria-label="Delete maintenance record">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/>
+                            </svg>
+                        </button>
+                        @else
+                            <span class="mt-sub">Read-only</span>
+                        @endif
 
                     </div>
                 </td>

@@ -6,10 +6,12 @@ use App\Models\MaintenanceRecord;
 use App\Models\MaintenanceSchedule;
 use App\Models\SerialNumber;
 use App\Models\User;
+use App\Services\MaintenanceWorkflowRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MaintenanceController extends Controller
@@ -150,6 +152,7 @@ class MaintenanceController extends Controller
     {
         $validated = $request->validate($this->scheduleRules());
 
+        $validated['status'] = 'Scheduled';
         $maintenance = MaintenanceSchedule::create($validated);
 
         return redirect()
@@ -190,8 +193,15 @@ class MaintenanceController extends Controller
     /**
      * Form edit jadwal.
      */
-    public function edit(MaintenanceSchedule $maintenance): View
+    public function edit(MaintenanceSchedule $maintenance): View|RedirectResponse
     {
+        // Keep the Edit action visible in the list, but reject finalized schedules
+        // before rendering the edit form (server-side protection as well as UI).
+        if (in_array($maintenance->status, ['Completed', 'Cancelled'], true)) {
+            return redirect()->route('maintenance.index')
+                ->with('error', 'This maintenance schedule is ' . $maintenance->status . ' and cannot be edited.');
+        }
+
         $maintenance->load(['serialNumber.product', 'serialNumber.customer', 'user']);
 
         return view(
@@ -209,7 +219,26 @@ class MaintenanceController extends Controller
     ): RedirectResponse {
         $validated = $request->validate($this->scheduleRules());
 
-        $maintenance->update($validated);
+        DB::transaction(function () use ($maintenance, $validated): void {
+            $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
+                ->lockForUpdate()->firstOrFail();
+            $recordCount = MaintenanceRecord::query()
+                ->where('maintenance_schedule_id', $schedule->getKey())->count();
+            if (in_array($schedule->status, ['Completed', 'Cancelled'], true)) {
+                throw ValidationException::withMessages(['status' => 'Finalized maintenance schedules are read-only.']);
+            }
+            // Editing schedule details cannot transition status. Use dedicated workflow instead.
+            if ($validated['status'] !== $schedule->status) {
+                throw ValidationException::withMessages(['status' => 'Change maintenance status using the workflow buttons on the detail page.']);
+            }
+            if ($recordCount > 0 && (
+                $validated['serial_number_id'] !== $schedule->serial_number_id ||
+                $validated['maintenance_type'] !== $schedule->maintenance_type
+            )) {
+                throw ValidationException::withMessages(['serial_number_id' => 'Device and maintenance type cannot be changed after records exist.']);
+            }
+            $schedule->update($validated);
+        }, 3);
 
         return redirect()
             ->route('maintenance.show', $maintenance->maintenance_schedule_id)
@@ -221,17 +250,18 @@ class MaintenanceController extends Controller
      */
     public function destroy(MaintenanceSchedule $maintenance): RedirectResponse
     {
-        DB::transaction(function () use ($maintenance) {
-            MaintenanceRecord::where(
-                'maintenance_schedule_id',
-                $maintenance->maintenance_schedule_id
-            )->delete();
+        DB::transaction(function () use ($maintenance): void {
+            $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
+                ->lockForUpdate()->firstOrFail();
+            if ($schedule->status !== 'Scheduled' || $schedule->records()->exists()) {
+                throw ValidationException::withMessages([
+                    'status' => 'Only a Scheduled maintenance without records can be deleted. Cancel it instead.',
+                ]);
+            }
+            $schedule->delete();
+        }, 3);
 
-            $maintenance->delete();
-        });
-
-        return redirect()
-            ->route('maintenance.index')
+        return redirect()->route('maintenance.index')
             ->with('success', 'Maintenance schedule successfully deleted.');
     }
 
@@ -240,113 +270,81 @@ class MaintenanceController extends Controller
      */
     public function createRecord(MaintenanceSchedule $maintenance): View|RedirectResponse
     {
-        if ($maintenance->status === 'Cancelled') {
-            return redirect()
-                ->route('maintenance.show', $maintenance->maintenance_schedule_id)
-                ->with('error', 'Cannot add a record to a cancelled maintenance schedule.');
+        if ($maintenance->status !== 'In Progress') {
+            return redirect()->route('maintenance.show', $maintenance->getKey())
+                ->with('error', 'Start maintenance before adding records. Finalized schedules are read-only.');
         }
-
         $maintenance->load(['serialNumber.product', 'serialNumber.customer', 'user']);
-
         return view('maintenance.records.create', $this->recordFormData($maintenance));
     }
 
-    /**
-     * Simpan record maintenance baru.
-     */
-    public function storeRecord(
-        Request $request,
-        MaintenanceSchedule $maintenance
-    ): RedirectResponse {
-        if ($maintenance->status === 'Cancelled') {
-            return redirect()
-                ->route('maintenance.show', $maintenance->maintenance_schedule_id)
-                ->with('error', 'Cannot add a record to a cancelled maintenance schedule.');
-        }
-
+    public function storeRecord(Request $request, MaintenanceSchedule $maintenance): RedirectResponse
+    {
         $validated = $request->validate($this->recordRules());
-
         $completeSchedule = $request->boolean('complete_schedule');
-
         unset($validated['complete_schedule']);
 
-        DB::transaction(function () use ($maintenance, $validated, $completeSchedule) {
-            $maintenance->records()->create($validated);
-
+        DB::transaction(function () use ($maintenance, $validated, $completeSchedule): void {
+            $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
+                ->lockForUpdate()->firstOrFail();
+            MaintenanceWorkflowRules::assertRecordWritable($schedule);
+            $schedule->records()->create($validated);
             if ($completeSchedule) {
-                $maintenance->update(['status' => 'Completed']);
-            } elseif ($maintenance->status === 'Scheduled') {
-                $maintenance->update(['status' => 'In Progress']);
+                MaintenanceWorkflowRules::assertTransition($schedule, 'Completed', 1);
+                $schedule->update(['status' => 'Completed']);
             }
-        });
+        }, 3);
 
-        return redirect()
-            ->route('maintenance.show', $maintenance->maintenance_schedule_id)
+        return redirect()->route('maintenance.show', $maintenance->getKey())
             ->with('success', 'Maintenance record successfully added.');
     }
 
-    /**
-     * Form edit record maintenance.
-     */
-    public function editRecord(
-        MaintenanceSchedule $maintenance,
-        MaintenanceRecord $record
-    ): View {
+    public function editRecord(MaintenanceSchedule $maintenance, MaintenanceRecord $record): View|RedirectResponse
+    {
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
-
+        if ($maintenance->status !== 'In Progress') {
+            return redirect()->route('maintenance.show', $maintenance->getKey())
+                ->with('error', 'Maintenance records are read-only unless the schedule is In Progress.');
+        }
         $maintenance->load(['serialNumber.product', 'serialNumber.customer', 'user']);
-
-        return view(
-            'maintenance.records.edit',
-            array_merge(
-                ['record' => $record],
-                $this->recordFormData($maintenance)
-            )
-        );
+        return view('maintenance.records.edit', array_merge(
+            ['record' => $record], $this->recordFormData($maintenance)
+        ));
     }
 
-    /**
-     * Perbarui record maintenance.
-     */
-    public function updateRecord(
-        Request $request,
-        MaintenanceSchedule $maintenance,
-        MaintenanceRecord $record
-    ): RedirectResponse {
+    public function updateRecord(Request $request, MaintenanceSchedule $maintenance, MaintenanceRecord $record): RedirectResponse
+    {
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
-
         $validated = $request->validate($this->recordRules());
-
         $completeSchedule = $request->boolean('complete_schedule');
-
         unset($validated['complete_schedule']);
 
-        DB::transaction(function () use ($maintenance, $record, $validated, $completeSchedule) {
+        DB::transaction(function () use ($maintenance, $record, $validated, $completeSchedule): void {
+            $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
+                ->lockForUpdate()->firstOrFail();
+            MaintenanceWorkflowRules::assertRecordWritable($schedule);
             $record->update($validated);
-
-            if ($completeSchedule && $maintenance->status !== 'Completed') {
-                $maintenance->update(['status' => 'Completed']);
+            if ($completeSchedule) {
+                MaintenanceWorkflowRules::assertTransition($schedule, 'Completed', $schedule->records()->count());
+                $schedule->update(['status' => 'Completed']);
             }
-        });
+        }, 3);
 
-        return redirect()
-            ->route('maintenance.show', $maintenance->maintenance_schedule_id)
+        return redirect()->route('maintenance.show', $maintenance->getKey())
             ->with('success', 'Maintenance record successfully updated.');
     }
 
-    /**
-     * Hapus satu record maintenance.
-     */
-    public function destroyRecord(
-        MaintenanceSchedule $maintenance,
-        MaintenanceRecord $record
-    ): RedirectResponse {
+    public function destroyRecord(MaintenanceSchedule $maintenance, MaintenanceRecord $record): RedirectResponse
+    {
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
+        DB::transaction(function () use ($maintenance, $record): void {
+            $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
+                ->lockForUpdate()->firstOrFail();
+            MaintenanceWorkflowRules::assertRecordWritable($schedule);
+            $record->delete();
+        }, 3);
 
-        $record->delete();
-
-        return redirect()
-            ->route('maintenance.show', $maintenance->maintenance_schedule_id)
+        return redirect()->route('maintenance.show', $maintenance->getKey())
             ->with('success', 'Maintenance record successfully deleted.');
     }
 

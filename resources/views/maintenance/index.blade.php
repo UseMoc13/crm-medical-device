@@ -20,14 +20,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert success">{{ session('success') }}</div>
-@endif
-
-@if(session('error'))
-    <div class="alert error">{{ session('error') }}</div>
-@endif
-
 
 {{-- SUMMARY --}}
 <div class="mt-summary">
@@ -274,9 +266,11 @@
 
                                     <a
                                         href="{{ route('maintenance.edit', $maintenance->maintenance_schedule_id) }}"
-                                        class="mt-icon-btn edit"
+                                        class="mt-icon-btn edit js-mt-protected-action"
                                         title="Edit"
                                         aria-label="Edit maintenance"
+                                        data-action="edit"
+                                        data-status="{{ $maintenance->status }}"
                                     >
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M12 20h9"/>
@@ -287,7 +281,11 @@
                                     <form
                                         action="{{ route('maintenance.destroy', $maintenance->maintenance_schedule_id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Delete this maintenance schedule and all of its records?')"
+                                        class="js-mt-delete-form"
+                                        data-status="{{ $maintenance->status }}"
+                                        data-records="{{ $maintenance->records_count }}"
+                                        data-device="{{ $maintenance->serialNumber?->serial_number ?? 'Unknown Device' }}"
+                                        data-type="{{ $maintenance->maintenance_type }}"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -346,6 +344,123 @@
 
     </div>
 </div>
+
+
+{{-- Shared Maintenance delete confirmation / protected-action dialog. --}}
+<div id="mtDeleteConfirmModal" class="mt-confirm-modal" aria-hidden="true">
+    <div class="mt-confirm-backdrop" data-mt-close></div>
+    <section class="mt-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="mtConfirmTitle" aria-describedby="mtConfirmText" tabindex="-1">
+        <button type="button" class="mt-confirm-x" data-mt-close aria-label="Close dialog">&times;</button>
+        <div class="mt-confirm-icon" id="mtConfirmIcon" aria-hidden="true">!</div>
+        <h3 id="mtConfirmTitle">Delete Maintenance Schedule?</h3>
+        <p id="mtConfirmText">This action cannot be undone.</p>
+        <div id="mtConfirmDevice" class="mt-confirm-device" hidden></div>
+        <div class="mt-confirm-buttons">
+            <button type="button" class="btn" data-mt-close id="mtConfirmCancel">Cancel</button>
+            <button type="button" class="btn danger" id="mtConfirmProceed">Delete Schedule</button>
+        </div>
+    </section>
+</div>
+
+<script>
+(() => {
+    const modal = document.getElementById('mtDeleteConfirmModal');
+    if (!modal) return;
+    const dialog = modal.querySelector('.mt-confirm-dialog');
+    const title = document.getElementById('mtConfirmTitle');
+    const message = document.getElementById('mtConfirmText');
+    const device = document.getElementById('mtConfirmDevice');
+    const confirm = document.getElementById('mtConfirmProceed');
+    const cancel = document.getElementById('mtConfirmCancel');
+    const symbol = document.getElementById('mtConfirmIcon');
+    let pendingForm = null;
+    let opener = null;
+    let committing = false;
+
+    function openModal({heading, body, deviceText = '', destructive = false, form = null}, trigger) {
+        pendingForm = form;
+        opener = trigger;
+        committing = false;
+        title.textContent = heading;
+        message.textContent = body;
+        device.textContent = deviceText;
+        device.hidden = !deviceText;
+        confirm.hidden = !destructive;
+        confirm.disabled = false;
+        confirm.textContent = 'Delete Schedule';
+        cancel.textContent = destructive ? 'Cancel' : 'OK';
+        symbol.classList.toggle('mt-confirm-icon-warning', !destructive);
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('mt-confirm-open');
+        dialog.focus();
+    }
+    function closeModal() {
+        if (committing) return;
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('mt-confirm-open');
+        pendingForm = null;
+        opener?.focus();
+    }
+    modal.querySelectorAll('[data-mt-close]').forEach(btn => btn.addEventListener('click', closeModal));
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+        if (e.key === 'Tab' && modal.classList.contains('open')) {
+            const focusable = [...dialog.querySelectorAll('button:not([hidden]):not([disabled])')];
+            if (!focusable.length) return;
+            const first = focusable[0], last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+
+    document.querySelectorAll('.js-mt-protected-action').forEach(link => {
+        link.addEventListener('click', e => {
+            const status = link.dataset.status;
+            if (!['Completed', 'Cancelled'].includes(status)) return;
+            e.preventDefault();
+            openModal({
+                heading: 'Edit Not Allowed',
+                body: `This maintenance schedule is ${status}. Finalized maintenance schedules are read-only and cannot be edited.`
+            }, link);
+        });
+    });
+
+    document.querySelectorAll('.js-mt-delete-form').forEach(form => {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (committing) return;
+            const status = form.dataset.status;
+            const count = Number(form.dataset.records || 0);
+            const trigger = e.submitter || form.querySelector('button[type="submit"]');
+            if (status !== 'Scheduled' || count > 0) {
+                openModal({
+                    heading: 'Delete Not Allowed',
+                    body: `This maintenance schedule is ${status}${count ? ` and has ${count} maintenance record(s)` : ''}. Only a Scheduled maintenance without records can be deleted.`
+                }, trigger);
+                return;
+            }
+            openModal({
+                heading: 'Delete Maintenance Schedule?',
+                body: 'Are you sure you want to permanently delete this maintenance schedule? This action cannot be undone.',
+                deviceText: `${form.dataset.device || 'Unknown Device'} · ${form.dataset.type || 'Maintenance'}`,
+                destructive: true,
+                form
+            }, trigger);
+        });
+    });
+
+    confirm.addEventListener('click', () => {
+        if (!pendingForm || committing) return;
+        committing = true;
+        confirm.disabled = true;
+        confirm.textContent = 'Deleting...';
+        // Native form submission bypasses the submit event listener; Laravel validates again.
+        HTMLFormElement.prototype.submit.call(pendingForm);
+    });
+})();
+</script>
 
 @include('maintenance._style')
 

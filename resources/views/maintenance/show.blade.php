@@ -14,7 +14,7 @@
     $statusClass = \Illuminate\Support\Str::slug($maintenance->status);
 
     $lastRecord = $allRecords->first();
-    $canAddRecord = $maintenance->status !== 'Cancelled';
+    $canAddRecord = $maintenance->status === 'In Progress';
 
 @endphp
 
@@ -29,9 +29,9 @@
             &larr; Back to Maintenance
         </a>
 
-        <a href="{{ route('maintenance.edit', $maintenance->maintenance_schedule_id) }}" class="btn primary">
-            Edit Schedule
-        </a>
+        @if(in_array($maintenance->status, ['Scheduled', 'In Progress'], true))
+            <a href="{{ route('maintenance.edit', $maintenance->maintenance_schedule_id) }}" class="btn primary">Edit Schedule</a>
+        @endif
     </div>
 </div>
 
@@ -282,7 +282,11 @@
                     @if($canAddRecord)
                         Log the first activity using the + Add Maintenance Record button above.
                     @else
-                        This schedule is cancelled, so records can no longer be added.
+                        @if($maintenance->status === 'Scheduled')
+                            Start maintenance to add records.
+                        @else
+                            This schedule is finalized; its records are read-only.
+                        @endif
                     @endif
                 </span>
             </div>
@@ -469,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+@include('maintenance._delete_confirm')
 @include('maintenance._style')
 
 @endsection
