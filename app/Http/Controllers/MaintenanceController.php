@@ -140,9 +140,28 @@ class MaintenanceController extends Controller
     /**
      * Form tambah jadwal.
      */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('maintenance.create', $this->formData());
+        $followupSource = null;
+        if ($request->filled('followup_from')) {
+            $request->validate(['followup_from' => ['required', 'uuid']]);
+            $followupSource = MaintenanceSchedule::query()
+                ->with(['serialNumber.product', 'records'])
+                ->findOrFail($request->input('followup_from'));
+
+            if (! $this->requiresFollowup($followupSource)) {
+                return redirect()->route('maintenance.show', $followupSource->getKey())
+                    ->with('error', 'A follow-up can only be created after a Completed maintenance with the latest result Requires Follow-up or Failed.');
+            }
+            if ($this->followupExists($followupSource)) {
+                return redirect()->route('maintenance.show', $followupSource->getKey())
+                    ->with('error', 'A follow-up schedule already exists for this maintenance.');
+            }
+        }
+
+        return view('maintenance.create', array_merge($this->formData(), [
+            'followupSource' => $followupSource,
+        ]));
     }
 
     /**
@@ -153,11 +172,39 @@ class MaintenanceController extends Controller
         $validated = $request->validate($this->scheduleRules());
 
         $validated['status'] = 'Scheduled';
-        $maintenance = MaintenanceSchedule::create($validated);
+        $sourceId = $request->input('followup_from');
+        $request->validate(['followup_from' => ['nullable', 'uuid']]);
+
+        $maintenance = DB::transaction(function () use ($validated, $sourceId): MaintenanceSchedule {
+            if ($sourceId) {
+                // Lock source to serialize competing follow-up creation requests.
+                $source = MaintenanceSchedule::query()->whereKey($sourceId)
+                    ->lockForUpdate()->firstOrFail();
+                if (! $this->requiresFollowup($source)) {
+                    throw ValidationException::withMessages([
+                        'followup_from' => 'This source schedule is not eligible for follow-up.',
+                    ]);
+                }
+                if ($validated['serial_number_id'] !== $source->serial_number_id) {
+                    throw ValidationException::withMessages([
+                        'serial_number_id' => 'A follow-up must use the same medical device as its source.',
+                    ]);
+                }
+                if ($this->followupExists($source)) {
+                    throw ValidationException::withMessages([
+                        'followup_from' => 'A follow-up schedule already exists for this maintenance.',
+                    ]);
+                }
+                // Explicit traceability without database changes.
+                $marker = $this->followupMarker($source->getKey());
+                $validated['notes'] = $marker . ($validated['notes'] ? "\n" . $validated['notes'] : '');
+            }
+            return MaintenanceSchedule::create($validated);
+        }, 3);
 
         return redirect()
             ->route('maintenance.show', $maintenance->maintenance_schedule_id)
-            ->with('success', 'Maintenance schedule successfully created.');
+            ->with('success', $sourceId ? 'Follow-up maintenance schedule successfully created.' : 'Maintenance schedule successfully created.');
     }
 
     /**
@@ -182,11 +229,19 @@ class MaintenanceController extends Controller
             ->with('user')
             ->get();
 
+        $canFollowup = $this->requiresFollowup($maintenance);
+        $followupSchedule = $canFollowup
+            ? MaintenanceSchedule::query()->where('notes', 'like', $this->followupMarker($maintenance->getKey()) . '%')
+                ->orderBy('created_at')->first()
+            : null;
+
         return view('maintenance.show', [
             'maintenance' => $maintenance,
             'records' => $records,
             'allRecords' => $allRecords,
             'results' => self::RESULTS,
+            'canFollowup' => $canFollowup,
+            'followupSchedule' => $followupSchedule,
         ]);
     }
 
@@ -236,6 +291,12 @@ class MaintenanceController extends Controller
                 $validated['maintenance_type'] !== $schedule->maintenance_type
             )) {
                 throw ValidationException::withMessages(['serial_number_id' => 'Device and maintenance type cannot be changed after records exist.']);
+            }
+            // Preserve the source marker on follow-up schedules during edits.
+            if (preg_match('/\A\[FOLLOW-UP SOURCE: ([0-9a-f-]{36})\]/i', (string) $schedule->notes, $matches)) {
+                $marker = $matches[0];
+                $userNotes = preg_replace('/\A\[FOLLOW-UP SOURCE: [0-9a-f-]{36}\]\s*/i', '', (string) ($validated['notes'] ?? ''));
+                $validated['notes'] = $marker . ($userNotes !== '' ? "\n" . $userNotes : '');
             }
             $schedule->update($validated);
         }, 3);
@@ -399,6 +460,29 @@ class MaintenanceController extends Controller
             'status' => ['required', Rule::in(self::STATUSES)],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    private function followupMarker(string $sourceId): string
+    {
+        return '[FOLLOW-UP SOURCE: ' . $sourceId . ']';
+    }
+
+    private function followupExists(MaintenanceSchedule $source): bool
+    {
+        return MaintenanceSchedule::query()
+            ->where('notes', 'like', $this->followupMarker($source->getKey()) . '%')
+            ->exists();
+    }
+
+    private function requiresFollowup(MaintenanceSchedule $source): bool
+    {
+        if ($source->status !== 'Completed') {
+            return false;
+        }
+        $latest = $source->records()->orderByDesc('performed_at')
+            ->orderByDesc('maintenance_record_id')->first();
+        return $latest !== null
+            && in_array($latest->result, ['Requires Follow-up', 'Failed'], true);
     }
 
     private function formData(): array

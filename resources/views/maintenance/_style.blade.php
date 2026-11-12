@@ -262,4 +262,11 @@
 .mt-confirm-buttons .btn[hidden] { display:none; }
 @media (max-width:480px) { .mt-confirm-dialog { padding:25px 18px 18px; } .mt-confirm-buttons { flex-wrap:wrap; } }
 
+.mt-followup-notice { padding:16px 18px; margin-bottom:18px; border:1px solid #b8dfd6; border-left:4px solid #15966f; border-radius:10px; background:#f1faf7; color:#34415c; }
+.mt-followup-notice strong, .mt-followup-action strong { color:#17284f; font-size:14px; }
+.mt-followup-notice p, .mt-followup-action p { margin:7px 0 0; font-size:12px; line-height:1.7; color:#596579; }
+.mt-followup-notice a { color:#147c62; font-weight:700; text-decoration:underline; }
+.mt-followup-action { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.mt-followup-action .btn { flex-shrink:0; white-space:nowrap; }
+@media(max-width:700px){.mt-followup-action{flex-direction:column;align-items:stretch}}
 </style>

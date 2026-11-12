@@ -166,6 +166,29 @@
 </div>
 
 
+{{-- FOLLOW-UP ACTION --}}
+@if($canFollowup)
+<section class="card mt-block">
+    <div class="card-head"><div>
+        <h3>Maintenance Follow-up</h3>
+        <p>The latest result requires additional work. The completed record remains read-only.</p>
+    </div></div>
+    <div class="card-body">
+        <div class="mt-followup-action">
+            <div>
+                <strong>{{ $lastRecord?->result }}</strong>
+                <p>Keep the original maintenance record and create a separate Corrective schedule for further work.</p>
+            </div>
+            @if($followupSchedule)
+                <a class="btn" href="{{ route('maintenance.show', $followupSchedule->getKey()) }}">View Follow-up Schedule</a>
+            @else
+                <a class="btn primary" href="{{ route('maintenance.create', ['followup_from' => $maintenance->getKey()]) }}">+ Create Follow-up</a>
+            @endif
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- DEVICE --}}
 <section class="card mt-block">
     <div class="card-head">
@@ -473,7 +496,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-@include('maintenance._delete_confirm')
 @include('maintenance._style')
 
 @endsection

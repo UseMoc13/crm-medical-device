@@ -34,6 +34,15 @@
     </div>
 @endif
 
+@if($followupSource)
+    <div class="mt-followup-notice" role="status">
+        <strong>Follow-up Maintenance</strong>
+        <p>Creating a new Corrective maintenance schedule for device <b>{{ $followupSource->serialNumber?->serial_number }}</b>,
+        originating from <a href="{{ route('maintenance.show', $followupSource->getKey()) }}">{{ $followupSource->maintenance_type }} maintenance</a>.
+        The original maintenance records will remain unchanged. Select a new date and confirm the assigned technician.</p>
+    </div>
+@endif
+
 <div class="card mt-card">
     <div class="card-head">
         <div>

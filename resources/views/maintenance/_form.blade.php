@@ -1,16 +1,20 @@
 {{-- Shared Maintenance Schedule form for Create and Edit. The Record form is maintenance.records._form. --}}
 @php
     $isEdit = isset($maintenance) && $maintenance !== null;
-    $selectedSerial = (string) old('serial_number_id', $isEdit ? $maintenance->serial_number_id : request('serial_number_id', ''));
-    $selectedUser = (string) old('user_id', $isEdit ? $maintenance->user_id : '');
-    $selectedType = (string) old('maintenance_type', $isEdit ? $maintenance->maintenance_type : '');
+    $followupSource = $followupSource ?? null;
+    $selectedSerial = (string) old('serial_number_id', $isEdit ? $maintenance->serial_number_id : ($followupSource?->serial_number_id ?? request('serial_number_id', '')));
+    $selectedUser = (string) old('user_id', $isEdit ? $maintenance->user_id : ($followupSource?->user_id ?? ''));
+    $selectedType = (string) old('maintenance_type', $isEdit ? $maintenance->maintenance_type : ($followupSource ? 'Corrective' : ''));
     $selectedStatus = (string) old('status', $isEdit ? $maintenance->status : 'Scheduled');
     $scheduledDate = old('scheduled_date', $isEdit ? $maintenance->scheduled_date?->format('Y-m-d') : '');
-    $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : '');
+    $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : ($followupSource ? 'Follow-up required after ' . $followupSource->maintenance_type . ' maintenance (latest result: ' . ($followupSource->records()->orderByDesc('performed_at')->first()?->result ?? 'Unknown') . ').' : ''));
 @endphp
 
 <form method="POST" action="{{ $isEdit ? route('maintenance.update', $maintenance->maintenance_schedule_id) : route('maintenance.store') }}" id="maintenanceScheduleForm">
     @csrf
+    @if(!$isEdit && $followupSource)
+        <input type="hidden" name="followup_from" value="{{ $followupSource->maintenance_schedule_id }}">
+    @endif
     @if($isEdit)
         @method('PUT')
     @endif
