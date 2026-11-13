@@ -1,0 +1,152 @@
+--- a/app/Http/Controllers/QuotationController.php
++++ b/app/Http/Controllers/QuotationController.php
+@@ -4,8 +4,9 @@
+ 
+ use App\Models\Quotation;
+ use App\Models\QuotationItem;
+ use App\Models\Opportunity;
++use App\Services\CrmReferenceDataScope;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Str;
+ use Illuminate\Validation\Rule;
+@@ -19,12 +20,17 @@
+     */
+ 
+     public function index(Request $request)
+     {
++        $referenceScope = app(CrmReferenceDataScope::class);
+         $query = Quotation::query()
+             ->with([
+                 'opportunity',
+             ]);
++
++        if ($referenceScope->enabled('opportunities')) {
++            $query->whereIn('opportunity_id', $referenceScope->visible('opportunities')->select('opportunity_id'));
++        }
+ 
+         if ($request->filled('search')) {
+ 
+             $search = $request->search;
+@@ -109,9 +115,9 @@
+         $quotations = $query
+             ->paginate(10)
+             ->withQueryString();
+ 
+-        $opportunities = Opportunity::query()
++        $opportunities = app(CrmReferenceDataScope::class)->visible('opportunities')
+             ->orderBy('name')
+             ->get([
+                 'opportunity_id',
+                 'opportunity_code',
+@@ -149,9 +155,9 @@
+     */
+ 
+     public function create()
+     {
+-        $opportunities = Opportunity::query()
++        $opportunities = app(CrmReferenceDataScope::class)->visible('opportunities')
+             ->with([
+                 'customer',
+                 'user',
+                 'items.product',
+@@ -418,8 +424,10 @@
+             ],
+ 
+         ]);
+ 
++        app(CrmReferenceDataScope::class)->assertVisible('opportunities', $validated['opportunity_id']);
++
+ 
+         /*
+         |--------------------------------------------------------------------------
+         | Discount
+@@ -871,8 +879,9 @@
+ 
+     public function show(
+         Quotation $quotation
+     ) {
++        $this->assertOpportunityScope($quotation);
+ 
+         $quotation->load([
+ 
+             'opportunity.customer',
+@@ -908,8 +917,9 @@
+     public function items(
+         Request $request,
+         Quotation $quotation
+     ) {
++        $this->assertOpportunityScope($quotation);
+ 
+         $query = $quotation
+             ->items()
+             ->with('product');
+@@ -1060,11 +1070,12 @@
+ 
+     public function edit(
+         Quotation $quotation
+     ) {
++        $this->assertOpportunityScope($quotation);
+ 
+         $opportunities =
+-            Opportunity::query()
++            app(CrmReferenceDataScope::class)->visible('opportunities')
+                 ->orderBy('name')
+                 ->get([
+                     'opportunity_id',
+                     'opportunity_code',
+@@ -1093,8 +1104,9 @@
+     public function update(
+         Request $request,
+         Quotation $quotation
+     ) {
++        $this->assertOpportunityScope($quotation);
+ 
+         $validated = $request->validate([
+ 
+             'opportunity_id' => [
+@@ -1162,8 +1174,10 @@
+                 'string',
+             ],
+ 
+         ]);
++
++        app(CrmReferenceDataScope::class)->assertVisible('opportunities', $validated['opportunity_id']);
+ 
+ 
+         /*
+         |--------------------------------------------------------------------------
+@@ -1393,8 +1407,9 @@
+ 
+ 
+     public function changeStatus(Request $request, Quotation $quotation)
+     {
++        $this->assertOpportunityScope($quotation);
+         $validated = $request->validate([
+             'action' => ['required', Rule::in(['mark_sent', 'approve', 'reject'])],
+         ]);
+ 
+@@ -1435,8 +1450,9 @@
+ 
+ 
+     public function destroy($id)
+ {
++    $this->assertOpportunityScope(Quotation::query()->findOrFail($id));
+     try {
+         DB::transaction(function () use ($id) {
+ 
+             $quotation = Quotation::findOrFail($id);
+@@ -1479,8 +1495,13 @@
+     |--------------------------------------------------------------------------
+     | GENERATE QUOTATION NUMBER
+     |--------------------------------------------------------------------------
+     */
++
++    private function assertOpportunityScope(Quotation $quotation): void
++    {
++        app(CrmReferenceDataScope::class)->assertUrlVisible('opportunities', (string) $quotation->opportunity_id);
++    }
+ 
+     private function generateQuotationNumber()
+     {
+ 
