@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ServiceTicket;
+use App\Services\CrmServiceDataScope;
 use App\Models\ServiceTicketPart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,6 +48,7 @@ class ServiceTicketPartController extends Controller
 
     public function store(Request $request, ServiceTicket $serviceTicket): RedirectResponse
     {
+        app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $serviceTicket->getKey());
         $data = $request->validate($this->rules());
         DB::transaction(function () use ($serviceTicket, $data) {
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())->lockForUpdate()->firstOrFail();
@@ -66,6 +68,7 @@ class ServiceTicketPartController extends Controller
 
     public function update(Request $request, ServiceTicket $serviceTicket, string $part): RedirectResponse
     {
+        app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $serviceTicket->getKey());
         $data = $request->validate($this->rules());
         DB::transaction(function () use ($serviceTicket, $part, $data) {
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())->lockForUpdate()->firstOrFail();
@@ -85,6 +88,7 @@ class ServiceTicketPartController extends Controller
 
     public function destroy(ServiceTicket $serviceTicket, string $part): RedirectResponse
     {
+        app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $serviceTicket->getKey());
         DB::transaction(function () use ($serviceTicket, $part) {
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())->lockForUpdate()->firstOrFail();
             $this->editable($ticket);

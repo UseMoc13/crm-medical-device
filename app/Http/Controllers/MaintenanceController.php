@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MaintenanceRecord;
+use App\Services\CrmServiceDataScope;
 use App\Models\MaintenanceSchedule;
 use App\Models\SerialNumber;
 use App\Models\User;
@@ -48,7 +49,7 @@ class MaintenanceController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = MaintenanceSchedule::query()
+        $query = app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
             ->with([
                 'serialNumber.product',
                 'serialNumber.customer',
@@ -121,7 +122,7 @@ class MaintenanceController extends Controller
             ->withQueryString();
 
         // Ringkasan.
-        $counts = MaintenanceSchedule::query()
+        $counts = app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
             ->select('status', DB::raw('COUNT(*) AS total'))
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -131,15 +132,15 @@ class MaintenanceController extends Controller
             'scheduled' => (int) ($counts['Scheduled'] ?? 0),
             'in_progress' => (int) ($counts['In Progress'] ?? 0),
             'completed' => (int) ($counts['Completed'] ?? 0),
-            'overdue' => MaintenanceSchedule::query()
+            'overdue' => app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
                 ->whereIn('status', self::OPEN_STATUSES)
                 ->whereDate('scheduled_date', '<', $today)
                 ->count(),
-            'due_today' => MaintenanceSchedule::query()
+            'due_today' => app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
                 ->whereIn('status', self::OPEN_STATUSES)
                 ->whereDate('scheduled_date', '=', $today)
                 ->count(),
-            'due_soon' => MaintenanceSchedule::query()
+            'due_soon' => app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
                 ->whereIn('status', self::OPEN_STATUSES)
                 ->whereDate('scheduled_date', '>', $today)
                 ->whereDate('scheduled_date', '<=', $dueSoonEnd)
@@ -171,7 +172,7 @@ class MaintenanceController extends Controller
             'followup_from' => ['nullable', 'uuid', 'prohibited_with:recurring_from'],
         ]);
         if ($request->filled('recurring_from')) {
-            $recurringSource = MaintenanceSchedule::query()->with(['serialNumber.product', 'records'])
+            $recurringSource = app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')->with(['serialNumber.product', 'records'])
                 ->findOrFail($request->input('recurring_from'));
             if (! $this->eligibleForNextPreventive($recurringSource)) {
                 return redirect()->route('maintenance.show', $recurringSource->getKey())
@@ -188,7 +189,7 @@ class MaintenanceController extends Controller
         }
         if ($request->filled('followup_from')) {
             $request->validate(['followup_from' => ['required', 'uuid']]);
-            $followupSource = MaintenanceSchedule::query()
+            $followupSource = app(CrmServiceDataScope::class)->visible(MaintenanceSchedule::query(), 'maintenance_schedules')
                 ->with(['serialNumber.product', 'records'])
                 ->findOrFail($request->input('followup_from'));
 
@@ -217,6 +218,7 @@ class MaintenanceController extends Controller
     {
         $validated = $request->validate($this->scheduleRules());
 
+        $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('maintenance_schedules', $validated['user_id'] ?? null);
         $validated['status'] = 'Scheduled';
         $request->validate([
             'followup_from' => ['nullable', 'uuid', 'prohibited_with:recurring_from'],
@@ -224,7 +226,13 @@ class MaintenanceController extends Controller
             'recurring_months' => ['required_with:recurring_from', 'nullable', 'integer', Rule::in([3, 6, 12])],
         ]);
         $sourceId = $request->input('followup_from');
+        if ($sourceId) {
+            app(CrmServiceDataScope::class)->assertVisible(MaintenanceSchedule::query(), 'maintenance_schedules', (string) $sourceId);
+        }
         $recurringId = $request->input('recurring_from');
+        if ($recurringId) {
+            app(CrmServiceDataScope::class)->assertVisible(MaintenanceSchedule::query(), 'maintenance_schedules', (string) $recurringId);
+        }
         $recurringMonths = (int) $request->input('recurring_months');
 
         $maintenance = DB::transaction(function () use ($validated, $sourceId, $recurringId, $recurringMonths): MaintenanceSchedule {
@@ -285,6 +293,7 @@ class MaintenanceController extends Controller
      */
     public function show(MaintenanceSchedule $maintenance): View
     {
+        $this->assertMaintenanceScope($maintenance);
         $maintenance->load([
             'serialNumber.product',
             'serialNumber.customer',
@@ -331,6 +340,7 @@ class MaintenanceController extends Controller
      */
     public function edit(MaintenanceSchedule $maintenance): View|RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         // Keep the Edit action visible in the list, but reject finalized schedules
         // before rendering the edit form (server-side protection as well as UI).
         if (in_array($maintenance->status, ['Completed', 'Cancelled'], true)) {
@@ -353,7 +363,9 @@ class MaintenanceController extends Controller
         Request $request,
         MaintenanceSchedule $maintenance
     ): RedirectResponse {
+        $this->assertMaintenanceScope($maintenance);
         $validated = $request->validate($this->scheduleRules());
+        $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('maintenance_schedules', $validated['user_id'] ?? null);
 
         DB::transaction(function () use ($maintenance, $validated): void {
             $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
@@ -398,6 +410,7 @@ class MaintenanceController extends Controller
      */
     public function destroy(MaintenanceSchedule $maintenance): RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         DB::transaction(function () use ($maintenance): void {
             $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
                 ->lockForUpdate()->firstOrFail();
@@ -418,6 +431,7 @@ class MaintenanceController extends Controller
      */
     public function createRecord(MaintenanceSchedule $maintenance): View|RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         if ($maintenance->status !== 'In Progress') {
             return redirect()->route('maintenance.show', $maintenance->getKey())
                 ->with('error', 'Start maintenance before adding records. Finalized schedules are read-only.');
@@ -428,6 +442,7 @@ class MaintenanceController extends Controller
 
     public function storeRecord(Request $request, MaintenanceSchedule $maintenance): RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         $validated = $request->validate($this->recordRules());
         $completeSchedule = $request->boolean('complete_schedule');
         unset($validated['complete_schedule']);
@@ -449,6 +464,7 @@ class MaintenanceController extends Controller
 
     public function editRecord(MaintenanceSchedule $maintenance, MaintenanceRecord $record): View|RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
         if ($maintenance->status !== 'In Progress') {
             return redirect()->route('maintenance.show', $maintenance->getKey())
@@ -462,6 +478,7 @@ class MaintenanceController extends Controller
 
     public function updateRecord(Request $request, MaintenanceSchedule $maintenance, MaintenanceRecord $record): RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
         $validated = $request->validate($this->recordRules());
         $completeSchedule = $request->boolean('complete_schedule');
@@ -484,6 +501,7 @@ class MaintenanceController extends Controller
 
     public function destroyRecord(MaintenanceSchedule $maintenance, MaintenanceRecord $record): RedirectResponse
     {
+        $this->assertMaintenanceScope($maintenance);
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
         DB::transaction(function () use ($maintenance, $record): void {
             $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
@@ -494,6 +512,11 @@ class MaintenanceController extends Controller
 
         return redirect()->route('maintenance.show', $maintenance->getKey())
             ->with('success', 'Maintenance record successfully deleted.');
+    }
+
+    private function assertMaintenanceScope(MaintenanceSchedule $maintenance): void
+    {
+        app(CrmServiceDataScope::class)->assertVisible(MaintenanceSchedule::query(), 'maintenance_schedules', (string) $maintenance->getKey());
     }
 
     private function ensureRecordBelongsToSchedule(

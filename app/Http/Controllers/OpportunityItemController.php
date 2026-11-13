@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Opportunity;
 use App\Models\OpportunityItem;
 use App\Models\Product;
+use App\Services\CrmSalesDataScope;
 use Illuminate\Http\Request;
 
 class OpportunityItemController extends Controller
@@ -14,6 +15,8 @@ class OpportunityItemController extends Controller
      */
     public function create(Opportunity $opportunity)
     {
+        $this->assertParentInScope($opportunity);
+
         $products = Product::query()
             ->where('status', 'active')
             ->orderBy('product_name')
@@ -44,6 +47,8 @@ class OpportunityItemController extends Controller
         Request $request,
         Opportunity $opportunity
     ) {
+        $this->assertParentInScope($opportunity);
+
         $validated = $request->validate([
 
             'product_id' => [
@@ -97,6 +102,8 @@ class OpportunityItemController extends Controller
         Opportunity $opportunity,
         OpportunityItem $item
     ) {
+        $this->assertParentInScope($opportunity);
+
         /*
         |--------------------------------------------------------------------------
         | Make sure item belongs to this opportunity
@@ -188,6 +195,8 @@ class OpportunityItemController extends Controller
         Opportunity $opportunity,
         OpportunityItem $item
     ) {
+        $this->assertParentInScope($opportunity);
+
         /*
         |--------------------------------------------------------------------------
         | Make sure item belongs to this opportunity
@@ -254,6 +263,8 @@ class OpportunityItemController extends Controller
         Opportunity $opportunity,
         OpportunityItem $item
     ) {
+        $this->assertParentInScope($opportunity);
+
         /*
         |--------------------------------------------------------------------------
         | Make sure item belongs to this opportunity
@@ -280,5 +291,18 @@ class OpportunityItemController extends Controller
                 'success',
                 'Opportunity item berhasil dihapus.'
             );
+    }
+    /**
+     * Opt-in parent visibility enforcement for nested Opportunity Items.
+     * Keeping this guard here protects direct UUID requests as well as the UI.
+     * When A6.11.2 is OFF this service intentionally leaves access unchanged.
+     */
+    private function assertParentInScope(Opportunity $opportunity): void
+    {
+        app(CrmSalesDataScope::class)->assertVisible(
+            Opportunity::query(),
+            'opportunities',
+            (string) $opportunity->getKey()
+        );
     }
 }

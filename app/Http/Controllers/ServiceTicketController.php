@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Services\CrmServiceDataScope;
 use App\Models\SerialNumber;
 use App\Models\ServiceTicket;
 use App\Services\ServiceWarrantyCoverage;
@@ -36,7 +37,7 @@ class ServiceTicketController extends Controller
 
     public function index(Request $request): View
     {
-        $query = ServiceTicket::query()
+        $query = app(CrmServiceDataScope::class)->visible(ServiceTicket::query(), 'service_tickets')
             ->with([
                 'customer',
                 'serialNumber.product',
@@ -158,6 +159,8 @@ class ServiceTicketController extends Controller
                 ->withInput();
         }
 
+        $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('service_tickets', $validated['user_id'] ?? null);
+
         $validated['ticket_number'] = $this->generateTicketNumber();
         $validated['opened_at'] = now();
         $validated['closed_at'] = $validated['status'] === 'closed'
@@ -173,6 +176,7 @@ class ServiceTicketController extends Controller
 
     public function show(ServiceTicket $serviceTicket): View
     {
+        $this->assertTicketScope($serviceTicket);
         $serviceTicket->load([
             'customer',
             'serialNumber.product',
@@ -191,6 +195,7 @@ class ServiceTicketController extends Controller
 
     public function edit(ServiceTicket $serviceTicket): View|RedirectResponse
     {
+        $this->assertTicketScope($serviceTicket);
         if ($serviceTicket->status === 'closed') {
             return redirect()->route('service-tickets.show', $serviceTicket)
                 ->with('error', 'Closed service tickets cannot be edited.');
@@ -217,6 +222,7 @@ class ServiceTicketController extends Controller
         Request $request,
         ServiceTicket $serviceTicket
     ): RedirectResponse {
+        $this->assertTicketScope($serviceTicket);
         $validated = $request->validate([
             'customer_id' => [
                 'required',
@@ -256,6 +262,8 @@ class ServiceTicketController extends Controller
             ],
         ]);
 
+        $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('service_tickets', $validated['user_id'] ?? null);
+
         // Validate and update against the locked database state, not a stale form snapshot.
         DB::transaction(function () use ($serviceTicket, $validated) {
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())
@@ -289,6 +297,7 @@ class ServiceTicketController extends Controller
      */
     public function changeStatus(Request $request, ServiceTicket $serviceTicket): RedirectResponse
     {
+        $this->assertTicketScope($serviceTicket);
         $data = $request->validate([
             'status' => ['required', Rule::in(['in_progress', 'on_hold', 'resolved', 'closed'])],
             'resolution' => ['nullable', 'string', 'max:5000'],
@@ -307,6 +316,11 @@ class ServiceTicketController extends Controller
         return redirect()
             ->route('service-tickets.show', $serviceTicket)
             ->with('workflow_success', 'Service ticket status updated successfully.');
+    }
+
+    private function assertTicketScope(ServiceTicket $ticket): void
+    {
+        app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $ticket->getKey());
     }
 
     private function formData(): array

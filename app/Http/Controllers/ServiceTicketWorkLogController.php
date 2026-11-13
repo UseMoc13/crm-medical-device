@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ServiceTicket;
+use App\Services\CrmServiceDataScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ class ServiceTicketWorkLogController extends Controller
 
     public function store(Request $request, ServiceTicket $serviceTicket): RedirectResponse
     {
+        app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $serviceTicket->getKey());
         $data = $request->validate([
             'entry_type' => ['required', Rule::in(self::TYPES)],
             'notes' => ['required', 'string', 'min:3', 'max:5000'],
