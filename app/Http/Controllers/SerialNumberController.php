@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CrmDownstreamCustomerScope;
+use App\Services\CrmReferenceDataScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -28,7 +30,9 @@ class SerialNumberController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DB::table('serial_numbers')
+        $query = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'serial_numbers.customer_id', true
+        )
             ->leftJoin(
                 'products',
                 'serial_numbers.product_id',
@@ -187,7 +191,7 @@ class SerialNumberController extends Controller
             ->orderBy('product_name')
             ->get();
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select(
                 'customer_id',
                 'customer_name'
@@ -201,13 +205,19 @@ class SerialNumberController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $total = DB::table('serial_numbers')->count();
+        $total = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'customer_id', true
+        )->count();
 
-        $assigned = DB::table('serial_numbers')
+        $assigned = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'customer_id', true
+        )
             ->whereNotNull('customer_id')
             ->count();
 
-        $available = DB::table('serial_numbers')
+        $available = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'customer_id', true
+        )
             ->whereRaw(
                 'LOWER(TRIM(status)) = ?',
                 ['available']
@@ -250,7 +260,7 @@ class SerialNumberController extends Controller
             ->orderBy('product_name')
             ->get();
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select(
                 'customer_id',
                 'customer_name'
@@ -332,6 +342,10 @@ class SerialNumberController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        app(CrmReferenceDataScope::class)->assertVisible(
+            'customers', $validated['customer_id'] ?? null, true
+        );
+
         DB::table('serial_numbers')->insert([
             'serial_number_id' => (string) Str::uuid(),
             'product_id'       => $validated['product_id'],
@@ -380,6 +394,9 @@ class SerialNumberController extends Controller
             ->first();
 
         abort_if(!$serialNumber, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer(
+            $serialNumber->customer_id ?? null, true
+        );
 
         return view(
             'serial-numbers.show',
@@ -397,6 +414,9 @@ class SerialNumberController extends Controller
             ->first();
 
         abort_if(!$serialNumber, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer(
+            $serialNumber->customer_id ?? null, true
+        );
 
         $products = DB::table('products')
             ->select(
@@ -407,7 +427,7 @@ class SerialNumberController extends Controller
             ->orderBy('product_name')
             ->get();
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select(
                 'customer_id',
                 'customer_name'
@@ -438,6 +458,9 @@ class SerialNumberController extends Controller
             ->first();
 
         abort_if(!$existingSerialNumber, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer(
+            $existingSerialNumber->customer_id ?? null, true
+        );
 
         $request->merge([
             'serial_number' => trim(
@@ -486,6 +509,10 @@ class SerialNumberController extends Controller
             ],
         ]);
 
+        app(CrmReferenceDataScope::class)->assertVisible(
+            'customers', $validated['customer_id'] ?? null, true
+        );
+
         DB::table('serial_numbers')
             ->where(
                 'serial_number_id',
@@ -516,6 +543,9 @@ class SerialNumberController extends Controller
             ->first();
 
         abort_if(!$existingSerialNumber, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer(
+            $existingSerialNumber->customer_id ?? null, true
+        );
 
         try {
             DB::table('serial_numbers')

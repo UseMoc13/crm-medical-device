@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CrmDownstreamCustomerScope;
+use App\Services\CrmReferenceDataScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,7 +26,9 @@ class WarrantyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DB::table('warranties')
+        $query = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('warranties'), 'warranties.customer_id'
+        )
             ->join(
                 'serial_numbers',
                 'warranties.serial_number_id',
@@ -159,7 +163,7 @@ class WarrantyController extends Controller
 
         $statuses = self::WARRANTY_STATUSES;
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select('customer_id', 'customer_name')
             ->orderBy('customer_name')
             ->get();
@@ -170,9 +174,13 @@ class WarrantyController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $total = DB::table('warranties')->count();
+        $total = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('warranties'), 'customer_id'
+        )->count();
 
-        $active = DB::table('warranties')
+        $active = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('warranties'), 'customer_id'
+        )
             ->whereRaw(
                 'LOWER(TRIM(status)) = ?',
                 ['active']
@@ -180,7 +188,9 @@ class WarrantyController extends Controller
             ->whereDate('end_date', '>=', now()->toDateString())
             ->count();
 
-        $expired = DB::table('warranties')
+        $expired = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('warranties'), 'customer_id'
+        )
             ->where(function ($q) {
                 $q->whereRaw(
                     'LOWER(TRIM(status)) = ?',
@@ -215,12 +225,14 @@ class WarrantyController extends Controller
     {
         $warrantyNumber = $this->generateWarrantyNumber();
 
-        $serialNumbers = DB::table('serial_numbers')
+        $serialNumbers = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'serial_numbers.customer_id'
+        )
             ->select('serial_number_id', 'serial_number', 'customer_id')
             ->orderBy('serial_number')
             ->get();
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select('customer_id', 'customer_name')
             ->orderBy('customer_name')
             ->get();
@@ -259,8 +271,11 @@ class WarrantyController extends Controller
             'terms' => 'nullable|string',
         ]);
 
-    
-                $serialNumber = DB::table('serial_numbers')
+        app(CrmReferenceDataScope::class)->assertVisible(
+            'customers', $validated['customer_id']
+        );
+
+        $serialNumber = DB::table('serial_numbers')
             ->where('serial_number_id', $validated['serial_number_id'])
             ->first();
 
@@ -329,6 +344,7 @@ class WarrantyController extends Controller
             ->first();
 
         abort_if(!$warranty, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer($warranty->customer_id ?? null);
 
         return view('warranties.show', compact('warranty'));
     }
@@ -343,8 +359,11 @@ class WarrantyController extends Controller
             ->first();
 
         abort_if(!$warranty, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer($warranty->customer_id ?? null);
 
-        $serialNumbers = DB::table('serial_numbers')
+        $serialNumbers = app(CrmDownstreamCustomerScope::class)->apply(
+            DB::table('serial_numbers'), 'serial_numbers.customer_id'
+        )
             ->leftJoin(
                 'products',
                 'serial_numbers.product_id',
@@ -367,7 +386,7 @@ class WarrantyController extends Controller
             ->orderBy('serial_numbers.serial_number')
             ->get();
 
-        $customers = DB::table('customers')
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->select('customer_id', 'customer_name')
             ->orderBy('customer_name')
             ->get();
@@ -395,6 +414,7 @@ class WarrantyController extends Controller
             ->first();
 
         abort_if(!$existingWarranty, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer($existingWarranty->customer_id ?? null);
 
         $request->merge([
             'warranty_number' => trim(
@@ -454,6 +474,18 @@ class WarrantyController extends Controller
             ],
         ]);
 
+        app(CrmReferenceDataScope::class)->assertVisible(
+            'customers', $validated['customer_id']
+        );
+        $selectedSerial = DB::table('serial_numbers')
+            ->where('serial_number_id', $validated['serial_number_id'])
+            ->first();
+        if (! $selectedSerial || $selectedSerial->customer_id !== $validated['customer_id']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'serial_number_id' => 'The serial number does not belong to the selected customer.',
+            ]);
+        }
+
         DB::table('warranties')
             ->where('warranty_id', $warranty)
             ->update([
@@ -484,6 +516,7 @@ class WarrantyController extends Controller
             ->first();
 
         abort_if(!$existingWarranty, 404);
+        app(CrmDownstreamCustomerScope::class)->assertRecordCustomer($existingWarranty->customer_id ?? null);
 
         DB::table('warranties')
             ->where('warranty_id', $warranty)
