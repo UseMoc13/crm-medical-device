@@ -132,9 +132,6 @@ Route::put('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'up
 Route::delete('/serial-numbers/{serialNumber}', [SerialNumberController::class, 'destroy'])
     ->name('serial-numbers.destroy');
 
-Route::resource('service-tickets', ServiceTicketController::class)
-    ->except(['destroy']);
-
 // Maintenance
 Route::resource('maintenance', MaintenanceController::class);
 

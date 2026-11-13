@@ -1,0 +1,84 @@
+--- before/InstallationController.php
++++ after/InstallationController.php
+@@ -165,6 +165,81 @@
+         return redirect()->route('installations.show', $installation)->with('success', 'Installation updated successfully.');
+     }
+ 
++    /**
++     * Dedicated PATCH endpoint used by the status form on Installation Show.
++     * Keeps status transitions and completion checks consistent with update().
++     */
++    public function changeStatus(Request $request, Installation $installation)
++    {
++        app(CrmInstallationActivityDataScope::class)->assertVisible(
++            Installation::query(), 'installations', (string) $installation->getKey()
++        );
++
++        $data = $request->validate([
++            'status' => ['required', Rule::in(['Scheduled', 'In Progress', 'Completed', 'Cancelled'])],
++        ]);
++
++        DB::transaction(function () use ($installation, $data) {
++            $record = Installation::query()->whereKey($installation->getKey())->lockForUpdate()->firstOrFail();
++            $transitions = [
++                'Scheduled' => ['In Progress', 'Cancelled'],
++                'In Progress' => ['Completed'],
++                'Completed' => [],
++                'Cancelled' => [],
++            ];
++
++            $next = $data['status'];
++            if (!in_array($next, $transitions[(string) $record->status] ?? [], true)) {
++                throw ValidationException::withMessages([
++                    'status' => 'Invalid installation status transition.',
++                ]);
++            }
++
++            if ($next === 'Completed') {
++                $delivery = Delivery::query()->whereKey($record->delivery_id)->lockForUpdate()->firstOrFail();
++                if (strtolower((string) $delivery->status) !== 'delivered') {
++                    throw ValidationException::withMessages([
++                        'status' => 'Delivery must be Delivered before completing Installation.',
++                    ]);
++                }
++
++                $total = InstallationChecklist::where('installation_id', $record->getKey())->count();
++                $pending = InstallationChecklist::where('installation_id', $record->getKey())
++                    ->where('is_completed', false)->count();
++                if ($total === 0 || $pending > 0) {
++                    throw ValidationException::withMessages([
++                        'status' => 'Complete all installation checklist items first.',
++                    ]);
++                }
++
++                $items = DeliveryItem::query()->where('delivery_id', $record->delivery_id)->get();
++                if ($items->isEmpty()) {
++                    throw ValidationException::withMessages([
++                        'status' => 'Delivery has no allocated device serial numbers.',
++                    ]);
++                }
++
++                foreach ($items as $item) {
++                    $serial = SerialNumber::query()->whereKey($item->serial_number_id)
++                        ->lockForUpdate()->firstOrFail();
++                    if ($serial->status !== 'assigned') {
++                        throw ValidationException::withMessages([
++                            'status' => 'Serial number ' . $serial->serial_number
++                                . ' must be Assigned before Installation can complete.',
++                        ]);
++                    }
++                    $serial->status = 'installed';
++                    $serial->save();
++                }
++            }
++
++            $record->update(['status' => $next]);
++        }, 3);
++
++        return redirect()->route('installations.show', $installation)
++            ->with('success', 'Installation status updated successfully.');
++    }
++
+     public function updateChecklist(Request $request, Installation $installation, InstallationChecklist $checklist)
+     {
+         $data = $request->validate([

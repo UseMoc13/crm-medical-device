@@ -324,6 +324,19 @@ class ServiceTicketController extends Controller
             ->with('workflow_success', 'Service ticket status updated successfully.');
     }
 
+    /**
+     * Fail-closed compatibility handler for the legacy Delete action.
+     * Tickets can contain parts, resolution history and technician work logs;
+     * a permanent deletion policy has not been approved.
+     */
+    public function destroy(ServiceTicket $serviceTicket): RedirectResponse
+    {
+        $this->assertTicketScope($serviceTicket);
+
+        return redirect()->route('service-tickets.index')
+            ->with('error', 'Deleting service tickets is currently disabled to preserve service history.');
+    }
+
     private function assertTicketScope(ServiceTicket $ticket): void
     {
         app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $ticket->getKey());
