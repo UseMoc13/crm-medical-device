@@ -6,6 +6,7 @@ use App\Models\Lead;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\CrmSalesDataScope;
 use Illuminate\Support\Str;
 
 class LeadController extends Controller
@@ -15,10 +16,10 @@ class LeadController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Lead::with([
+        $query = app(CrmSalesDataScope::class)->visible(Lead::with([
             'user',
             'customer',
-        ]);
+        ]), 'leads');
 
 
         /*
@@ -184,7 +185,7 @@ class LeadController extends Controller
             ]);
 
 
-        $statuses = Lead::query()
+        $statuses = app(CrmSalesDataScope::class)->visible(Lead::query(), 'leads')
             ->whereNotNull('status')
             ->where('status', '!=', '')
             ->distinct()
@@ -192,7 +193,7 @@ class LeadController extends Controller
             ->pluck('status');
 
 
-        $sources = Lead::query()
+        $sources = app(CrmSalesDataScope::class)->visible(Lead::query(), 'leads')
             ->whereNotNull('source')
             ->where('source', '!=', '')
             ->distinct()
@@ -320,6 +321,10 @@ class LeadController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $validated['user_id'] = app(CrmSalesDataScope::class)->enabled('leads')
+            ? app(CrmSalesDataScope::class)->authorizeOwner('leads', $validated['user_id'] ?? null)
+            : ($validated['user_id'] ?? null);
+
         $validated['lead_code'] =
             $this->generateLeadCode();
 
@@ -341,6 +346,8 @@ class LeadController extends Controller
      */
     public function show(Lead $lead)
     {
+        app(CrmSalesDataScope::class)->assertVisible(Lead::query(), 'leads', (string) $lead->getKey());
+
         $lead->load([
             'user',
             'customer',
@@ -359,6 +366,8 @@ class LeadController extends Controller
      */
     public function edit(Lead $lead)
     {
+        app(CrmSalesDataScope::class)->assertVisible(Lead::query(), 'leads', (string) $lead->getKey());
+
         $users = User::query()
             ->where('status', 'active')
             ->orderBy('name')
@@ -433,6 +442,8 @@ class LeadController extends Controller
         Request $request,
         Lead $lead
     ) {
+        app(CrmSalesDataScope::class)->assertVisible(Lead::query(), 'leads', (string) $lead->getKey());
+
 
         $validated = $request->validate([
 
@@ -492,6 +503,10 @@ class LeadController extends Controller
         ]);
 
 
+        if (app(CrmSalesDataScope::class)->enabled('leads')) {
+            $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('leads', $validated['user_id'] ?? null);
+        }
+
         $lead->update(
             $validated
         );
@@ -514,6 +529,8 @@ class LeadController extends Controller
      */
     public function destroy(Lead $lead)
     {
+        app(CrmSalesDataScope::class)->assertVisible(Lead::query(), 'leads', (string) $lead->getKey());
+
         $lead->delete();
 
 

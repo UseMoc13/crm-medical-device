@@ -1,7 +1,8 @@
 <?php
 
 return [
-    // A6.11 Customer-only pilot. Keep false until the 38 NULL View grants
-    // have been reviewed and explicitly configured in Roles.
+    // All row-level pilots are OFF until roles are configured and tested.
     'customers_enabled' => (bool) env('CRM_DATA_SCOPE_CUSTOMERS_ENABLED', false),
+    'leads_enabled' => (bool) env('CRM_DATA_SCOPE_LEADS_ENABLED', false),
+    'opportunities_enabled' => (bool) env('CRM_DATA_SCOPE_OPPORTUNITIES_ENABLED', false),
 ];

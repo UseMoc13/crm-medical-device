@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\CrmSalesDataScope;
 use Illuminate\Support\Str;
 use App\Models\Product;
 
@@ -17,11 +18,11 @@ class OpportunityController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Opportunity::with([
+        $query = app(CrmSalesDataScope::class)->visible(Opportunity::with([
             'customer',
             'lead',
             'user',
-        ]);
+        ]), 'opportunities');
 
         /*
         |--------------------------------------------------------------------------
@@ -188,14 +189,14 @@ class OpportunityController extends Controller
                 'customer_code',
             ]);
 
-        $stages = Opportunity::query()
+        $stages = app(CrmSalesDataScope::class)->visible(Opportunity::query(), 'opportunities')
             ->whereNotNull('stage')
             ->where('stage', '!=', '')
             ->distinct()
             ->orderBy('stage')
             ->pluck('stage');
 
-        $statuses = Opportunity::query()
+        $statuses = app(CrmSalesDataScope::class)->visible(Opportunity::query(), 'opportunities')
             ->whereNotNull('status')
             ->where('status', '!=', '')
             ->distinct()
@@ -329,6 +330,10 @@ class OpportunityController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        if (app(CrmSalesDataScope::class)->enabled('opportunities')) {
+            $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('opportunities', $validated['user_id'] ?? null);
+        }
+
         $validated['opportunity_code'] =
             $this->generateOpportunityCode();
 
@@ -350,6 +355,8 @@ class OpportunityController extends Controller
      */
     public function show(Request $request, Opportunity $opportunity)
     {
+        app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
+
         $opportunity->load([
             'customer',
             'lead',
@@ -438,6 +445,8 @@ class OpportunityController extends Controller
         Request $request,
         Opportunity $opportunity
     ) {
+        app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
+
         $query = $opportunity->items()
             ->with('product');
 
@@ -583,6 +592,8 @@ class OpportunityController extends Controller
      */
     public function edit(Opportunity $opportunity)
     {
+        app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
+
         $users = User::query()
             ->where('status', 'active')
             ->orderBy('name')
@@ -665,6 +676,8 @@ class OpportunityController extends Controller
         Request $request,
         Opportunity $opportunity
     ) {
+        app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
+
         $validated = $request->validate([
 
             'customer_id' => [
@@ -720,6 +733,10 @@ class OpportunityController extends Controller
             ],
         ]);
 
+        if (app(CrmSalesDataScope::class)->enabled('opportunities')) {
+            $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('opportunities', $validated['user_id'] ?? null);
+        }
+
         $opportunity->update(
             $validated
         );
@@ -743,6 +760,7 @@ class OpportunityController extends Controller
 public function destroy($id)
 {
     $opportunity = Opportunity::findOrFail($id);
+    app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
 
     // Cek apakah Opportunity masih memiliki item produk
     $hasItems = \Illuminate\Support\Facades\DB::table('opportunity_items')

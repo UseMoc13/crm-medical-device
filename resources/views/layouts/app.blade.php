@@ -267,7 +267,7 @@
         });
     </script>
 
-    @include('components.global-delete-confirm')
+    @includeIf('components.global-delete-confirm')
 
 </body>
 
