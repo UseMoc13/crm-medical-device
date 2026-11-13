@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CrmReportingDataScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,7 @@ class ReportController extends Controller
 
         /* ---------- Invoice KPI ---------- */
 
-        $kpi = DB::table('invoices')
+        $kpi = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->whereDate('invoice_date', '>=', $fromDate)
             ->whereDate('invoice_date', '<=', $toDate)
             ->selectRaw(
@@ -63,7 +64,7 @@ class ReportController extends Controller
 
         /* ---------- Status breakdown ---------- */
 
-        $statusBreakdown = DB::table('invoices')
+        $statusBreakdown = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->whereDate('invoice_date', '>=', $fromDate)
             ->whereDate('invoice_date', '<=', $toDate)
             ->select('status', DB::raw('COUNT(*) AS total'), DB::raw('COALESCE(SUM(total_amount),0) AS amount'))
@@ -73,7 +74,7 @@ class ReportController extends Controller
 
         /* ---------- Top customers ---------- */
 
-        $topCustomers = DB::table('invoices as i')
+        $topCustomers = app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
             ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
             ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
             ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
@@ -93,8 +94,8 @@ class ReportController extends Controller
 
         /* ---------- Top products ---------- */
 
-        $topProducts = DB::table('invoice_items as ii')
-            ->join('invoices as i', 'i.invoice_id', '=', 'ii.invoice_id')
+        $topProducts = app(CrmReportingDataScope::class)->invoices(DB::table('invoice_items as ii')
+            ->join('invoices as i', 'i.invoice_id', '=', 'ii.invoice_id'), 'i.sales_order_id')
             ->leftJoin('products as p', 'p.product_id', '=', 'ii.product_id')
             ->whereIn('i.status', self::ISSUED)
             ->whereDate('i.invoice_date', '>=', $fromDate)
@@ -112,7 +113,7 @@ class ReportController extends Controller
 
         /* ---------- Service & Maintenance ---------- */
 
-        $ticketBase = fn () => DB::table('service_tickets')
+        $ticketBase = fn () => app(CrmReportingDataScope::class)->tickets(DB::table('service_tickets'))
             ->whereDate('opened_at', '>=', $fromDate)
             ->whereDate('opened_at', '<=', $toDate);
 
@@ -132,11 +133,11 @@ class ReportController extends Controller
         ];
 
         $maintenance = [
-            'schedules' => DB::table('maintenance_schedules')
+            'schedules' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_schedules'))
                 ->whereDate('scheduled_date', '>=', $fromDate)
                 ->whereDate('scheduled_date', '<=', $toDate)
                 ->count(),
-            'records' => DB::table('maintenance_records')
+            'records' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_records'), 'maintenance_schedule_id')
                 ->whereDate('performed_at', '>=', $fromDate)
                 ->whereDate('performed_at', '<=', $toDate)
                 ->count(),
@@ -158,7 +159,7 @@ class ReportController extends Controller
 
         /* ---------- Pipeline & Warranty (snapshot saat ini) ---------- */
 
-        $pipeline = DB::table('opportunities')
+        $pipeline = app(CrmReportingDataScope::class)->pipeline(DB::table('opportunities'))
             ->select(
                 'stage',
                 DB::raw('COUNT(*) AS total'),
@@ -169,7 +170,7 @@ class ReportController extends Controller
             ->get();
 
         $warranty = [
-            'by_status' => DB::table('warranties')
+            'by_status' => app(CrmReportingDataScope::class)->warranty(DB::table('warranties'))
                 ->select('status', DB::raw('COUNT(*) AS total'))
                 ->groupBy('status')->orderByDesc('total')->get(),
             'expiring_soon' => DB::table('warranties')
@@ -208,7 +209,7 @@ class ReportController extends Controller
 
         [$from, $to] = $this->period($request);
 
-        $rows = DB::table('invoices as i')
+        $rows = app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
             ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
             ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
             ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
@@ -323,7 +324,7 @@ class ReportController extends Controller
             $start = $end->copy()->subMonths(23);
         }
 
-        $data = DB::table('invoices')
+        $data = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->whereDate('invoice_date', '>=', $start->toDateString())
             ->whereDate('invoice_date', '<=', $to->toDateString())
             ->selectRaw(

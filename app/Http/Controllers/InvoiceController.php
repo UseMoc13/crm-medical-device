@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CrmReportingDataScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,7 @@ class InvoiceController extends Controller
 
         $today = today()->toDateString();
 
-        $summary = DB::table('invoices')
+        $summary = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->selectRaw(
                 "COUNT(*) AS total,
                  COALESCE(SUM(total_amount) FILTER (WHERE status IN ('Sent','Paid')), 0) AS issued,
@@ -149,6 +150,10 @@ class InvoiceController extends Controller
                 'notes' => ['nullable', 'string'],
             ]
         ));
+
+        app(CrmReportingDataScope::class)->salesOrders(DB::table('sales_orders'), 'sales_order_id')
+            ->where('sales_order_id', $validated['sales_order_id'])
+            ->exists() || abort(404);
 
         $calc = $this->calculate($validated);
 
@@ -375,7 +380,7 @@ class InvoiceController extends Controller
 
     private function baseQuery()
     {
-        return DB::table('invoices as i')
+        return app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
             ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
             ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
             ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
@@ -399,7 +404,7 @@ class InvoiceController extends Controller
 
     private function formData(): array
     {
-        $salesOrders = DB::table('sales_orders as so')
+        $salesOrders = app(CrmReportingDataScope::class)->salesOrders(DB::table('sales_orders as so'), 'so.sales_order_id')
             ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
             ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
             ->leftJoin('customers as c', 'c.customer_id', '=', 'o.customer_id')
@@ -417,6 +422,9 @@ class InvoiceController extends Controller
 
         // Item setiap sales order, dipakai untuk mengisi baris invoice otomatis.
         $salesOrderItems = DB::table('sales_order_items')
+            ->whereIn('sales_order_id', app(CrmReportingDataScope::class)
+                ->salesOrders(DB::table('sales_orders'), 'sales_order_id')
+                ->select('sales_order_id'))
             ->select('sales_order_id', 'product_id', 'quantity', 'unit_price', 'discount')
             ->get()
             ->groupBy('sales_order_id')

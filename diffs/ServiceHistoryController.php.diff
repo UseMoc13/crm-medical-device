@@ -1,0 +1,140 @@
+--- a/app/Http/Controllers/ServiceHistoryController.php
++++ b/app/Http/Controllers/ServiceHistoryController.php
+@@ -3,6 +3,8 @@
+ namespace App\Http\Controllers;
+ 
+ use App\Models\Customer;
++use App\Services\CrmReferenceDataScope;
++use App\Services\CrmReportingDataScope;
+ use App\Models\MaintenanceRecord;
+ use App\Models\MaintenanceSchedule;
+ use App\Models\SerialNumber;
+@@ -86,10 +88,18 @@
+ 
+         $summary = [
+             'total' => DB::query()->fromSub($this->eventsQuery(), 'h')->count(),
+-            'tickets' => DB::table('service_tickets')->count(),
+-            'maintenance' => DB::table('maintenance_records')->count(),
+-            'work_logs' => DB::table('service_ticket_work_logs')->count(),
+-            'resolutions' => DB::table('service_ticket_resolution_logs')->count(),
++            'tickets' => app(CrmReportingDataScope::class)->tickets(DB::table('service_tickets'))->count(),
++            'maintenance' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_records'))->count(),
++            'work_logs' => app(CrmReportingDataScope::class)->tickets(
++                DB::table('service_ticket_work_logs as wl')
++                    ->join('service_tickets as st', 'st.service_ticket_id', '=', 'wl.service_ticket_id'),
++                'st.service_ticket_id', 'st.customer_id'
++            )->count(),
++            'resolutions' => app(CrmReportingDataScope::class)->tickets(
++                DB::table('service_ticket_resolution_logs as rl')
++                    ->join('service_tickets as st', 'st.service_ticket_id', '=', 'rl.service_ticket_id'),
++                'st.service_ticket_id', 'st.customer_id'
++            )->count(),
+             'devices' => DB::query()
+                 ->fromSub($this->eventsQuery(), 'h')
+                 ->distinct()
+@@ -103,7 +113,8 @@
+         return view('service-history.index', [
+             'events' => $events,
+             'summary' => $summary,
+-            'customers' => Customer::query()->orderBy('customer_name')->get(),
++            'customers' => app(CrmReferenceDataScope::class)->visible('customers')
++                ->orderBy('customer_name')->get(),
+             'direction' => $direction,
+         ]);
+     }
+@@ -113,16 +124,27 @@
+      */
+     public function show(SerialNumber $serialNumber): View
+     {
++        app(CrmReportingDataScope::class)->customer(
++            DB::table('serial_numbers')->where('serial_number_id', $serialNumber->getKey()),
++            'customer_id'
++        )->exists() || abort(404);
++
+         $serialNumber->load(['product', 'customer']);
+ 
+         $serialId = $serialNumber->serial_number_id;
+ 
+         $tickets = ServiceTicket::query()
++            ->whereIn('service_ticket_id', app(CrmReportingDataScope::class)->tickets(
++                DB::table('service_tickets')
++            )->select('service_ticket_id'))
+             ->where('serial_number_id', $serialId)
+             ->with(['user', 'parts.product'])
+             ->get();
+ 
+         $records = MaintenanceRecord::query()
++            ->whereIn('maintenance_schedule_id', app(CrmReportingDataScope::class)->schedules(
++                DB::table('maintenance_schedules')
++            )->select('maintenance_schedule_id'))
+             ->whereHas('schedule', function ($q) use ($serialId) {
+                 $q->where('serial_number_id', $serialId);
+             })
+@@ -130,13 +152,16 @@
+             ->get();
+ 
+         $upcoming = MaintenanceSchedule::query()
++            ->whereIn('maintenance_schedule_id', app(CrmReportingDataScope::class)->schedules(
++                DB::table('maintenance_schedules')
++            )->select('maintenance_schedule_id'))
+             ->where('serial_number_id', $serialId)
+             ->whereIn('status', ['Scheduled', 'In Progress'])
+             ->with('user')
+             ->orderBy('scheduled_date')
+             ->get();
+ 
+-        $warranty = DB::table('warranties')
++        $warranty = app(CrmReportingDataScope::class)->warranty(DB::table('warranties'))
+             ->where('serial_number_id', $serialId)
+             ->orderByDesc('end_date')
+             ->first();
+@@ -262,7 +287,9 @@
+      */
+     private function eventsQuery(): Builder
+     {
+-        $tickets = DB::table('service_tickets as st')->select([
++        $tickets = app(CrmReportingDataScope::class)->tickets(
++            DB::table('service_tickets as st'), 'st.service_ticket_id', 'st.customer_id'
++        )->select([
+             DB::raw("'ticket'::text AS event_type"),
+             'st.service_ticket_id AS source_id',
+             DB::raw('NULL::uuid AS parent_id'),
+@@ -276,7 +303,9 @@
+             'st.user_id AS user_id',
+         ]);
+ 
+-        $maintenance = DB::table('maintenance_records as mr')
++        $maintenance = app(CrmReportingDataScope::class)->schedules(
++            DB::table('maintenance_records as mr'), 'mr.maintenance_schedule_id'
++        )
+             ->join('maintenance_schedules as ms', 'ms.maintenance_schedule_id', '=', 'mr.maintenance_schedule_id')
+             ->join('serial_numbers as msn', 'msn.serial_number_id', '=', 'ms.serial_number_id')
+             ->select([
+@@ -293,8 +322,11 @@
+                 'mr.user_id AS user_id',
+             ]);
+ 
+-        $workLogs = DB::table('service_ticket_work_logs as wl')
+-            ->join('service_tickets as st', 'st.service_ticket_id', '=', 'wl.service_ticket_id')
++        $workLogs = app(CrmReportingDataScope::class)->tickets(
++            DB::table('service_ticket_work_logs as wl')
++                ->join('service_tickets as st', 'st.service_ticket_id', '=', 'wl.service_ticket_id'),
++            'st.service_ticket_id', 'st.customer_id'
++        )
+             ->select([
+                 DB::raw("'work_log'::text AS event_type"),
+                 'wl.work_log_id AS source_id',
+@@ -309,8 +341,11 @@
+                 'st.user_id AS user_id',
+             ]);
+ 
+-        $resolutions = DB::table('service_ticket_resolution_logs as rl')
+-            ->join('service_tickets as st', 'st.service_ticket_id', '=', 'rl.service_ticket_id')
++        $resolutions = app(CrmReportingDataScope::class)->tickets(
++            DB::table('service_ticket_resolution_logs as rl')
++                ->join('service_tickets as st', 'st.service_ticket_id', '=', 'rl.service_ticket_id'),
++            'st.service_ticket_id', 'st.customer_id'
++        )
+             ->select([
+                 DB::raw("'resolution'::text AS event_type"),
+                 'rl.resolution_log_id AS source_id',

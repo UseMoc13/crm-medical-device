@@ -1,0 +1,1080 @@
+--- a/app/Http/Controllers/InvoiceController.php
++++ b/app/Http/Controllers/InvoiceController.php
+@@ -1,535 +1,543 @@
+-<?php
+-
+-namespace App\Http\Controllers;
+-
+-use Illuminate\Http\RedirectResponse;
+-use Illuminate\Http\Request;
+-use Illuminate\Support\Facades\DB;
+-use Illuminate\Support\Str;
+-use Illuminate\View\View;
+-
+-/**
+- * Invoices.
+- *
+- * Memakai query builder (seperti WarrantyController) sehingga tidak
+- * bergantung pada model Eloquent SalesOrder / Quotation / Opportunity.
+- *
+- * Alur data customer: invoices -> sales_orders -> quotations
+- *                     -> opportunities -> customers
+- */
+-class InvoiceController extends Controller
+-{
+-    private const STATUSES = ['Draft', 'Sent', 'Paid', 'Cancelled'];
+-
+-    /** Status yang boleh dipilih saat membuat invoice. */
+-    private const CREATE_STATUSES = ['Draft', 'Sent'];
+-
+-    /** Peralihan status yang diizinkan. */
+-    private const TRANSITIONS = [
+-        'Draft' => ['Sent', 'Cancelled'],
+-        'Sent' => ['Paid', 'Cancelled'],
+-        'Paid' => [],
+-        'Cancelled' => ['Draft'],
+-    ];
+-
+-    /** Status yang masih boleh diedit. */
+-    private const EDITABLE = ['Draft', 'Sent'];
+-
+-    /** Status yang boleh dihapus. */
+-    private const DELETABLE = ['Draft', 'Cancelled'];
+-
+-    private const DEFAULT_TAX_RATE = 11;
+-
+-    /**
+-     * Daftar invoice.
+-     */
+-    public function index(Request $request): View
+-    {
+-        $query = $this->baseQuery();
+-
+-        if ($request->filled('search')) {
+-            $search = trim($request->input('search'));
+-
+-            $query->where(function ($q) use ($search) {
+-                $q->where('i.invoice_number', 'ILIKE', "%{$search}%")
+-                    ->orWhere('so.sales_order_number', 'ILIKE', "%{$search}%")
+-                    ->orWhere('c.customer_name', 'ILIKE', "%{$search}%");
+-            });
+-        }
+-
+-        $status = $request->input('status');
+-
+-        if ($status === 'overdue') {
+-            $query->where('i.status', 'Sent')
+-                ->whereDate('i.due_date', '<', today()->toDateString());
+-        } elseif (in_array($status, self::STATUSES, true)) {
+-            $query->where('i.status', $status);
+-        }
+-
+-        if ($request->filled('date_from')) {
+-            $query->whereDate('i.invoice_date', '>=', $request->input('date_from'));
+-        }
+-
+-        if ($request->filled('date_to')) {
+-            $query->whereDate('i.invoice_date', '<=', $request->input('date_to'));
+-        }
+-
+-        $allowedSorts = [
+-            'invoice_number' => 'i.invoice_number',
+-            'invoice_date' => 'i.invoice_date',
+-            'due_date' => 'i.due_date',
+-            'total_amount' => 'i.total_amount',
+-            'status' => 'i.status',
+-            'created_at' => 'i.created_at',
+-        ];
+-
+-        $sort = array_key_exists($request->input('sort'), $allowedSorts)
+-            ? $request->input('sort')
+-            : 'invoice_date';
+-
+-        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+-
+-        $invoices = $query
+-            ->orderBy($allowedSorts[$sort], $direction)
+-            ->orderByDesc('i.created_at')
+-            ->paginate(10)
+-            ->withQueryString();
+-
+-        $today = today()->toDateString();
+-
+-        $summary = DB::table('invoices')
+-            ->selectRaw(
+-                "COUNT(*) AS total,
+-                 COALESCE(SUM(total_amount) FILTER (WHERE status IN ('Sent','Paid')), 0) AS issued,
+-                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Paid'), 0) AS paid,
+-                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Sent'), 0) AS outstanding,
+-                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Sent' AND due_date < ?), 0) AS overdue_amount,
+-                 COUNT(*) FILTER (WHERE status = 'Sent' AND due_date < ?) AS overdue_count",
+-                [$today, $today]
+-            )
+-            ->first();
+-
+-        return view('invoices.index', [
+-            'invoices' => $invoices,
+-            'statuses' => self::STATUSES,
+-            'summary' => $summary,
+-            'sort' => $sort,
+-            'direction' => $direction,
+-            'editable' => self::EDITABLE,
+-            'deletable' => self::DELETABLE,
+-        ]);
+-    }
+-
+-    /**
+-     * Form buat invoice.
+-     */
+-    public function create(): View
+-    {
+-        return view('invoices.create', array_merge($this->formData(), [
+-            'invoiceNumber' => $this->generateInvoiceNumber(),
+-            'statuses' => self::CREATE_STATUSES,
+-            'defaultTaxRate' => self::DEFAULT_TAX_RATE,
+-        ]));
+-    }
+-
+-    /**
+-     * Simpan invoice baru.
+-     */
+-    public function store(Request $request): RedirectResponse
+-    {
+-        $validated = $request->validate(array_merge(
+-            $this->itemRules(),
+-            [
+-                'sales_order_id' => ['required', 'uuid', 'exists:sales_orders,sales_order_id'],
+-                'invoice_date' => ['required', 'date'],
+-                'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
+-                'status' => ['required', 'in:' . implode(',', self::CREATE_STATUSES)],
+-                'discount' => ['nullable', 'numeric', 'min:0'],
+-                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+-                'notes' => ['nullable', 'string'],
+-            ]
+-        ));
+-
+-        $calc = $this->calculate($validated);
+-
+-        if (is_string($calc)) {
+-            return back()->withInput()->withErrors(['items' => $calc]);
+-        }
+-
+-        $invoiceId = (string) Str::uuid();
+-
+-        DB::transaction(function () use ($validated, $calc, $invoiceId) {
+-            DB::table('invoices')->insert([
+-                'invoice_id' => $invoiceId,
+-                'sales_order_id' => $validated['sales_order_id'],
+-                'invoice_number' => $this->generateInvoiceNumber(),
+-                'invoice_date' => $validated['invoice_date'],
+-                'due_date' => $validated['due_date'] ?? null,
+-                'subtotal' => $calc['subtotal'],
+-                'tax' => $calc['tax'],
+-                'discount' => $calc['discount'],
+-                'total_amount' => $calc['total'],
+-                'status' => $validated['status'],
+-                'notes' => $validated['notes'] ?? null,
+-                'created_at' => now(),
+-                'updated_at' => now(),
+-            ]);
+-
+-            $this->insertItems($invoiceId, $calc['items']);
+-        });
+-
+-        return redirect()
+-            ->route('invoices.show', $invoiceId)
+-            ->with('success', 'Invoice successfully created.');
+-    }
+-
+-    /**
+-     * Detail invoice.
+-     */
+-    public function show(string $invoice): View
+-    {
+-        $invoice = $this->findInvoice($invoice);
+-
+-        $customer = $invoice->customer_id
+-            ? DB::table('customers')->where('customer_id', $invoice->customer_id)->first()
+-            : null;
+-
+-        $items = DB::table('invoice_items as ii')
+-            ->leftJoin('products as p', 'p.product_id', '=', 'ii.product_id')
+-            ->where('ii.invoice_id', $invoice->invoice_id)
+-            ->select('ii.*', 'p.product_name', 'p.product_code', 'p.unit')
+-            ->get();
+-
+-        $isOverdue = $invoice->status === 'Sent'
+-            && $invoice->due_date
+-            && \Illuminate\Support\Carbon::parse($invoice->due_date)->lt(today());
+-
+-        return view('invoices.show', [
+-            'invoice' => $invoice,
+-            'customer' => $customer,
+-            'items' => $items,
+-            'isOverdue' => $isOverdue,
+-            'transitions' => self::TRANSITIONS[$invoice->status] ?? [],
+-            'canEdit' => in_array($invoice->status, self::EDITABLE, true),
+-            'canDelete' => in_array($invoice->status, self::DELETABLE, true),
+-        ]);
+-    }
+-
+-    /**
+-     * Form edit invoice.
+-     */
+-    public function edit(string $invoice): View|RedirectResponse
+-    {
+-        $invoice = $this->findInvoice($invoice);
+-
+-        if (!in_array($invoice->status, self::EDITABLE, true)) {
+-            return redirect()
+-                ->route('invoices.show', $invoice->invoice_id)
+-                ->with('error', "A {$invoice->status} invoice can no longer be edited.");
+-        }
+-
+-        $items = DB::table('invoice_items')
+-            ->where('invoice_id', $invoice->invoice_id)
+-            ->get()
+-            ->map(fn ($row) => [
+-                'product_id' => $row->product_id,
+-                'quantity' => (int) $row->quantity,
+-                'unit_price' => (float) $row->unit_price,
+-                'discount' => (float) ($row->discount ?? 0),
+-            ])
+-            ->all();
+-
+-        $taxable = (float) $invoice->subtotal - (float) ($invoice->discount ?? 0);
+-
+-        $taxRate = $taxable > 0
+-            ? round(((float) ($invoice->tax ?? 0)) / $taxable * 100, 2)
+-            : 0;
+-
+-        return view('invoices.edit', array_merge($this->formData(), [
+-            'invoice' => $invoice,
+-            'initialItems' => $items,
+-            'taxRate' => $taxRate,
+-        ]));
+-    }
+-
+-    /**
+-     * Perbarui invoice.
+-     */
+-    public function update(Request $request, string $invoice): RedirectResponse
+-    {
+-        $existing = $this->findInvoice($invoice);
+-
+-        if (!in_array($existing->status, self::EDITABLE, true)) {
+-            return redirect()
+-                ->route('invoices.show', $existing->invoice_id)
+-                ->with('error', "A {$existing->status} invoice can no longer be edited.");
+-        }
+-
+-        $validated = $request->validate(array_merge(
+-            $this->itemRules(),
+-            [
+-                'invoice_date' => ['required', 'date'],
+-                'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
+-                'discount' => ['nullable', 'numeric', 'min:0'],
+-                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+-                'notes' => ['nullable', 'string'],
+-            ]
+-        ));
+-
+-        $calc = $this->calculate($validated);
+-
+-        if (is_string($calc)) {
+-            return back()->withInput()->withErrors(['items' => $calc]);
+-        }
+-
+-        DB::transaction(function () use ($existing, $validated, $calc) {
+-            DB::table('invoices')
+-                ->where('invoice_id', $existing->invoice_id)
+-                ->update([
+-                    'invoice_date' => $validated['invoice_date'],
+-                    'due_date' => $validated['due_date'] ?? null,
+-                    'subtotal' => $calc['subtotal'],
+-                    'tax' => $calc['tax'],
+-                    'discount' => $calc['discount'],
+-                    'total_amount' => $calc['total'],
+-                    'notes' => $validated['notes'] ?? null,
+-                    'updated_at' => now(),
+-                ]);
+-
+-            DB::table('invoice_items')
+-                ->where('invoice_id', $existing->invoice_id)
+-                ->delete();
+-
+-            $this->insertItems($existing->invoice_id, $calc['items']);
+-        });
+-
+-        return redirect()
+-            ->route('invoices.show', $existing->invoice_id)
+-            ->with('success', 'Invoice successfully updated.');
+-    }
+-
+-    /**
+-     * Ubah status invoice (Sent / Paid / Cancelled / Draft).
+-     */
+-    public function updateStatus(Request $request, string $invoice): RedirectResponse
+-    {
+-        $existing = $this->findInvoice($invoice);
+-
+-        $request->validate([
+-            'status' => ['required', 'in:' . implode(',', self::STATUSES)],
+-        ]);
+-
+-        $target = $request->input('status');
+-
+-        if (!in_array($target, self::TRANSITIONS[$existing->status] ?? [], true)) {
+-            return back()->with(
+-                'error',
+-                "Cannot change status from {$existing->status} to {$target}."
+-            );
+-        }
+-
+-        DB::table('invoices')
+-            ->where('invoice_id', $existing->invoice_id)
+-            ->update([
+-                'status' => $target,
+-                'updated_at' => now(),
+-            ]);
+-
+-        return redirect()
+-            ->route('invoices.show', $existing->invoice_id)
+-            ->with('success', "Invoice marked as {$target}.");
+-    }
+-
+-    /**
+-     * Hapus invoice beserta item-nya.
+-     */
+-    public function destroy(string $invoice): RedirectResponse
+-    {
+-        $existing = $this->findInvoice($invoice);
+-
+-        if (!in_array($existing->status, self::DELETABLE, true)) {
+-            return back()->with(
+-                'error',
+-                "A {$existing->status} invoice cannot be deleted. Cancel it first if it is still Sent."
+-            );
+-        }
+-
+-        DB::transaction(function () use ($existing) {
+-            DB::table('invoice_items')
+-                ->where('invoice_id', $existing->invoice_id)
+-                ->delete();
+-
+-            DB::table('invoices')
+-                ->where('invoice_id', $existing->invoice_id)
+-                ->delete();
+-        });
+-
+-        return redirect()
+-            ->route('invoices.index')
+-            ->with('success', 'Invoice successfully deleted.');
+-    }
+-
+-    /* =====================================================
+-       HELPERS
+-    ===================================================== */
+-
+-    private function baseQuery()
+-    {
+-        return DB::table('invoices as i')
+-            ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
+-            ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
+-            ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
+-            ->leftJoin('customers as c', 'c.customer_id', '=', 'o.customer_id')
+-            ->select(
+-                'i.*',
+-                'so.sales_order_number',
+-                'c.customer_id',
+-                'c.customer_name'
+-            );
+-    }
+-
+-    private function findInvoice(string $id): object
+-    {
+-        $invoice = $this->baseQuery()->where('i.invoice_id', $id)->first();
+-
+-        abort_if(!$invoice, 404);
+-
+-        return $invoice;
+-    }
+-
+-    private function formData(): array
+-    {
+-        $salesOrders = DB::table('sales_orders as so')
+-            ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
+-            ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
+-            ->leftJoin('customers as c', 'c.customer_id', '=', 'o.customer_id')
+-            ->select(
+-                'so.sales_order_id',
+-                'so.sales_order_number',
+-                'so.subtotal',
+-                'so.tax',
+-                'so.total_amount',
+-                'so.status',
+-                'c.customer_name'
+-            )
+-            ->orderByDesc('so.created_at')
+-            ->get();
+-
+-        // Item setiap sales order, dipakai untuk mengisi baris invoice otomatis.
+-        $salesOrderItems = DB::table('sales_order_items')
+-            ->select('sales_order_id', 'product_id', 'quantity', 'unit_price', 'discount')
+-            ->get()
+-            ->groupBy('sales_order_id')
+-            ->map(fn ($rows) => $rows->map(fn ($row) => [
+-                'product_id' => $row->product_id,
+-                'quantity' => (int) $row->quantity,
+-                'unit_price' => (float) $row->unit_price,
+-                'discount' => (float) ($row->discount ?? 0),
+-            ])->values());
+-
+-        $products = DB::table('products')
+-            ->select('product_id', 'product_code', 'product_name', 'price')
+-            ->orderBy('product_name')
+-            ->get();
+-
+-        return [
+-            'salesOrders' => $salesOrders,
+-            'salesOrderItems' => $salesOrderItems,
+-            'products' => $products,
+-        ];
+-    }
+-
+-    private function itemRules(): array
+-    {
+-        return [
+-            'items' => ['required', 'array', 'min:1'],
+-            'items.*.product_id' => ['required', 'uuid', 'exists:products,product_id'],
+-            'items.*.quantity' => ['required', 'integer', 'min:1'],
+-            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+-            'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+-        ];
+-    }
+-
+-    /**
+-     * Hitung ulang seluruh nilai di server (angka dari browser tidak dipercaya).
+-     * Mengembalikan array hasil, atau string pesan error.
+-     */
+-    private function calculate(array $validated): array|string
+-    {
+-        $items = [];
+-        $subtotal = 0.0;
+-
+-        foreach (array_values($validated['items']) as $index => $row) {
+-            $quantity = (int) $row['quantity'];
+-            $unitPrice = round((float) $row['unit_price'], 2);
+-            $discount = round((float) ($row['discount'] ?? 0), 2);
+-            $gross = round($quantity * $unitPrice, 2);
+-
+-            if ($discount > $gross) {
+-                return 'Item #' . ($index + 1) . ': discount cannot exceed the line amount.';
+-            }
+-
+-            $lineSubtotal = round($gross - $discount, 2);
+-
+-            $items[] = [
+-                'product_id' => $row['product_id'],
+-                'quantity' => $quantity,
+-                'unit_price' => $unitPrice,
+-                'discount' => $discount,
+-                'subtotal' => $lineSubtotal,
+-            ];
+-
+-            $subtotal += $lineSubtotal;
+-        }
+-
+-        $subtotal = round($subtotal, 2);
+-        $discount = round((float) ($validated['discount'] ?? 0), 2);
+-
+-        if ($discount > $subtotal) {
+-            return 'The invoice discount cannot exceed the subtotal.';
+-        }
+-
+-        $taxable = $subtotal - $discount;
+-        $tax = round($taxable * ((float) ($validated['tax_rate'] ?? 0)) / 100, 2);
+-
+-        return [
+-            'items' => $items,
+-            'subtotal' => $subtotal,
+-            'discount' => $discount,
+-            'tax' => $tax,
+-            'total' => round($taxable + $tax, 2),
+-        ];
+-    }
+-
+-    private function insertItems(string $invoiceId, array $items): void
+-    {
+-        DB::table('invoice_items')->insert(
+-            array_map(fn ($item) => [
+-                'invoice_item_id' => (string) Str::uuid(),
+-                'invoice_id' => $invoiceId,
+-                'product_id' => $item['product_id'],
+-                'quantity' => $item['quantity'],
+-                'unit_price' => $item['unit_price'],
+-                'discount' => $item['discount'],
+-                'subtotal' => $item['subtotal'],
+-            ], $items)
+-        );
+-    }
+-
+-    private function generateInvoiceNumber(): string
+-    {
+-        $prefix = 'INV-' . now()->format('Y') . '-';
+-        $offset = strlen($prefix) + 1;
+-
+-        $last = DB::table('invoices')
+-            ->where('invoice_number', 'like', $prefix . '%')
+-            ->orderByRaw("CAST(SUBSTRING(invoice_number FROM {$offset}) AS INTEGER) DESC")
+-            ->first();
+-
+-        $next = $last
+-            ? ((int) substr($last->invoice_number, strlen($prefix))) + 1
+-            : 1;
+-
+-        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+-    }
++<?php
++
++namespace App\Http\Controllers;
++
++use App\Services\CrmReportingDataScope;
++use Illuminate\Http\RedirectResponse;
++use Illuminate\Http\Request;
++use Illuminate\Support\Facades\DB;
++use Illuminate\Support\Str;
++use Illuminate\View\View;
++
++/**
++ * Invoices.
++ *
++ * Memakai query builder (seperti WarrantyController) sehingga tidak
++ * bergantung pada model Eloquent SalesOrder / Quotation / Opportunity.
++ *
++ * Alur data customer: invoices -> sales_orders -> quotations
++ *                     -> opportunities -> customers
++ */
++class InvoiceController extends Controller
++{
++    private const STATUSES = ['Draft', 'Sent', 'Paid', 'Cancelled'];
++
++    /** Status yang boleh dipilih saat membuat invoice. */
++    private const CREATE_STATUSES = ['Draft', 'Sent'];
++
++    /** Peralihan status yang diizinkan. */
++    private const TRANSITIONS = [
++        'Draft' => ['Sent', 'Cancelled'],
++        'Sent' => ['Paid', 'Cancelled'],
++        'Paid' => [],
++        'Cancelled' => ['Draft'],
++    ];
++
++    /** Status yang masih boleh diedit. */
++    private const EDITABLE = ['Draft', 'Sent'];
++
++    /** Status yang boleh dihapus. */
++    private const DELETABLE = ['Draft', 'Cancelled'];
++
++    private const DEFAULT_TAX_RATE = 11;
++
++    /**
++     * Daftar invoice.
++     */
++    public function index(Request $request): View
++    {
++        $query = $this->baseQuery();
++
++        if ($request->filled('search')) {
++            $search = trim($request->input('search'));
++
++            $query->where(function ($q) use ($search) {
++                $q->where('i.invoice_number', 'ILIKE', "%{$search}%")
++                    ->orWhere('so.sales_order_number', 'ILIKE', "%{$search}%")
++                    ->orWhere('c.customer_name', 'ILIKE', "%{$search}%");
++            });
++        }
++
++        $status = $request->input('status');
++
++        if ($status === 'overdue') {
++            $query->where('i.status', 'Sent')
++                ->whereDate('i.due_date', '<', today()->toDateString());
++        } elseif (in_array($status, self::STATUSES, true)) {
++            $query->where('i.status', $status);
++        }
++
++        if ($request->filled('date_from')) {
++            $query->whereDate('i.invoice_date', '>=', $request->input('date_from'));
++        }
++
++        if ($request->filled('date_to')) {
++            $query->whereDate('i.invoice_date', '<=', $request->input('date_to'));
++        }
++
++        $allowedSorts = [
++            'invoice_number' => 'i.invoice_number',
++            'invoice_date' => 'i.invoice_date',
++            'due_date' => 'i.due_date',
++            'total_amount' => 'i.total_amount',
++            'status' => 'i.status',
++            'created_at' => 'i.created_at',
++        ];
++
++        $sort = array_key_exists($request->input('sort'), $allowedSorts)
++            ? $request->input('sort')
++            : 'invoice_date';
++
++        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
++
++        $invoices = $query
++            ->orderBy($allowedSorts[$sort], $direction)
++            ->orderByDesc('i.created_at')
++            ->paginate(10)
++            ->withQueryString();
++
++        $today = today()->toDateString();
++
++        $summary = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
++            ->selectRaw(
++                "COUNT(*) AS total,
++                 COALESCE(SUM(total_amount) FILTER (WHERE status IN ('Sent','Paid')), 0) AS issued,
++                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Paid'), 0) AS paid,
++                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Sent'), 0) AS outstanding,
++                 COALESCE(SUM(total_amount) FILTER (WHERE status = 'Sent' AND due_date < ?), 0) AS overdue_amount,
++                 COUNT(*) FILTER (WHERE status = 'Sent' AND due_date < ?) AS overdue_count",
++                [$today, $today]
++            )
++            ->first();
++
++        return view('invoices.index', [
++            'invoices' => $invoices,
++            'statuses' => self::STATUSES,
++            'summary' => $summary,
++            'sort' => $sort,
++            'direction' => $direction,
++            'editable' => self::EDITABLE,
++            'deletable' => self::DELETABLE,
++        ]);
++    }
++
++    /**
++     * Form buat invoice.
++     */
++    public function create(): View
++    {
++        return view('invoices.create', array_merge($this->formData(), [
++            'invoiceNumber' => $this->generateInvoiceNumber(),
++            'statuses' => self::CREATE_STATUSES,
++            'defaultTaxRate' => self::DEFAULT_TAX_RATE,
++        ]));
++    }
++
++    /**
++     * Simpan invoice baru.
++     */
++    public function store(Request $request): RedirectResponse
++    {
++        $validated = $request->validate(array_merge(
++            $this->itemRules(),
++            [
++                'sales_order_id' => ['required', 'uuid', 'exists:sales_orders,sales_order_id'],
++                'invoice_date' => ['required', 'date'],
++                'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
++                'status' => ['required', 'in:' . implode(',', self::CREATE_STATUSES)],
++                'discount' => ['nullable', 'numeric', 'min:0'],
++                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
++                'notes' => ['nullable', 'string'],
++            ]
++        ));
++
++        app(CrmReportingDataScope::class)->salesOrders(DB::table('sales_orders'), 'sales_order_id')
++            ->where('sales_order_id', $validated['sales_order_id'])
++            ->exists() || abort(404);
++
++        $calc = $this->calculate($validated);
++
++        if (is_string($calc)) {
++            return back()->withInput()->withErrors(['items' => $calc]);
++        }
++
++        $invoiceId = (string) Str::uuid();
++
++        DB::transaction(function () use ($validated, $calc, $invoiceId) {
++            DB::table('invoices')->insert([
++                'invoice_id' => $invoiceId,
++                'sales_order_id' => $validated['sales_order_id'],
++                'invoice_number' => $this->generateInvoiceNumber(),
++                'invoice_date' => $validated['invoice_date'],
++                'due_date' => $validated['due_date'] ?? null,
++                'subtotal' => $calc['subtotal'],
++                'tax' => $calc['tax'],
++                'discount' => $calc['discount'],
++                'total_amount' => $calc['total'],
++                'status' => $validated['status'],
++                'notes' => $validated['notes'] ?? null,
++                'created_at' => now(),
++                'updated_at' => now(),
++            ]);
++
++            $this->insertItems($invoiceId, $calc['items']);
++        });
++
++        return redirect()
++            ->route('invoices.show', $invoiceId)
++            ->with('success', 'Invoice successfully created.');
++    }
++
++    /**
++     * Detail invoice.
++     */
++    public function show(string $invoice): View
++    {
++        $invoice = $this->findInvoice($invoice);
++
++        $customer = $invoice->customer_id
++            ? DB::table('customers')->where('customer_id', $invoice->customer_id)->first()
++            : null;
++
++        $items = DB::table('invoice_items as ii')
++            ->leftJoin('products as p', 'p.product_id', '=', 'ii.product_id')
++            ->where('ii.invoice_id', $invoice->invoice_id)
++            ->select('ii.*', 'p.product_name', 'p.product_code', 'p.unit')
++            ->get();
++
++        $isOverdue = $invoice->status === 'Sent'
++            && $invoice->due_date
++            && \Illuminate\Support\Carbon::parse($invoice->due_date)->lt(today());
++
++        return view('invoices.show', [
++            'invoice' => $invoice,
++            'customer' => $customer,
++            'items' => $items,
++            'isOverdue' => $isOverdue,
++            'transitions' => self::TRANSITIONS[$invoice->status] ?? [],
++            'canEdit' => in_array($invoice->status, self::EDITABLE, true),
++            'canDelete' => in_array($invoice->status, self::DELETABLE, true),
++        ]);
++    }
++
++    /**
++     * Form edit invoice.
++     */
++    public function edit(string $invoice): View|RedirectResponse
++    {
++        $invoice = $this->findInvoice($invoice);
++
++        if (!in_array($invoice->status, self::EDITABLE, true)) {
++            return redirect()
++                ->route('invoices.show', $invoice->invoice_id)
++                ->with('error', "A {$invoice->status} invoice can no longer be edited.");
++        }
++
++        $items = DB::table('invoice_items')
++            ->where('invoice_id', $invoice->invoice_id)
++            ->get()
++            ->map(fn ($row) => [
++                'product_id' => $row->product_id,
++                'quantity' => (int) $row->quantity,
++                'unit_price' => (float) $row->unit_price,
++                'discount' => (float) ($row->discount ?? 0),
++            ])
++            ->all();
++
++        $taxable = (float) $invoice->subtotal - (float) ($invoice->discount ?? 0);
++
++        $taxRate = $taxable > 0
++            ? round(((float) ($invoice->tax ?? 0)) / $taxable * 100, 2)
++            : 0;
++
++        return view('invoices.edit', array_merge($this->formData(), [
++            'invoice' => $invoice,
++            'initialItems' => $items,
++            'taxRate' => $taxRate,
++        ]));
++    }
++
++    /**
++     * Perbarui invoice.
++     */
++    public function update(Request $request, string $invoice): RedirectResponse
++    {
++        $existing = $this->findInvoice($invoice);
++
++        if (!in_array($existing->status, self::EDITABLE, true)) {
++            return redirect()
++                ->route('invoices.show', $existing->invoice_id)
++                ->with('error', "A {$existing->status} invoice can no longer be edited.");
++        }
++
++        $validated = $request->validate(array_merge(
++            $this->itemRules(),
++            [
++                'invoice_date' => ['required', 'date'],
++                'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
++                'discount' => ['nullable', 'numeric', 'min:0'],
++                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
++                'notes' => ['nullable', 'string'],
++            ]
++        ));
++
++        $calc = $this->calculate($validated);
++
++        if (is_string($calc)) {
++            return back()->withInput()->withErrors(['items' => $calc]);
++        }
++
++        DB::transaction(function () use ($existing, $validated, $calc) {
++            DB::table('invoices')
++                ->where('invoice_id', $existing->invoice_id)
++                ->update([
++                    'invoice_date' => $validated['invoice_date'],
++                    'due_date' => $validated['due_date'] ?? null,
++                    'subtotal' => $calc['subtotal'],
++                    'tax' => $calc['tax'],
++                    'discount' => $calc['discount'],
++                    'total_amount' => $calc['total'],
++                    'notes' => $validated['notes'] ?? null,
++                    'updated_at' => now(),
++                ]);
++
++            DB::table('invoice_items')
++                ->where('invoice_id', $existing->invoice_id)
++                ->delete();
++
++            $this->insertItems($existing->invoice_id, $calc['items']);
++        });
++
++        return redirect()
++            ->route('invoices.show', $existing->invoice_id)
++            ->with('success', 'Invoice successfully updated.');
++    }
++
++    /**
++     * Ubah status invoice (Sent / Paid / Cancelled / Draft).
++     */
++    public function updateStatus(Request $request, string $invoice): RedirectResponse
++    {
++        $existing = $this->findInvoice($invoice);
++
++        $request->validate([
++            'status' => ['required', 'in:' . implode(',', self::STATUSES)],
++        ]);
++
++        $target = $request->input('status');
++
++        if (!in_array($target, self::TRANSITIONS[$existing->status] ?? [], true)) {
++            return back()->with(
++                'error',
++                "Cannot change status from {$existing->status} to {$target}."
++            );
++        }
++
++        DB::table('invoices')
++            ->where('invoice_id', $existing->invoice_id)
++            ->update([
++                'status' => $target,
++                'updated_at' => now(),
++            ]);
++
++        return redirect()
++            ->route('invoices.show', $existing->invoice_id)
++            ->with('success', "Invoice marked as {$target}.");
++    }
++
++    /**
++     * Hapus invoice beserta item-nya.
++     */
++    public function destroy(string $invoice): RedirectResponse
++    {
++        $existing = $this->findInvoice($invoice);
++
++        if (!in_array($existing->status, self::DELETABLE, true)) {
++            return back()->with(
++                'error',
++                "A {$existing->status} invoice cannot be deleted. Cancel it first if it is still Sent."
++            );
++        }
++
++        DB::transaction(function () use ($existing) {
++            DB::table('invoice_items')
++                ->where('invoice_id', $existing->invoice_id)
++                ->delete();
++
++            DB::table('invoices')
++                ->where('invoice_id', $existing->invoice_id)
++                ->delete();
++        });
++
++        return redirect()
++            ->route('invoices.index')
++            ->with('success', 'Invoice successfully deleted.');
++    }
++
++    /* =====================================================
++       HELPERS
++    ===================================================== */
++
++    private function baseQuery()
++    {
++        return app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
++            ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
++            ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
++            ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
++            ->leftJoin('customers as c', 'c.customer_id', '=', 'o.customer_id')
++            ->select(
++                'i.*',
++                'so.sales_order_number',
++                'c.customer_id',
++                'c.customer_name'
++            );
++    }
++
++    private function findInvoice(string $id): object
++    {
++        $invoice = $this->baseQuery()->where('i.invoice_id', $id)->first();
++
++        abort_if(!$invoice, 404);
++
++        return $invoice;
++    }
++
++    private function formData(): array
++    {
++        $salesOrders = app(CrmReportingDataScope::class)->salesOrders(DB::table('sales_orders as so'), 'so.sales_order_id')
++            ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
++            ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
++            ->leftJoin('customers as c', 'c.customer_id', '=', 'o.customer_id')
++            ->select(
++                'so.sales_order_id',
++                'so.sales_order_number',
++                'so.subtotal',
++                'so.tax',
++                'so.total_amount',
++                'so.status',
++                'c.customer_name'
++            )
++            ->orderByDesc('so.created_at')
++            ->get();
++
++        // Item setiap sales order, dipakai untuk mengisi baris invoice otomatis.
++        $salesOrderItems = DB::table('sales_order_items')
++            ->whereIn('sales_order_id', app(CrmReportingDataScope::class)
++                ->salesOrders(DB::table('sales_orders'), 'sales_order_id')
++                ->select('sales_order_id'))
++            ->select('sales_order_id', 'product_id', 'quantity', 'unit_price', 'discount')
++            ->get()
++            ->groupBy('sales_order_id')
++            ->map(fn ($rows) => $rows->map(fn ($row) => [
++                'product_id' => $row->product_id,
++                'quantity' => (int) $row->quantity,
++                'unit_price' => (float) $row->unit_price,
++                'discount' => (float) ($row->discount ?? 0),
++            ])->values());
++
++        $products = DB::table('products')
++            ->select('product_id', 'product_code', 'product_name', 'price')
++            ->orderBy('product_name')
++            ->get();
++
++        return [
++            'salesOrders' => $salesOrders,
++            'salesOrderItems' => $salesOrderItems,
++            'products' => $products,
++        ];
++    }
++
++    private function itemRules(): array
++    {
++        return [
++            'items' => ['required', 'array', 'min:1'],
++            'items.*.product_id' => ['required', 'uuid', 'exists:products,product_id'],
++            'items.*.quantity' => ['required', 'integer', 'min:1'],
++            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
++            'items.*.discount' => ['nullable', 'numeric', 'min:0'],
++        ];
++    }
++
++    /**
++     * Hitung ulang seluruh nilai di server (angka dari browser tidak dipercaya).
++     * Mengembalikan array hasil, atau string pesan error.
++     */
++    private function calculate(array $validated): array|string
++    {
++        $items = [];
++        $subtotal = 0.0;
++
++        foreach (array_values($validated['items']) as $index => $row) {
++            $quantity = (int) $row['quantity'];
++            $unitPrice = round((float) $row['unit_price'], 2);
++            $discount = round((float) ($row['discount'] ?? 0), 2);
++            $gross = round($quantity * $unitPrice, 2);
++
++            if ($discount > $gross) {
++                return 'Item #' . ($index + 1) . ': discount cannot exceed the line amount.';
++            }
++
++            $lineSubtotal = round($gross - $discount, 2);
++
++            $items[] = [
++                'product_id' => $row['product_id'],
++                'quantity' => $quantity,
++                'unit_price' => $unitPrice,
++                'discount' => $discount,
++                'subtotal' => $lineSubtotal,
++            ];
++
++            $subtotal += $lineSubtotal;
++        }
++
++        $subtotal = round($subtotal, 2);
++        $discount = round((float) ($validated['discount'] ?? 0), 2);
++
++        if ($discount > $subtotal) {
++            return 'The invoice discount cannot exceed the subtotal.';
++        }
++
++        $taxable = $subtotal - $discount;
++        $tax = round($taxable * ((float) ($validated['tax_rate'] ?? 0)) / 100, 2);
++
++        return [
++            'items' => $items,
++            'subtotal' => $subtotal,
++            'discount' => $discount,
++            'tax' => $tax,
++            'total' => round($taxable + $tax, 2),
++        ];
++    }
++
++    private function insertItems(string $invoiceId, array $items): void
++    {
++        DB::table('invoice_items')->insert(
++            array_map(fn ($item) => [
++                'invoice_item_id' => (string) Str::uuid(),
++                'invoice_id' => $invoiceId,
++                'product_id' => $item['product_id'],
++                'quantity' => $item['quantity'],
++                'unit_price' => $item['unit_price'],
++                'discount' => $item['discount'],
++                'subtotal' => $item['subtotal'],
++            ], $items)
++        );
++    }
++
++    private function generateInvoiceNumber(): string
++    {
++        $prefix = 'INV-' . now()->format('Y') . '-';
++        $offset = strlen($prefix) + 1;
++
++        $last = DB::table('invoices')
++            ->where('invoice_number', 'like', $prefix . '%')
++            ->orderByRaw("CAST(SUBSTRING(invoice_number FROM {$offset}) AS INTEGER) DESC")
++            ->first();
++
++        $next = $last
++            ? ((int) substr($last->invoice_number, strlen($prefix))) + 1
++            : 1;
++
++        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
++    }
+ }
