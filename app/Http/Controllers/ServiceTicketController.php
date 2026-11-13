@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Services\CrmServiceDataScope;
+use App\Services\CrmReferenceDataScope;
 use App\Models\SerialNumber;
 use App\Models\ServiceTicket;
 use App\Services\ServiceWarrantyCoverage;
@@ -148,6 +149,8 @@ class ServiceTicketController extends Controller
             ],
         ]);
 
+        app(CrmReferenceDataScope::class)->assertVisible('customers', $validated['customer_id']);
+
         if (!$this->deviceBelongsToCustomer(
             $validated['serial_number_id'],
             $validated['customer_id']
@@ -262,6 +265,9 @@ class ServiceTicketController extends Controller
             ],
         ]);
 
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $serviceTicket->customer_id);
+        app(CrmReferenceDataScope::class)->assertVisible('customers', $validated['customer_id']);
+
         $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('service_tickets', $validated['user_id'] ?? null);
 
         // Validate and update against the locked database state, not a stale form snapshot.
@@ -321,11 +327,12 @@ class ServiceTicketController extends Controller
     private function assertTicketScope(ServiceTicket $ticket): void
     {
         app(CrmServiceDataScope::class)->assertVisible(ServiceTicket::query(), 'service_tickets', (string) $ticket->getKey());
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $ticket->customer_id);
     }
 
     private function formData(): array
     {
-        $customers = Customer::query()
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->orderBy('customer_name')
             ->get();
 

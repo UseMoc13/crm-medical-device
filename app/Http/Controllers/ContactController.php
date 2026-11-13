@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\Customer;
+use App\Services\CrmReferenceDataScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,11 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
+        $referenceScope = app(CrmReferenceDataScope::class);
         $query = Contact::with('customer');
+        if ($referenceScope->enabled('customers')) {
+            $query->whereIn('customer_id', $referenceScope->visible('customers')->select('customer_id'));
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -135,7 +140,7 @@ class ContactController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $customers = Customer::query()
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->orderBy('customer_name')
             ->get([
                 'customer_id',
@@ -170,7 +175,7 @@ class ContactController extends Controller
      */
     public function create()
     {
-        $customers = Customer::query()
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->orderBy('customer_name')
             ->get([
                 'customer_id',
@@ -241,6 +246,8 @@ class ContactController extends Controller
         ]);
 
 
+        app(CrmReferenceDataScope::class)->assertVisible('customers', $validated['customer_id']);
+
         $validated['is_primary'] =
             $request->boolean('is_primary');
 
@@ -289,6 +296,7 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $contact->customer_id);
         $contact->load('customer');
 
         return view(
@@ -303,7 +311,8 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact)
     {
-        $customers = Customer::query()
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $contact->customer_id);
+        $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->orderBy('customer_name')
             ->get([
                 'customer_id',
@@ -330,6 +339,7 @@ class ContactController extends Controller
         Request $request,
         Contact $contact
     ) {
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $contact->customer_id);
 
         $validated = $request->validate([
 
@@ -382,6 +392,8 @@ class ContactController extends Controller
 
         ]);
 
+
+        app(CrmReferenceDataScope::class)->assertVisible('customers', $validated['customer_id']);
 
         $validated['is_primary'] =
             $request->boolean('is_primary');
@@ -442,6 +454,7 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
+        app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $contact->customer_id);
         $contact->delete();
 
         return redirect()
