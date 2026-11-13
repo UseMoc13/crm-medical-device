@@ -141,16 +141,16 @@ class ReportController extends Controller
                 ->whereDate('performed_at', '>=', $fromDate)
                 ->whereDate('performed_at', '<=', $toDate)
                 ->count(),
-            'overdue_now' => DB::table('maintenance_schedules')
+            'overdue_now' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_schedules'))
                 ->whereIn('status', ['Scheduled', 'In Progress'])
                 ->whereDate('scheduled_date', '<', $today)
                 ->count(),
-            'by_type' => DB::table('maintenance_schedules')
+            'by_type' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_schedules'))
                 ->whereDate('scheduled_date', '>=', $fromDate)
                 ->whereDate('scheduled_date', '<=', $toDate)
                 ->select('maintenance_type', DB::raw('COUNT(*) AS total'))
                 ->groupBy('maintenance_type')->orderByDesc('total')->get(),
-            'by_result' => DB::table('maintenance_records')
+            'by_result' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_records'), 'maintenance_schedule_id')
                 ->whereDate('performed_at', '>=', $fromDate)
                 ->whereDate('performed_at', '<=', $toDate)
                 ->select('result', DB::raw('COUNT(*) AS total'))
@@ -173,7 +173,7 @@ class ReportController extends Controller
             'by_status' => app(CrmReportingDataScope::class)->warranty(DB::table('warranties'))
                 ->select('status', DB::raw('COUNT(*) AS total'))
                 ->groupBy('status')->orderByDesc('total')->get(),
-            'expiring_soon' => DB::table('warranties')
+            'expiring_soon' => app(CrmReportingDataScope::class)->warranty(DB::table('warranties'))
                 ->whereRaw('LOWER(TRIM(status)) = ?', ['active'])
                 ->whereDate('end_date', '>=', $today)
                 ->whereDate('end_date', '<=', today()->addDays(30)->toDateString())
