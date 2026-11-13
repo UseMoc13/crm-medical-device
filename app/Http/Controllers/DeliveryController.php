@@ -320,6 +320,8 @@ class DeliveryController extends Controller
             $inventory->save();
             DB::table('stock_movements')->insert([
                 'stock_movement_id' => (string) Str::uuid(),
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
                 'warehouse_id' => $group['warehouse_id'],
                 'product_id' => $group['product_id'],
                 'movement_type' => 'stock_out',
