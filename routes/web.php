@@ -34,7 +34,7 @@ use App\Http\Controllers\ReportController;
 
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
-    
+
 Route::resource('roles', RoleController::class);
 Route::resource('users', UserController::class);
 Route::resource('brands', BrandController::class);
@@ -42,6 +42,12 @@ Route::resource('warehouses', WarehouseController::class);
 Route::resource('contacts', ContactController::class);
 Route::resource('leads', LeadController::class);
 Route::resource('opportunities', OpportunityController::class);
+Route::post(
+    '/quotations/{quotation}/change-status',
+    [QuotationController::class, 'changeStatus']
+)
+    ->whereUuid('quotation')
+    ->name('quotations.change-status');
 Route::resource('quotations', QuotationController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
@@ -289,7 +295,9 @@ Route::delete('/service-tickets/{serviceTicket}/parts/{part}', [\App\Http\Contro
     ->whereUuid('serviceTicket')->whereUuid('part')->name('service-tickets.parts.destroy');
 
 // Maintenance status workflow (dedicated PATCH endpoint; existing CRUD is preserved).
-Route::patch('/maintenance/{maintenance}/change-status',
-    [\App\Http\Controllers\MaintenanceWorkflowController::class, 'changeStatus'])
+Route::patch(
+    '/maintenance/{maintenance}/change-status',
+    [\App\Http\Controllers\MaintenanceWorkflowController::class, 'changeStatus']
+)
     ->whereUuid('maintenance')
     ->name('maintenance.change-status');

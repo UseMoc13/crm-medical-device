@@ -172,6 +172,8 @@ class SalesOrderController extends Controller
                     'total_amount' => $quotation->total_amount,
                     'status' => 'confirmed',
                     'notes' => $quotation->notes,
+                    'created_by' => auth()->id(),
+                    'updated_by' => auth()->id(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

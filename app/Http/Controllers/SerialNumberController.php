@@ -339,6 +339,8 @@ class SerialNumberController extends Controller
             'serial_number'    => $validated['serial_number'],
             'status'           => $validated['status'],
             'purchase_date'    => $validated['purchase_date'] ?? null,
+            'created_by'       => auth()->id(),
+            'updated_by'       => auth()->id(),
             'created_at'       => now(),
             'updated_at'       => now(),
         ]);
@@ -495,6 +497,7 @@ class SerialNumberController extends Controller
                 'customer_id' => $validated['customer_id'] ?? null,
                 'status' => $validated['status'],
                 'purchase_date' => $validated['purchase_date'] ?? null,
+                'updated_by' => auth()->id(),
                 'updated_at' => now(),
             ]);
 

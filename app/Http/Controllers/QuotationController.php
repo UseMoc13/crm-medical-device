@@ -1411,6 +1411,7 @@ class QuotationController extends Controller
             ->whereRaw('LOWER(TRIM(status)) = ?', [$transition['from']])
             ->update([
                 'status' => $transition['to'],
+                'updated_by' => auth()->id(),
                 'updated_at' => now(),
             ]);
 

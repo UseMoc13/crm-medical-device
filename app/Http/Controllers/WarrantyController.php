@@ -284,6 +284,8 @@ class WarrantyController extends Controller
             'warranty_type' => $validated['warranty_type'] ?? null,
             'status' => $validated['status'],
             'terms' => $validated['terms'] ?? null,
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -463,6 +465,7 @@ class WarrantyController extends Controller
                 'warranty_type' => $validated['warranty_type'] ?? null,
                 'status' => $validated['status'],
                 'terms' => $validated['terms'] ?? null,
+                'updated_by' => auth()->id(),
                 'updated_at' => now(),
             ]);
 

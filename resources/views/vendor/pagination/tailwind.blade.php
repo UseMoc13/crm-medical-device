@@ -1,3 +1,7 @@
+{{-- Shared pagination CSS is loaded here so page styles survive layout updates. --}}
+@once
+    @include('components._pagination_style')
+@endonce
 {{-- Global pagination view for CRM Medical Device. Laravel default tailwind paginator override. --}}
 @if ($paginator->hasPages())
     <nav class="crm-pagination" role="navigation" aria-label="Pagination Navigation">

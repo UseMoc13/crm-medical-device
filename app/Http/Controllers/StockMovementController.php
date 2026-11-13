@@ -248,6 +248,8 @@ class StockMovementController extends Controller
                     ?? ($type === 'opening_stock' ? 'opening_stock' : null),
                 'reference_id' => $validated['reference_id'] ?? null,
                 'notes' => $validated['notes'] ?? null,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
                 'created_at' => $now,
             ]);
         }, 3);
@@ -574,6 +576,8 @@ class StockMovementController extends Controller
                 'reference_type' => 'correction_reversal',
                 'reference_id' => $original->stock_movement_id,
                 'notes' => 'Reversal of stock movement ' . $original->stock_movement_id,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
                 'created_at' => $now,
                 'reversal_of_id' => $original->stock_movement_id,
                 'correction_reason' => $validated['correction_reason'],
@@ -588,6 +592,8 @@ class StockMovementController extends Controller
                 'reference_type' => 'correction',
                 'reference_id' => $original->stock_movement_id,
                 'notes' => $validated['notes'] ?? null,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
                 'created_at' => $now,
                 'correction_reason' => $validated['correction_reason'],
             ]);
@@ -597,6 +603,7 @@ class StockMovementController extends Controller
                 ->update([
                     'reversed_by_id' => $reversalId,
                     'correction_reason' => $validated['correction_reason'],
+                    'updated_by' => auth()->id(),
                 ]);
 
             DB::table('inventories')
