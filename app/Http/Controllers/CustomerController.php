@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\User;
+use App\Services\CrmDataScope;
+use App\Services\CrmPermissionResolver;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +18,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::query();
+        $query = $this->visibleCustomers();
 
 
         /*
@@ -146,7 +151,7 @@ class CustomerController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $statuses = Customer::query()
+        $statuses = $this->visibleCustomers()
             ->whereNotNull('status')
             ->where('status', '!=', '')
             ->distinct()
@@ -154,7 +159,7 @@ class CustomerController extends Controller
             ->pluck('status');
 
 
-        $customerTypes = Customer::query()
+        $customerTypes = $this->visibleCustomers()
             ->whereNotNull('customer_type')
             ->where('customer_type', '!=', '')
             ->distinct()
@@ -205,7 +210,29 @@ public function store(Request $request)
         'status' => ['required', 'string', 'max:30'],
     ]);
 
-    // 2. Buat customer code menggunakan sequence PostgreSQL
+    // 2. When scoped access is explicitly enabled, assign new customer
+    // records to the signed-in user for own/branch scopes. Unscoped
+    // environments retain the existing nullable owner behavior.
+    if ($this->customerDataScopeEnabled()) {
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            abort(401);
+        }
+        $resolver = app(CrmPermissionResolver::class);
+        $scopes = $resolver->scopes($user, 'crm_page.customers.view');
+        // Fail closed before generating a Customer Code if View has no
+        // configured row scope. A branch-only user also needs a branch.
+        $canSeeNewRecord = in_array('all', $scopes, true)
+            || in_array('own', $scopes, true)
+            || (in_array('branch', $scopes, true) && $user->branch_id !== null);
+        abort_unless($resolver->allows($user, 'crm_page.customers.view') && $canSeeNewRecord, 403);
+
+        if (! in_array('all', $scopes, true)) {
+            $validated['user_id'] = $user->getKey();
+        }
+    }
+
+    // 3. Buat customer code menggunakan sequence PostgreSQL
     $number = DB::selectOne(
         "SELECT nextval('customer_code_seq') AS number"
     )->number;
@@ -213,10 +240,10 @@ public function store(Request $request)
     $validated['customer_code'] = 'CUST-' .
         str_pad((string) $number, 4, '0', STR_PAD_LEFT);
 
-    // 3. Simpan data hanya satu kali
+    // 4. Simpan data hanya satu kali
     Customer::create($validated);
 
-    // 4. Kembali ke daftar customer
+    // 5. Kembali ke daftar customer
     return redirect()
         ->route('customers.index')
         ->with('success', 'Customer berhasil ditambahkan.');
@@ -229,6 +256,8 @@ public function store(Request $request)
      */
     public function show(Customer $customer)
     {
+        $this->assertVisibleCustomer($customer);
+
         return view(
             'customers.show',
             compact('customer')
@@ -241,6 +270,8 @@ public function store(Request $request)
      */
     public function edit(Customer $customer)
     {
+        $this->assertVisibleCustomer($customer);
+
         return view(
             'customers.edit',
             compact('customer')
@@ -255,6 +286,7 @@ public function store(Request $request)
         Request $request,
         Customer $customer
     ) {
+        $this->assertVisibleCustomer($customer);
 
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:150'],
@@ -288,6 +320,8 @@ public function store(Request $request)
      */
     public function destroy(Customer $customer)
     {
+        $this->assertVisibleCustomer($customer);
+
         $customer->delete();
 
 
@@ -297,5 +331,51 @@ public function store(Request $request)
                 'success',
                 'Customer berhasil dihapus.'
             );
+    }
+    /**
+     * A6.11 opt-in pilot. Disabled by default: no changes in current access
+     * until the application owner explicitly enables this environment flag.
+     */
+    private function customerDataScopeEnabled(): bool
+    {
+        return (bool) config('crm_data_scope.customers_enabled', false);
+    }
+
+    private function visibleCustomers(): Builder
+    {
+        $query = Customer::query();
+        if (! $this->customerDataScopeEnabled()) {
+            return $query;
+        }
+
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            abort(401);
+        }
+
+        return app(CrmDataScope::class)->applyForPermission(
+            $query,
+            $user,
+            'customers',
+            'crm_page.customers.view',
+            app(CrmPermissionResolver::class)
+        );
+    }
+
+    /**
+     * A6.11 direct UUID authorization; deny with 404 so inaccessible records
+     * cannot be enumerated by trying the show/edit/update/delete endpoints.
+     * Existing route-level CRUD permission checks remain in force.
+     */
+    private function assertVisibleCustomer(Customer $customer): void
+    {
+        if (! $this->customerDataScopeEnabled()) {
+            return;
+        }
+
+        abort_unless(
+            $this->visibleCustomers()->whereKey($customer->getKey())->exists(),
+            404
+        );
     }
 }
