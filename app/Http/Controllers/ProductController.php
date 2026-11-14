@@ -7,7 +7,7 @@ use App\Models\ProductCategory;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Models\Opportunity;
+use App\Services\CrmSalesDataScope;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -353,20 +353,25 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        // Product is a shared catalog. Only related sales records are subject
+        // to the Opportunities view scope; never scope the Product itself.
         $product->load([
             'category',
             'brand',
-            'opportunityItems.opportunity',
+            'opportunityItems' => function ($query) {
+                // Filter before loading quantities, prices and notes.
+                // Filtering only the nested opportunity relation would still
+                // expose restricted opportunity-item details in the view.
+                $query->whereHas('opportunity', function ($opportunityQuery) {
+                    app(CrmSalesDataScope::class)->visible(
+                        $opportunityQuery,
+                        'opportunities'
+                    );
+                })->with('opportunity');
+            },
         ]);
 
-        $opportunities = Opportunity::query()
-            ->orderByDesc('created_at')
-            ->get();
-
-        return view(
-            'products.show',
-            compact('product', 'opportunities')
-        );
+        return view('products.show', compact('product'));
     }
 
 
