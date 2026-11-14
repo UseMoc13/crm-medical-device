@@ -74,6 +74,18 @@ class ActivityController extends Controller
 
     private function validated(Request $request): array
     {
+        // Browser form uses separate keyboard-editable date and time fields.
+        // Keep activity_date validation for backwards-compatible API/form clients.
+        if ($request->has('activity_day') || $request->has('activity_time')) {
+            $schedule = $request->validate([
+                'activity_day' => ['required', 'date_format:Y-m-d'],
+                'activity_time' => ['required', 'date_format:H:i'],
+            ]);
+            $request->merge([
+                'activity_date' => $schedule['activity_day'] . ' ' . $schedule['activity_time'] . ':00',
+            ]);
+        }
+
         $data = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
             'activity_type' => ['required', Rule::in(self::TYPES)],
@@ -99,8 +111,11 @@ class ActivityController extends Controller
         if (app(CrmInstallationActivityDataScope::class)->enabled('activities')) {
             app(CrmInstallationActivityDataScope::class)->authorizeActivityOwner($data['user_id']);
         }
+        // Eloquent HasUuids generates activity_id before INSERT, so route generation
+        // never relies on refreshing a PostgreSQL DEFAULT gen_random_uuid().
         $activity = Activity::create($data);
-        return redirect()->route('activities.show', $activity)->with('success', 'Activity created successfully.');
+        return redirect()->route('activities.show', ['activity' => $activity->getKey()])
+            ->with('success', 'Activity created successfully.');
     }
 
     public function show(Activity $activity): View
@@ -127,7 +142,7 @@ class ActivityController extends Controller
             abort_unless($record->user_id === (string) Auth::id(), 403);
             $record->update($data);
         });
-        return redirect()->route('activities.show', $activity)->with('success', 'Activity updated successfully.');
+        return redirect()->route('activities.show', ['activity' => $activity->getKey()])->with('success', 'Activity updated successfully.');
     }
 
     public function destroy(Activity $activity): RedirectResponse

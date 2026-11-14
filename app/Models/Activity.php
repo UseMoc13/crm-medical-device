@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Activity extends Model
 {
+    use HasUuids;
     protected $table = 'activities';
     protected $primaryKey = 'activity_id';
     public $incrementing = false;
