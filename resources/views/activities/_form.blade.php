@@ -35,22 +35,34 @@
     @error('activity_date') <small class="activity-field-error span-all">{{ $message }}</small> @enderror
     <div>
         <label for="customer_id">Customer <span class="activity-optional">Optional</span></label>
-        <select id="customer_id" name="customer_id">
+        <select id="customer_id" name="customer_id" data-activity-customer>
             <option value="">No customer selected</option>
             @foreach($customers as $customer)
                 <option value="{{ $customer->getKey() }}" @selected(old('customer_id', $current?->customer_id ?? '') == $customer->getKey())>{{ $customer->customer_name }}</option>
             @endforeach
         </select>
+        <small class="activity-link-hint" id="activityCustomerHint">Select a customer to filter related leads, or select a lead to fill the customer.</small>
         @error('customer_id') <small class="activity-field-error">{{ $message }}</small> @enderror
     </div>
     <div>
         <label for="lead_id">Lead <span class="activity-optional">Optional</span></label>
-        <select id="lead_id" name="lead_id">
+        <select id="lead_id" name="lead_id" data-activity-lead>
             <option value="">No lead selected</option>
             @foreach($leads as $lead)
-                <option value="{{ $lead->getKey() }}" @selected(old('lead_id', $current?->lead_id ?? '') == $lead->getKey())>{{ $lead->name ?? $lead->lead_name ?? $lead->getKey() }}</option>
+                @php
+                    $leadContact = trim((string) ($lead->contact_name ?? ''));
+                    $leadCompany = trim((string) ($lead->company_name ?? ''));
+                    $leadCode = trim((string) ($lead->lead_code ?? ''));
+                    $leadTitle = $leadContact !== '' ? $leadContact : ($leadCompany !== '' ? $leadCompany : ($leadCode !== '' ? $leadCode : 'Unnamed Lead'));
+                    $leadDetail = $leadCompany !== '' && $leadCompany !== $leadTitle ? ' — '.$leadCompany : '';
+                    $leadSuffix = $leadCode !== '' ? ' ('.$leadCode.')' : '';
+                @endphp
+                <option value="{{ $lead->getKey() }}"
+                    data-customer-id="{{ $lead->customer_id ?? '' }}"
+                    @selected((string) old('lead_id', $current?->lead_id ?? '') === (string) $lead->getKey())>{{ $leadTitle }}{{ $leadDetail }}{{ $leadSuffix }}</option>
             @endforeach
         </select>
+        <small class="activity-link-hint" id="activityLeadHint" aria-live="polite">Only leads related to the selected customer will be displayed.</small>
         @error('lead_id') <small class="activity-field-error">{{ $message }}</small> @enderror
     </div>
     <div class="span-all">

@@ -26,6 +26,40 @@ document.addEventListener('DOMContentLoaded', function () {
         setText('activityPreviewOpportunity', optionLabel('opportunity_id'));
         setText('activityPreviewDescription', value('description') || 'No description added yet.');
     };
+    // Customer ↔ Lead selection uses only options already authorized by
+    // CrmReferenceDataScope on the server. Never fetch unrestricted references.
+    const customerSelect = find('customer_id');
+    const leadSelect = find('lead_id');
+    const leadHint = find('activityLeadHint');
+    const allLeadOptions = leadSelect ? Array.from(leadSelect.options).filter(option => option.value !== '') : [];
+    const filterLeads = () => {
+        if (!leadSelect || !customerSelect) return;
+        const customerId = customerSelect.value;
+        let available = 0;
+        allLeadOptions.forEach(option => {
+            const matches = !customerId || option.dataset.customerId === customerId;
+            option.hidden = !matches;
+            option.disabled = !matches;
+            if (matches) available++;
+        });
+        const selected = leadSelect.selectedOptions?.[0];
+        if (selected?.disabled) leadSelect.value = '';
+        if (leadHint) leadHint.textContent = !customerId
+            ? 'Choose a lead by contact/company name. Selecting a linked lead will fill its customer.'
+            : available + ' related lead(s) available for the selected customer.';
+        update();
+    };
+    customerSelect?.addEventListener('change', filterLeads);
+    leadSelect?.addEventListener('change', () => {
+        const selected = leadSelect.selectedOptions?.[0];
+        if (selected?.value && selected.dataset.customerId && customerSelect) {
+            const customerOption = Array.from(customerSelect.options).find(option => option.value === selected.dataset.customerId);
+            if (customerOption) customerSelect.value = selected.dataset.customerId;
+        }
+        filterLeads();
+    });
+    // Preserve valid edit/old() selections; drop a stale mismatched lead.
+    filterLeads();
     form.querySelectorAll('input,select,textarea').forEach(element => {
         element.addEventListener('input', update);
         element.addEventListener('change', update);
