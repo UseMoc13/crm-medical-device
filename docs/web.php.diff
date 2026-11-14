@@ -1,0 +1,9 @@
+--- routes/web.php (A6.13.1)
++++ routes/web.php (A7.2)
+@@ -298,3 +298,6 @@
+ )
+     ->whereUuid('maintenance')
+     ->name('maintenance.change-status');
++
++// A7.2 Activities CRUD (authenticated workspace).
++require __DIR__ . '/activities.php';

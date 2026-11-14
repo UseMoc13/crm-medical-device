@@ -1,0 +1,11 @@
+--- sidebar (baseline)
++++ sidebar (A7.2)
+@@ -64,7 +64,7 @@
+             General & Workspace
+         </div>
+ 
+-        <a href="#" data-label="Activities">
++        <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}" data-label="Activities">
+             <span class="ico">✓</span>
+             <span class="nav-text">Activities</span>
+         </a>
