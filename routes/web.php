@@ -299,5 +299,5 @@ Route::patch(
     ->whereUuid('maintenance')
     ->name('maintenance.change-status');
 
-// A7.2 Activities CRUD (authenticated workspace).
 require __DIR__ . '/activities.php';
+require __DIR__ . '/todos.php';

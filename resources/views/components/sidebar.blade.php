@@ -64,9 +64,11 @@
             General & Workspace
         </div>
 
-        <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}" data-label="Activities">
-            <span class="ico">✓</span>
-            <span class="nav-text">Activities</span>
+        <a href="{{ route('activities.index') }}"
+        class="{{ request()->routeIs('activities.*') ? 'active' : '' }}"
+        data-label="Activities">
+        <span class="ico">✓</span>
+        <span class="nav-text">Activities</span>
         </a>
 
         <a href="#" data-label="Calendar">
@@ -74,7 +76,9 @@
             <span class="nav-text">Calendar</span>
         </a>
 
-        <a href="#" data-label="To-Do">
+        <a href="{{ route('todos.index') }}"
+        class="{{ request()->routeIs('todos.*') ? 'active' : '' }}"
+        data-label="To-Do">
             <span class="ico">☑</span>
             <span class="nav-text">To-Do</span>
         </a>

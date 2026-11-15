@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class WorkspaceTask extends Model
 {
+    use HasUuids;
+
     protected $table = 'workspace_tasks';
     protected $primaryKey = 'task_id';
     public $incrementing = false;
@@ -19,9 +22,15 @@ class WorkspaceTask extends Model
 
     protected function casts(): array
     {
-        return ['due_at' => 'datetime', 'completed_at' => 'datetime'];
+        return [
+            'due_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 
     public function owner() { return $this->belongsTo(User::class, 'owner_user_id', 'user_id'); }
     public function assignee() { return $this->belongsTo(User::class, 'assigned_user_id', 'user_id'); }
+    public function activity() { return $this->belongsTo(Activity::class, 'activity_id', 'activity_id'); }
 }
