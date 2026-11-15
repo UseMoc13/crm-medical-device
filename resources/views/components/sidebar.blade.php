@@ -71,7 +71,7 @@
         <span class="nav-text">Activities</span>
         </a>
 
-        <a href="#" data-label="Calendar">
+        <a href="{{ route('calendar.index') }}" class="{{ request()->routeIs('calendar.*') ? 'active' : '' }}" data-label="Calendar">
             <span class="ico">▣</span>
             <span class="nav-text">Calendar</span>
         </a>

@@ -314,6 +314,5 @@ require __DIR__ . '/todos.php';
 
 require __DIR__ . '/crm_auth.php';
 
-
-
-
+// A7.4: Calendar routes
+require __DIR__ . '/calendar.php';

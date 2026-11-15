@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class WorkspaceCalendarEvent extends Model
 {
+    use HasUuids;
+
     protected $table = 'workspace_calendar_events';
     protected $primaryKey = 'calendar_event_id';
     public $incrementing = false;
