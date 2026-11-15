@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', function () {
             setText('activityPreviewDate', 'Not selected');
         }
         setText('activityPreviewTime', value('activity_time') || 'Not selected');
+        const endDay = value('activity_end_day');
+        if (/^\d{4}-\d{2}-\d{2}$/.test(endDay)) {
+            const [y, m, d] = endDay.split('-');
+            setText('activityPreviewEndDate', `${d}/${m}/${y}`);
+        } else {
+            setText('activityPreviewEndDate', 'Not specified');
+        }
+        setText('activityPreviewEndTime', value('activity_end_time') || 'Not specified');
         setText('activityPreviewCustomer', optionLabel('customer_id'));
         setText('activityPreviewLead', optionLabel('lead_id'));
         setText('activityPreviewOpportunity', optionLabel('opportunity_id'));

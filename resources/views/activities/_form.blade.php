@@ -2,6 +2,8 @@
     $current = $activity ?? null;
     $selectedDate = old('activity_day', $current?->activity_date?->format('Y-m-d') ?? '');
     $selectedTime = old('activity_time', $current?->activity_date?->format('H:i') ?? '09:00');
+    $selectedEndDay = old('activity_end_day', $current?->ends_at?->format('Y-m-d') ?? '');
+    $selectedEndTime = old('activity_end_time', $current?->ends_at?->format('H:i') ?? '');
 @endphp
 <div class="activity-form" id="activityFormFields">
     <div class="span-all">
@@ -31,6 +33,20 @@
             <input id="activity_time" name="activity_time" type="time" step="60" required value="{{ $selectedTime }}">
             @error('activity_time') <small class="activity-field-error">{{ $message }}</small> @enderror
         </div>
+    </div>
+    <div class="activity-time-group span-all activity-end-group">
+        <div>
+            <label for="activity_end_day">End Date <span class="activity-optional">Optional</span></label>
+            <input id="activity_end_day" name="activity_end_day" type="date" value="{{ $selectedEndDay }}">
+        </div>
+        <div>
+            <label for="activity_end_time">End Time <span class="activity-optional">Optional</span></label>
+            <input id="activity_end_time" name="activity_end_time" type="time" step="60" value="{{ $selectedEndTime }}">
+        </div>
+        <small class="activity-link-hint span-all">Add an end date and time to display this Activity across its schedule on Calendar. Leave both blank for a single moment.</small>
+        @error('activity_end_day') <small class="activity-field-error span-all">{{ $message }}</small> @enderror
+        @error('activity_end_time') <small class="activity-field-error span-all">{{ $message }}</small> @enderror
+        @error('ends_at') <small class="activity-field-error span-all">{{ $message }}</small> @enderror
     </div>
     @error('activity_date') <small class="activity-field-error span-all">{{ $message }}</small> @enderror
     <div>

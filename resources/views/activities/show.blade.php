@@ -9,7 +9,7 @@
     $typeSlug = \Illuminate\Support\Str::slug($activityType);
     $ownerName = $activity->user?->name ?? 'Unassigned';
     $customerName = $activity->customer?->customer_name;
-    $leadName = $activity->lead?->lead_name ?? $activity->lead?->name;
+    $leadName = $activity->lead?->contact_name ?? $activity->lead?->company_name ?? $activity->lead?->lead_code;
     $opportunityName = $activity->opportunity?->opportunity_name ?? $activity->opportunity?->name;
     $schedule = $activity->activity_date;
     $isOwner = (string) $activity->user_id === (string) auth()->id();
@@ -44,6 +44,7 @@
                 <div class="activity-show-info"><span>Activity Type</span><strong>{{ $activityType }}</strong></div>
                 <div class="activity-show-info"><span>Scheduled Date</span><strong>{{ $schedule?->format('d M Y') ?? 'Not scheduled' }}</strong></div>
                 <div class="activity-show-info"><span>Scheduled Time</span><strong>{{ $schedule?->format('H:i') ?? '—' }}</strong></div>
+                <div class="activity-show-info"><span>Ends At</span><strong>{{ $activity->ends_at?->format('d M Y, H:i') ?? 'Single appointment' }}</strong></div>
                 <div class="activity-show-info"><span>Activity Owner</span><strong>{{ $ownerName }}</strong></div>
                 <div class="activity-show-info"><span>Created At</span><strong>{{ $activity->created_at?->format('d M Y, H:i') ?? '—' }}</strong></div>
             </div>
@@ -59,7 +60,7 @@
         <div class="card-body">
             <div class="activity-show-summary-list">
                 <div class="activity-show-summary-item"><div class="activity-summary-icon type">A</div><div><span>Activity Type</span><strong>{{ $activityType }}</strong><small>Recorded interaction category</small></div></div>
-                <div class="activity-show-summary-item"><div class="activity-summary-icon date">◷</div><div><span>Scheduled For</span><strong>{{ $schedule?->format('d M Y, H:i') ?? 'Not scheduled' }}</strong><small>Date and time of this activity</small></div></div>
+                <div class="activity-show-summary-item"><div class="activity-summary-icon date">◷</div><div><span>Schedule</span><strong>{{ $schedule?->format('d M Y, H:i') ?? 'Not scheduled' }}{{ $activity->ends_at ? ' — '.$activity->ends_at->format('d M Y, H:i') : '' }}</strong><small>Date and time of this activity</small></div></div>
                 <div class="activity-show-summary-item"><div class="activity-summary-icon owner">U</div><div><span>Activity Owner</span><strong>{{ $ownerName }}</strong><small>Responsible CRM user</small></div></div>
                 <div class="activity-show-summary-item"><div class="activity-summary-icon related">↗</div><div><span>Related CRM Records</span><strong>{{ (int) filled($customerName) + (int) filled($leadName) + (int) filled($opportunityName) }} linked</strong><small>Customer, Lead, and Opportunity references</small></div></div>
             </div>

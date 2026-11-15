@@ -147,4 +147,8 @@
 .activity-list-delete-form .activity-action-btn.delete svg { width: 17px; height: 17px; fill: none !important; stroke: currentColor !important; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .activity-link-hint { display: block; margin-top: 6px; color: #8993a4; font-size: 11px; line-height: 1.55; }
 .activity-form select option[hidden] { display: none; }
+/* Activity duration inputs share the standard CRM date/time grid. */
+.activity-end-group{margin:3px 0 8px;padding:14px;background:#f8fafc;border:1px solid #e5eaf1;border-radius:9px}
+.activity-end-group .activity-link-hint{grid-column:1/-1}
+@media(max-width:650px){.activity-end-group{padding:12px}}
 </style>

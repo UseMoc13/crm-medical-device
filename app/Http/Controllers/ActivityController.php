@@ -86,11 +86,24 @@ class ActivityController extends Controller
             ]);
         }
 
+        // Optional end date/time makes an Activity a calendar time range.
+        // Both end inputs must be provided together; historical point activities remain valid.
+        if ($request->filled('activity_end_day') || $request->filled('activity_end_time')) {
+            $end = $request->validate([
+                'activity_end_day' => ['required', 'date_format:Y-m-d'],
+                'activity_end_time' => ['required', 'date_format:H:i'],
+            ]);
+            $request->merge(['ends_at' => $end['activity_end_day'] . ' ' . $end['activity_end_time'] . ':00']);
+        } else {
+            $request->merge(['ends_at' => null]);
+        }
+
         $data = $request->validate([
             'subject' => ['required', 'string', 'max:150'],
             'activity_type' => ['required', Rule::in(self::TYPES)],
             'description' => ['nullable', 'string', 'max:5000'],
             'activity_date' => ['required', 'date'],
+            'ends_at' => ['nullable', 'date', 'after_or_equal:activity_date'],
             'customer_id' => ['nullable', 'uuid', 'exists:customers,customer_id'],
             'lead_id' => ['nullable', 'uuid', 'exists:leads,lead_id'],
             'opportunity_id' => ['nullable', 'uuid', 'exists:opportunities,opportunity_id'],

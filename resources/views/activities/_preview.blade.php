@@ -7,6 +7,8 @@
         <div class="activity-preview-separator"></div>
         <div class="activity-preview-row"><span>Scheduled Date</span><strong id="activityPreviewDate">Not selected</strong></div>
         <div class="activity-preview-row"><span>Time</span><strong id="activityPreviewTime">Not selected</strong></div>
+        <div class="activity-preview-row"><span>End Date</span><strong id="activityPreviewEndDate">Not specified</strong></div>
+        <div class="activity-preview-row"><span>End Time</span><strong id="activityPreviewEndTime">Not specified</strong></div>
         <div class="activity-preview-row"><span>Owner</span><strong>{{ auth()->user()?->name ?? 'Current user' }}</strong></div>
         <div class="activity-preview-separator"></div>
         <div class="activity-preview-overline">RELATED CRM RECORDS</div>

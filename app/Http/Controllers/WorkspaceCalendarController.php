@@ -68,29 +68,46 @@ class WorkspaceCalendarController extends Controller
         if ($view !== 'personal') {
             // Work activities are owner-only until CRM Calendar RBAC scope is finalized.
             foreach (Activity::query()->where('user_id', $owner)
-                ->whereBetween('activity_date', [$start, $end])->orderBy('activity_date')->get() as $activity) {
+                ->where('activity_date', '<=', $end)
+                ->where(fn ($q) => $q->where('activity_date', '>=', $start)
+                    ->orWhere('ends_at', '>=', $start))
+                ->orderBy('activity_date')->get() as $activity) {
                 $events[] = [
                     'kind' => 'activity', 'title' => $activity->subject,
-                    'start' => $activity->activity_date, 'end' => null,
+                    'start' => $activity->activity_date, 'end' => $activity->ends_at,
                     'url' => route('activities.show', ['activity' => $activity->getKey()]),
-                    'subtitle' => $activity->activity_type ?: 'Activity', 'all_day' => false,
+                    'subtitle' => ($activity->activity_type ?: 'Activity')
+                        . ($activity->ends_at ? ' · Ends '.$activity->ends_at->format('d M H:i') : ''),
+                    'all_day' => false,
                 ];
             }
         }
 
         // Tasks are classified by their own visibility. Personal tasks appear in Personal.
         // Work tasks appear in Work; All includes both.
-        $tasks = WorkspaceTask::query()->where('owner_user_id', $owner)
-            ->whereNotNull('due_at')->whereBetween('due_at', [$start, $end])
+        $tasks = WorkspaceTask::query()
+            ->where(function ($q) use ($owner) {
+                $q->where('owner_user_id', $owner)
+                    ->orWhere(function ($work) use ($owner) {
+                        $work->where('visibility', 'work')->whereHas('assignments',
+                            fn ($a) => $a->where('assigned_user_id', $owner));
+                    });
+            })
+            ->whereNotNull('due_at')
+            ->where('due_at', '>=', $start)
+            ->where(fn ($q) => $q->whereNull('starts_at')->where('due_at', '<=', $end)
+                ->orWhere('starts_at', '<=', $end))
             ->where('status', '!=', 'cancelled');
         if ($view !== 'all') $tasks->where('visibility', $view);
         foreach ($tasks->orderBy('due_at')->get() as $task) {
             $events[] = [
                 'kind' => 'todo', 'title' => $task->title,
-                'start' => $task->due_at, 'end' => null,
+                'start' => $task->starts_at ?? $task->due_at,
+                'end' => $task->starts_at ? $task->due_at : null,
                 'url' => route('todos.show', ['todo' => $task->getKey()]),
                 'subtitle' => ($task->visibility === 'personal' ? 'Personal · ' : 'Work · ')
-                    . ($task->status === 'completed' ? 'Completed task' : 'Task deadline'),
+                    . ($task->status === 'completed' ? 'Completed task' : 'Task deadline')
+                    . ($task->starts_at ? ' · Until '.$task->due_at->format('d M H:i') : ''),
                 'all_day' => false,
             ];
         }
@@ -98,7 +115,7 @@ class WorkspaceCalendarController extends Controller
         $byDay = [];
         foreach ($events as $event) {
             $date = CarbonImmutable::parse($event['start']);
-            $last = $event['kind'] === 'personal' && $event['end']
+            $last = $event['end']
                 ? CarbonImmutable::parse($event['end']) : $date;
             $cursor = $date->startOfDay()->max($start);
             $stop = $last->startOfDay()->min($end->startOfDay());
@@ -109,14 +126,16 @@ class WorkspaceCalendarController extends Controller
                 $instance['date'] = $key;
                 $instance['ongoing'] = !$date->isSameDay($cursor);
                 $instance['time_label'] = $event['all_day'] ? 'All day'
-                    : ($instance['ongoing'] ? '00:00' : $date->format('H:i'));
+                    : ($instance['ongoing'] ? 'Ongoing' : $date->format('H:i'));
+                $instance['sort_time'] = ($event['all_day'] || $instance['ongoing'])
+                    ? '00:00' : $date->format('H:i');
                 $byDay[$key][] = $instance;
             }
         }
         foreach ($byDay as &$dayEvents) {
             usort($dayEvents, static function ($a, $b) {
-                $aTime = $a['all_day'] ? '0' : '1' . $a['time_label'];
-                $bTime = $b['all_day'] ? '0' : '1' . $b['time_label'];
+                $aTime = $a['all_day'] ? '0' : '1' . $a['sort_time'];
+                $bTime = $b['all_day'] ? '0' : '1' . $b['sort_time'];
                 return strcmp($aTime, $bTime) ?: strcmp($a['title'], $b['title']);
             });
         }

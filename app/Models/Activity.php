@@ -16,12 +16,12 @@ class Activity extends Model
 
     protected $fillable = [
         'user_id', 'customer_id', 'lead_id', 'opportunity_id',
-        'activity_type', 'subject', 'description', 'activity_date',
+        'activity_type', 'subject', 'description', 'activity_date', 'ends_at',
     ];
 
     protected function casts(): array
     {
-        return ['activity_date' => 'datetime', 'created_at' => 'datetime'];
+        return ['activity_date' => 'datetime', 'ends_at' => 'datetime', 'created_at' => 'datetime'];
     }
 
     public function user() { return $this->belongsTo(User::class, 'user_id', 'user_id'); }
