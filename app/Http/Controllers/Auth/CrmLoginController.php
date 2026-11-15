@@ -8,56 +8,67 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CrmLoginController extends Controller
 {
-    public function show(Request $request): View|RedirectResponse
+    public function create(): View|RedirectResponse
     {
-        if (Auth::check()) {
+        if (Auth::guard('web')->check()) {
             return redirect()->route('dashboard');
         }
 
-        return view('auth.login');
+        return view('auth.crm-login');
     }
 
-    public function login(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'email' => ['required', 'email', 'max:150'],
+        $credentials = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string'],
         ]);
 
-        $email = Str::lower(trim($data['email']));
+        $email = Str::lower(trim($credentials['email']));
         $key = 'crm-login:' . hash('sha256', $email . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
-            throw ValidationException::withMessages([
-                'email' => 'Too many login attempts. Try again in ' . RateLimiter::availableIn($key) . ' seconds.',
-            ]);
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors([
+                'email' => "Too many login attempts. Try again in {$seconds} seconds.",
+            ])->onlyInput('email');
         }
 
-        if (! Auth::attempt(['email' => $email, 'password' => $data['password'], 'status' => 'active'])) {
+        if (!Auth::guard('web')->attempt(['email' => $email, 'password' => $credentials['password']])) {
             RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages([
-                'email' => 'Invalid credentials or inactive account.',
+            return back()->withErrors(['email' => 'Invalid email or password.'])
+                ->onlyInput('email');
+        }
+
+        // Authentication does not bypass the CRM account-status policy.
+        $user = Auth::guard('web')->user();
+        if (Str::lower(trim((string) ($user->status ?? ''))) !== 'active') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            RateLimiter::hit($key, 60);
+            return redirect()->route('login')->withErrors([
+                'email' => 'This account is not active. Contact your administrator.',
             ]);
         }
 
-        $request->session()->regenerate();
         RateLimiter::clear($key);
-        $request->user()->forceFill(['last_login_at' => now()])->save();
+        $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard'))
+            ->with('success', 'Welcome back!');
     }
 
-    public function logout(Request $request): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('status', 'You have signed out successfully.');
     }
 }

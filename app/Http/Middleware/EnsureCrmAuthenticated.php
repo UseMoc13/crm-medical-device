@@ -6,16 +6,41 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Deny access to CRM private workspaces until a real authenticated session exists.
- * Does not redirect to a login route that may not yet be registered.
- */
 class EnsureCrmAuthenticated
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless(auth()->check(), 403, 'Sign in before accessing this CRM workspace.');
+        // The login page must remain reachable even when this middleware is
+        // appended globally to Laravel's "web" middleware group.
+        if ($request->is('login')) {
+            return $next($request);
+        }
 
-        return $next($request);
+        if (auth('web')->check()) {
+            $user = auth('web')->user();
+            if (strtolower(trim((string) ($user->status ?? ''))) === 'active') {
+                return $next($request);
+            }
+
+            auth('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        // Avoid HTML redirects for JSON/API consumers.
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        // Use the named login route. This needs routes/crm_auth.php registered.
+        // Redirect::guest stores the intended URL for safe GET requests.
+        if ($request->isMethod('GET')) {
+            return redirect()->guest(route('login'))
+                ->with('warning', 'Your session has expired. Please sign in again.');
+        }
+
+        // Do not resume an unsafe POST/PATCH/DELETE after reauthentication.
+        return redirect()->route('login')
+            ->with('warning', 'Your session has expired. Please sign in and retry the action.');
     }
 }

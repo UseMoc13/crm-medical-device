@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\CrmLoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContactController;
@@ -299,5 +300,24 @@ Route::patch(
     ->whereUuid('maintenance')
     ->name('maintenance.change-status');
 
+// Authentication
+Route::get('/login', [CrmLoginController::class, 'create'])
+    ->name('login');
+
+Route::post('/login', [CrmLoginController::class, 'store'])
+    ->name('login.attempt');
+
+Route::post('/logout', [CrmLoginController::class, 'destroy'])
+    ->name('logout');
+
 require __DIR__ . '/activities.php';
 require __DIR__ . '/todos.php';
+
+// CRM Login / Logout (registered once)
+require __DIR__ . '/crm_auth.php';
+
+
+
+
+
+
