@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class WorkspaceCalendarController extends Controller
@@ -177,36 +179,94 @@ class WorkspaceCalendarController extends Controller
             ->with('success', 'Entire personal event deleted successfully.');
     }
 
+    /**
+     * Backward compatibility with A7.4.2 single-date endpoint.
+     * The new mini calendar submits to destroyDays() instead.
+     */
     public function destroyDay(Request $request, string $event): RedirectResponse
     {
-        $model = $this->ownedEvent($event);
-        abort_unless($model->is_all_day, 422, 'Single-day removal is available only for all-day events.');
-        $data = $request->validate(['date' => ['required', 'date_format:Y-m-d']]);
-        $date = CarbonImmutable::createFromFormat('!Y-m-d', $data['date']);
+        $validated = $request->validate(['date' => ['required', 'date_format:Y-m-d']]);
+
+        return $this->excludeEventDates($event, [$validated['date']]);
+    }
+
+    /**
+     * Exclude multiple calendar dates from an owned all-day event.
+     * This never modifies Work/TO-DO records or another user's events.
+     */
+    public function destroyDays(Request $request, string $event): RedirectResponse
+    {
+        $validated = $request->validate([
+            'dates' => ['required', 'array', 'min:1', 'max:366'],
+            'dates.*' => ['required', 'date_format:Y-m-d', 'distinct'],
+        ]);
+
+        return $this->excludeEventDates($event, $validated['dates']);
+    }
+
+    private function excludeEventDates(string $eventId, array $dates): RedirectResponse
+    {
+        $model = $this->ownedEvent($eventId);
+        abort_unless($model->is_all_day, 422, 'Date removal is only available for all-day events.');
+
         $first = CarbonImmutable::parse($model->starts_at)->startOfDay();
         $last = CarbonImmutable::parse($model->ends_at ?? $model->starts_at)->startOfDay();
-        abort_unless($date->betweenIncluded($first, $last), 422, 'The selected date is outside this event.');
-
-        $removedAll = DB::transaction(function () use ($model, $data, $first, $last) {
-            WorkspaceCalendarDayExclusion::query()->firstOrCreate([
-                'calendar_event_id' => $model->getKey(),
-                'excluded_date' => $data['date'],
-            ]);
-            $excludedCount = $model->excludedDays()->count();
-            $totalDays = $first->diffInDays($last) + 1;
-            if ($excludedCount >= $totalDays) {
-                $model->delete();
-                return true;
+        $uniqueDates = array_values(array_unique($dates));
+        foreach ($uniqueDates as $day) {
+            $date = CarbonImmutable::createFromFormat('!Y-m-d', $day);
+            if (!$date || $date->format('Y-m-d') !== $day || !$date->betweenIncluded($first, $last)) {
+                throw ValidationException::withMessages([
+                    'dates' => 'Selected dates must belong to the event schedule.',
+                ]);
             }
-            return false;
+        }
+
+        // Lock the event so two simultaneous bulk requests cannot incorrectly
+        // count remaining dates or delete a changed event schedule.
+        [$removedAll, $added] = DB::transaction(function () use ($model, $uniqueDates) {
+            $locked = WorkspaceCalendarEvent::query()
+                ->where('owner_user_id', $this->ownerId())
+                ->whereKey($model->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            abort_unless($locked->is_all_day, 422, 'Event is no longer an all-day event.');
+            $first = CarbonImmutable::parse($locked->starts_at)->startOfDay();
+            $last = CarbonImmutable::parse($locked->ends_at ?? $locked->starts_at)->startOfDay();
+            foreach ($uniqueDates as $day) {
+                if (!CarbonImmutable::createFromFormat('!Y-m-d', $day)->betweenIncluded($first, $last)) {
+                    throw ValidationException::withMessages([
+                        'dates' => 'Event dates have changed. Reload the page and try again.',
+                    ]);
+                }
+            }
+
+            $rows = array_map(static fn (string $day) => [
+                'exclusion_id' => (string) Str::uuid(),
+                'calendar_event_id' => $locked->getKey(),
+                'excluded_date' => $day,
+            ], $uniqueDates);
+            $added = DB::table('workspace_calendar_day_exclusions')->insertOrIgnore($rows);
+            $totalDays = (int) $first->diffInDays($last) + 1;
+            $excludedCount = $locked->excludedDays()->count();
+            if ($excludedCount >= $totalDays) {
+                $locked->delete();
+                return [true, $added];
+            }
+            return [false, $added];
         });
 
         if ($removedAll) {
-            return redirect()->route('calendar.index', ['month' => $date->format('Y-m'), 'view' => 'personal'])
-                ->with('success', 'All dates of this event have been removed.');
+            return redirect()->route('calendar.index', [
+                'month' => $first->format('Y-m'),
+                'view' => 'personal',
+            ])->with('success', 'All dates were removed. The event is now deleted.');
         }
+
         return redirect()->route('calendar.show', ['event' => $model->getKey()])
-            ->with('success', 'Event removed from ' . $date->format('d M Y') . '. Other dates remain unchanged.');
+            ->with('success', $added > 0
+                ? $added . ' date(s) removed from this event. Other dates remain unchanged.'
+                : 'Selected dates were already removed.');
     }
 
     private function validateEvent(Request $request): array

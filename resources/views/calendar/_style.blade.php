@@ -65,4 +65,45 @@ body.calendar-modal-open{overflow:hidden}
 @media(max-width:1200px){.calendar-toolbar{grid-template-columns:1fr auto}.calendar-toolbar .calendar-legend{grid-column:1/-1;justify-self:start}}
 @media(max-width:760px){.calendar-toolbar{grid-template-columns:1fr}.calendar-view-toggle{justify-self:start}.calendar-toolbar .calendar-legend{grid-column:auto}.calendar-month-picker label{font-size:11px}.calendar-day-dialog-head,.calendar-day-dialog-body,.calendar-day-dialog-foot{padding-left:16px;padding-right:16px}}
 @media(max-width:480px){.calendar-day-dialog-foot{flex-direction:column}.calendar-day-dialog-foot .btn{width:100%;justify-content:center}.calendar-timeline-entry{grid-template-columns:52px 3px minmax(0,1fr);gap:9px}}
+
+
+/* A7.4.3 — 3-way calendar mode + multi-select all-day date manager */
+.calendar-view-toggle{white-space:nowrap}
+.calendar-toggle-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-width:88px;box-sizing:border-box}
+.calendar-toggle-btn:hover{background:#e7edf4;color:#34415c;text-decoration:none}
+.calendar-toggle-btn:focus-visible{outline:2px solid #168b85;outline-offset:2px}
+.calendar-toggle-btn.active.work{color:#138477}
+.calendar-toggle-btn.active.all{color:#284b82}
+.calendar-toggle-btn.active.personal{color:#7556b0}
+.calendar-mini-calendar{border:1px solid #dde4ed;border-radius:11px;padding:12px;background:#fafbfd}
+.calendar-mini-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.calendar-mini-header strong{font-size:13px;color:#17284f;font-weight:700;text-align:center}
+.calendar-mini-arrow{width:32px;height:32px;border:1px solid #e2e8f0;border-radius:8px;background:white;color:#34415c;cursor:pointer;font-size:17px;line-height:1}
+.calendar-mini-arrow:hover:not(:disabled){background:#eaf7f3;border-color:#bde1db;color:#167d70}
+.calendar-mini-arrow:disabled{cursor:default;opacity:.35}
+.calendar-mini-weekdays,.calendar-mini-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calendar-mini-weekdays{margin-bottom:5px}
+.calendar-mini-weekdays span{text-align:center;color:#8491a4;font-weight:700;font-size:10px}
+.calendar-mini-day,.calendar-mini-blank{display:flex;align-items:center;justify-content:center;aspect-ratio:1;border:1px solid transparent;min-width:0;border-radius:7px;font-size:11px;font-weight:600;background:white;color:#34415c}
+.calendar-mini-day{cursor:pointer;border-color:#e2e8f0;transition:.15s}
+.calendar-mini-day:hover:not(:disabled){border-color:#168b85;background:#eaf7f3}
+.calendar-mini-day.selected,.calendar-mini-day.selected:hover{background:#168b85;color:white;border-color:#168b85}
+.calendar-mini-day.removed{background:#f1f3f6;color:#a5afbb;text-decoration:line-through;border-color:#edf0f5}
+.calendar-mini-day.outside{background:transparent;color:#c7cdd6;border-color:transparent}
+.calendar-mini-day:disabled{cursor:not-allowed}
+.calendar-mini-day:focus-visible,.calendar-mini-arrow:focus-visible{outline:2px solid #168b85;outline-offset:2px}
+.calendar-mini-legend{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;margin-top:12px;font-size:10px;color:#8190a2}
+.calendar-mini-legend span{display:inline-flex;align-items:center;gap:5px}
+.calendar-mini-legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;border:1px solid #dde4ed;background:#fff}
+.calendar-mini-legend-dot.selected{background:#168b85;border-color:#168b85}
+.calendar-mini-legend-dot.removed{background:#dfe4eb;border-color:#dfe4eb}
+.calendar-mini-actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
+.calendar-mini-textbtn{border:0;background:transparent;color:#168b85;font-size:10px;font-weight:700;cursor:pointer;padding:4px 0;text-align:left}
+.calendar-mini-textbtn:hover:not(:disabled){text-decoration:underline}
+.calendar-mini-textbtn:disabled{opacity:.4;cursor:default}
+.calendar-mini-selection-status{margin:12px 0 6px!important;line-height:1.7!important;color:#596579!important;font-size:11px!important;overflow-wrap:anywhere}
+.calendar-remove-selected{margin-top:5px!important}
+.calendar-remove-selected:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:760px){.calendar-view-toggle{justify-self:center}.calendar-toolbar .calendar-legend{justify-self:start}}
+@media(max-width:480px){.calendar-toggle-btn{min-width:73px;padding:0 9px}.calendar-mini-calendar{padding:9px}.calendar-mini-weekdays,.calendar-mini-days{gap:3px}}
 </style>

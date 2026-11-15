@@ -45,10 +45,13 @@
                 <input type="hidden" name="view" value="{{ $view }}">
                 <button class="btn" type="submit">Go</button>
             </form>
-            <div class="calendar-view-toggle" role="group" aria-label="Visible calendar types">
-                <button type="button" class="calendar-toggle-btn {{ $view !== 'personal' ? 'active work' : '' }}" id="calendarToggleWork" aria-pressed="{{ $view !== 'personal' ? 'true' : 'false' }}">Work</button>
-                <button type="button" class="calendar-toggle-btn {{ $view !== 'work' ? 'active personal' : '' }}" id="calendarTogglePersonal" aria-pressed="{{ $view !== 'work' ? 'true' : 'false' }}">Personal</button>
-            </div>
+            <nav class="calendar-view-toggle" aria-label="Calendar category">
+                @foreach(['work' => 'Work', 'all' => 'All', 'personal' => 'Personal'] as $mode => $label)
+                    <a href="{{ route('calendar.index', ['month' => $month->format('Y-m'), 'view' => $mode]) }}"
+                       class="calendar-toggle-btn {{ $view === $mode ? 'active '.$mode : '' }}"
+                       @if($view === $mode) aria-current="page" @endif>{{ $label }}</a>
+                @endforeach
+            </nav>
             <div class="calendar-legend"><span><i class="calendar-dot activity"></i> Activity</span><span><i class="calendar-dot todo"></i> TO-DO</span><span><i class="calendar-dot personal"></i> Personal Event</span></div>
         </div>
         <div class="calendar-scroll">
@@ -100,26 +103,12 @@
 <script>
 (() => {
     const byDay = {{ \Illuminate\Support\Js::from($byDay) }};
-    const calendarUrl = @json(route('calendar.index'));
-    const currentMonth = @json($month->format('Y-m'));
-    let currentView = @json($view);
     const monthSelect = document.getElementById('calendarSelectMonth');
     const yearSelect = document.getElementById('calendarSelectYear');
     const monthValue = document.getElementById('calendarMonthValue');
     document.getElementById('calendarMonthPicker')?.addEventListener('submit', () => {
         monthValue.value = `${yearSelect.value}-${monthSelect.value}`;
     });
-    const toggleWork = document.getElementById('calendarToggleWork');
-    const togglePersonal = document.getElementById('calendarTogglePersonal');
-    const switchTo = (next) => { window.location.assign(`${calendarUrl}?month=${encodeURIComponent(currentMonth)}&view=${encodeURIComponent(next)}`); };
-    const doToggle = (kind) => {
-        const work = currentView !== 'personal';
-        const personal = currentView !== 'work';
-        if (kind === 'work') switchTo(work && personal ? 'personal' : 'all');
-        else switchTo(work && personal ? 'work' : 'all');
-    };
-    toggleWork?.addEventListener('click', () => doToggle('work'));
-    togglePersonal?.addEventListener('click', () => doToggle('personal'));
 
     const backdrop = document.getElementById('calendarDayBackdrop');
     const dialog = backdrop.querySelector('.calendar-day-dialog');
