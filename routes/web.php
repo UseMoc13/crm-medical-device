@@ -319,3 +319,6 @@ require __DIR__ . '/calendar.php';
 
 // A7.4.5 Organization hierarchy (Super Admin only)
 require __DIR__ . '/organization.php';
+
+// A7.4.6 Team directory and membership (Super Admin only)
+require __DIR__ . '/teams.php';

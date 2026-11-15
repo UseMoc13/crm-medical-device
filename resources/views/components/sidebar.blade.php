@@ -397,6 +397,14 @@
             <span class="nav-text">Organization</span>
         </a>
         @endif
+        @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
+        <a href="{{ route('teams.index') }}"
+           class="{{ request()->routeIs('teams.*') ? 'active' : '' }}"
+           data-label="Teams">
+            <span class="ico">♟</span>
+            <span class="nav-text">Teams</span>
+        </a>
+        @endif
         <a href="#" data-label="Branches">
             <span class="ico">⌂</span>
             <span class="nav-text">Branches</span>
