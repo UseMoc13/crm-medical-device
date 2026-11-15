@@ -9,59 +9,191 @@
     $labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     $prevMonth = $month->subMonth()->format('Y-m');
     $nextMonth = $month->addMonth()->format('Y-m');
+    $currentYear = (int) $month->year;
+    $yearFirst = min(2000, $currentYear);
+    $yearLast = max(2100, $currentYear);
 @endphp
 <div class="page-head">
-  <div><h1>Calendar</h1><p>Manage personal appointments and track your CRM activities and task deadlines.</p></div>
-  <div class="actions"><a class="btn primary" href="{{ route('calendar.create') }}">+ New Personal Event</a></div>
+    <div><h1>Calendar</h1><p>Track work activities, TO-DO deadlines, and your private appointments in one place.</p></div>
+    <div class="actions"><a class="btn primary" href="{{ route('calendar.create') }}">+ New Personal Event</a></div>
 </div>
 <div class="card calendar-main-card">
-  <div class="card-head calendar-header">
-    <div><h3>{{ $month->format('F Y') }}</h3><p>Calendar workspace · Personal events are visible only to you.</p></div>
-    <div class="calendar-nav">
-      <a class="btn" href="{{ route('calendar.index', ['month'=>$prevMonth, 'view'=>$view]) }}" aria-label="Previous month">‹</a>
-      <a class="btn" href="{{ route('calendar.index', ['month'=>now()->format('Y-m'), 'view'=>$view]) }}">Today</a>
-      <a class="btn" href="{{ route('calendar.index', ['month'=>$nextMonth, 'view'=>$view]) }}" aria-label="Next month">›</a>
+    <div class="card-head calendar-header">
+        <div><h3>{{ $month->format('F Y') }}</h3><p>Private events remain visible only to your account.</p></div>
+        <nav class="calendar-nav" aria-label="Month navigation">
+            <a class="btn calendar-nav-arrow" href="{{ route('calendar.index', ['month' => $prevMonth, 'view' => $view]) }}" aria-label="Previous month" title="Previous month">&#8592;</a>
+            <a class="btn" href="{{ route('calendar.index', ['month' => now()->format('Y-m'), 'view' => $view]) }}">Today</a>
+            <a class="btn calendar-nav-arrow" href="{{ route('calendar.index', ['month' => $nextMonth, 'view' => $view]) }}" aria-label="Next month" title="Next month">&#8594;</a>
+        </nav>
     </div>
-  </div>
-  <div class="card-body">
-    <form method="GET" action="{{ route('calendar.index') }}" class="calendar-filter-bar">
-      <input type="month" name="month" value="{{ $month->format('Y-m') }}" aria-label="Select month">
-      <select name="view" aria-label="Calendar view">
-        <option value="all" @selected($view === 'all')>All — Work & Personal</option>
-        <option value="work" @selected($view === 'work')>Work — Activities & To-Do</option>
-        <option value="personal" @selected($view === 'personal')>Personal Events</option>
-      </select>
-      <button class="btn" type="submit">Apply</button>
-      <div class="calendar-legend" aria-label="Legend"><span><i class="calendar-dot personal"></i> Personal</span><span><i class="calendar-dot activity"></i> Activity</span><span><i class="calendar-dot todo"></i> TO-DO</span></div>
-    </form>
-    <div class="calendar-scroll">
-      <div class="calendar-grid" role="grid" aria-label="{{ $month->format('F Y') }}">
-        @foreach($labels as $label)<div class="calendar-weekday">{{ $label }}</div>@endforeach
-        @for($cell = 0; $cell < $cells; $cell++)
-          @php
-            $dayNumber = $cell - $offset + 1;
-            $current = $dayNumber >= 1 && $dayNumber <= $days ? $month->addDays($dayNumber - 1) : null;
-            $dateString = $current?->format('Y-m-d');
-            $daily = $dateString ? ($byDay[$dateString] ?? []) : [];
-          @endphp
-          <div class="calendar-day {{ !$current ? 'outside' : '' }} {{ $dateString === $today ? 'today' : '' }}" role="gridcell">
-            @if($current)
-              <div class="calendar-day-head"><span class="calendar-day-number">{{ $dayNumber }}</span><a href="{{ route('calendar.create', ['date'=>$dateString]) }}" title="Add personal event on {{ $dateString }}" aria-label="Add personal event">+</a></div>
-              <div class="calendar-day-events">
-                @foreach(array_slice($daily, 0, 4) as $item)
-                  <a class="calendar-event {{ $item['kind'] }}" href="{{ $item['url'] }}" title="{{ $item['title'] }} — {{ $item['subtitle'] }}">
-                    <span class="calendar-event-time">{{ $item['all_day'] ? 'All day' : \Illuminate\Support\Carbon::parse($item['start'])->format('H:i') }}</span>
-                    <span class="calendar-event-name">{{ $item['title'] }}</span>
-                  </a>
-                @endforeach
-                @if(count($daily) > 4)<span class="calendar-more">+{{ count($daily) - 4 }} more</span>@endif
-              </div>
-            @endif
-          </div>
-        @endfor
-      </div>
+    <div class="card-body">
+        <div class="calendar-toolbar">
+            <form class="calendar-month-picker" id="calendarMonthPicker" method="GET" action="{{ route('calendar.index') }}">
+                <label for="calendarSelectMonth">Month</label>
+                <select id="calendarSelectMonth" aria-label="Select month">
+                    @for($m = 1; $m <= 12; $m++)
+                        <option value="{{ sprintf('%02d', $m) }}" @selected((int) $month->month === $m)>{{ \Carbon\CarbonImmutable::create(2026, $m, 1)->format('F') }}</option>
+                    @endfor
+                </select>
+                <label for="calendarSelectYear">Year</label>
+                <select id="calendarSelectYear" aria-label="Select year">
+                    @for($y = $yearFirst; $y <= $yearLast; $y++)
+                        <option value="{{ $y }}" @selected($currentYear === $y)>{{ $y }}</option>
+                    @endfor
+                </select>
+                <input type="hidden" name="month" id="calendarMonthValue" value="{{ $month->format('Y-m') }}">
+                <input type="hidden" name="view" value="{{ $view }}">
+                <button class="btn" type="submit">Go</button>
+            </form>
+            <div class="calendar-view-toggle" role="group" aria-label="Visible calendar types">
+                <button type="button" class="calendar-toggle-btn {{ $view !== 'personal' ? 'active work' : '' }}" id="calendarToggleWork" aria-pressed="{{ $view !== 'personal' ? 'true' : 'false' }}">Work</button>
+                <button type="button" class="calendar-toggle-btn {{ $view !== 'work' ? 'active personal' : '' }}" id="calendarTogglePersonal" aria-pressed="{{ $view !== 'work' ? 'true' : 'false' }}">Personal</button>
+            </div>
+            <div class="calendar-legend"><span><i class="calendar-dot activity"></i> Activity</span><span><i class="calendar-dot todo"></i> TO-DO</span><span><i class="calendar-dot personal"></i> Personal Event</span></div>
+        </div>
+        <div class="calendar-scroll">
+            <div class="calendar-grid" role="grid" aria-label="{{ $month->format('F Y') }}">
+                @foreach($labels as $label)<div class="calendar-weekday" role="columnheader">{{ $label }}</div>@endforeach
+                @for($cell = 0; $cell < $cells; $cell++)
+                    @php
+                        $dayNumber = $cell - $offset + 1;
+                        $current = $dayNumber >= 1 && $dayNumber <= $days ? $month->addDays($dayNumber - 1) : null;
+                        $dateString = $current?->format('Y-m-d');
+                        $daily = $dateString ? ($byDay[$dateString] ?? []) : [];
+                        $remaining = max(0, count($daily) - 3);
+                    @endphp
+                    <div class="calendar-day {{ !$current ? 'outside' : '' }} {{ $dateString === $today ? 'today' : '' }}" role="gridcell" @if($current) data-calendar-date="{{ $dateString }}" tabindex="0" aria-label="View schedule for {{ $current->format('d F Y') }}, {{ count($daily) }} items" @endif>
+                        @if($current)
+                            <div class="calendar-day-head">
+                                <button type="button" class="calendar-open-day" data-calendar-open="{{ $dateString }}" aria-label="View all events on {{ $current->format('d F Y') }}"><span class="calendar-day-number">{{ $dayNumber }}</span></button>
+                                <a href="{{ route('calendar.create', ['date' => $dateString]) }}" title="Add personal event" aria-label="Add personal event on {{ $dateString }}">+</a>
+                            </div>
+                            <div class="calendar-day-events">
+                                @foreach(array_slice($daily, 0, 3) as $item)
+                                    <button class="calendar-event {{ $item['kind'] }}" type="button" data-calendar-open="{{ $dateString }}" title="{{ $item['title'] }} — {{ $item['subtitle'] }}">
+                                        <span class="calendar-event-time">{{ $item['time_label'] }}</span>
+                                        <span class="calendar-event-name">{{ $item['title'] }}</span>
+                                    </button>
+                                @endforeach
+                                @if($remaining > 0)
+                                    <button class="calendar-more" type="button" data-calendar-open="{{ $dateString }}">+{{ $remaining }} more</button>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endfor
+            </div>
+        </div>
+        <p class="calendar-help">Select a date or an event to view the complete daily schedule and timeline. Calendar cells display up to three entries.</p>
     </div>
-  </div>
 </div>
+<div class="calendar-day-backdrop" id="calendarDayBackdrop" hidden>
+    <section class="calendar-day-dialog" role="dialog" aria-modal="true" aria-labelledby="calendarDayTitle" tabindex="-1">
+        <div class="calendar-day-dialog-head">
+            <div><span class="calendar-day-kicker">DAILY SCHEDULE</span><h3 id="calendarDayTitle">Day details</h3><p id="calendarDayCount"></p></div>
+            <button type="button" class="calendar-day-close" id="calendarDayClose" aria-label="Close schedule">&times;</button>
+        </div>
+        <div class="calendar-day-dialog-body" id="calendarDayTimeline"></div>
+        <div class="calendar-day-dialog-foot"><a class="btn" id="calendarDayAdd" href="{{ route('calendar.create') }}">+ New Personal Event</a><button type="button" class="btn primary" id="calendarDayDone">Done</button></div>
+    </section>
+</div>
+<script>
+(() => {
+    const byDay = {{ \Illuminate\Support\Js::from($byDay) }};
+    const calendarUrl = @json(route('calendar.index'));
+    const currentMonth = @json($month->format('Y-m'));
+    let currentView = @json($view);
+    const monthSelect = document.getElementById('calendarSelectMonth');
+    const yearSelect = document.getElementById('calendarSelectYear');
+    const monthValue = document.getElementById('calendarMonthValue');
+    document.getElementById('calendarMonthPicker')?.addEventListener('submit', () => {
+        monthValue.value = `${yearSelect.value}-${monthSelect.value}`;
+    });
+    const toggleWork = document.getElementById('calendarToggleWork');
+    const togglePersonal = document.getElementById('calendarTogglePersonal');
+    const switchTo = (next) => { window.location.assign(`${calendarUrl}?month=${encodeURIComponent(currentMonth)}&view=${encodeURIComponent(next)}`); };
+    const doToggle = (kind) => {
+        const work = currentView !== 'personal';
+        const personal = currentView !== 'work';
+        if (kind === 'work') switchTo(work && personal ? 'personal' : 'all');
+        else switchTo(work && personal ? 'work' : 'all');
+    };
+    toggleWork?.addEventListener('click', () => doToggle('work'));
+    togglePersonal?.addEventListener('click', () => doToggle('personal'));
+
+    const backdrop = document.getElementById('calendarDayBackdrop');
+    const dialog = backdrop.querySelector('.calendar-day-dialog');
+    const timeline = document.getElementById('calendarDayTimeline');
+    const title = document.getElementById('calendarDayTitle');
+    const count = document.getElementById('calendarDayCount');
+    const add = document.getElementById('calendarDayAdd');
+    const closeBtn = document.getElementById('calendarDayClose');
+    let focusReturn = null;
+    const node = (tag, css, content) => {
+        const el = document.createElement(tag);
+        if (css) el.className = css;
+        if (content !== undefined) el.textContent = String(content);
+        return el;
+    };
+    const showDay = (date) => {
+        const list = byDay[date] || [];
+        focusReturn = document.activeElement;
+        title.textContent = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+        count.textContent = `${list.length} scheduled ${list.length === 1 ? 'item' : 'items'}`;
+        const base = @json(route('calendar.create'));
+        add.href = `${base}?date=${encodeURIComponent(date)}`;
+        timeline.replaceChildren();
+        if (!list.length) {
+            timeline.append(node('div', 'calendar-day-empty', 'No events for this date. Add a personal event to get started.'));
+        }
+        for (const item of list) {
+            const entry = node('div', 'calendar-timeline-entry');
+            const clock = node('div', 'calendar-timeline-clock', item.time_label || '—');
+            const bar = node('div', `calendar-timeline-bar ${item.kind || ''}`);
+            const content = node('div', 'calendar-timeline-content');
+            const line = node('div', 'calendar-timeline-topline');
+            line.append(node('span', `calendar-timeline-kind ${item.kind || ''}`, item.kind === 'todo' ? 'TO-DO' : item.kind === 'activity' ? 'Activity' : 'Personal'));
+            if (item.ongoing && !item.all_day) line.append(node('span', 'calendar-timeline-ongoing', 'Continues from earlier'));
+            const name = node('a', 'calendar-timeline-name', item.title);
+            name.href = item.url;
+            content.append(line, name, node('p', 'calendar-timeline-subtitle', item.subtitle || ''));
+            if (item.kind === 'personal' && item.all_day) {
+                const eventLink = node('a', 'calendar-timeline-manage', 'Manage days / Delete');
+                eventLink.href = `${item.url}?date=${encodeURIComponent(date)}`;
+                content.append(eventLink);
+            }
+            entry.append(clock, bar, content);
+            timeline.append(entry);
+        }
+        backdrop.hidden = false;
+        document.body.classList.add('calendar-modal-open');
+        closeBtn.focus();
+    };
+    const dismiss = () => {
+        backdrop.hidden = true;
+        document.body.classList.remove('calendar-modal-open');
+        focusReturn?.focus?.();
+    };
+    document.querySelectorAll('[data-calendar-open]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); showDay(el.dataset.calendarOpen); }));
+    document.querySelectorAll('[data-calendar-date]').forEach(el => {
+        el.addEventListener('click', e => { if (e.target.closest('a,button')) return; showDay(el.dataset.calendarDate); });
+        el.addEventListener('keydown', e => { if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showDay(el.dataset.calendarDate); } });
+    });
+    closeBtn.addEventListener('click', dismiss);
+    document.getElementById('calendarDayDone').addEventListener('click', dismiss);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) dismiss(); });
+    document.addEventListener('keydown', e => {
+        if (backdrop.hidden) return;
+        if (e.key === 'Escape') dismiss();
+        if (e.key === 'Tab') {
+            const focusable = [...dialog.querySelectorAll('a[href],button:not([disabled])')];
+            if (!focusable.length) return;
+            const first = focusable[0], last = focusable[focusable.length-1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+})();
+</script>
 @include('calendar._style')
 @endsection

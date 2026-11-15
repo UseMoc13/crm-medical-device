@@ -24,5 +24,10 @@ class WorkspaceCalendarEvent extends Model
         return ['starts_at' => 'datetime', 'ends_at' => 'datetime', 'is_all_day' => 'boolean'];
     }
 
+    public function excludedDays()
+    {
+        return $this->hasMany(WorkspaceCalendarDayExclusion::class, 'calendar_event_id', 'calendar_event_id');
+    }
+
     public function owner() { return $this->belongsTo(User::class, 'owner_user_id', 'user_id'); }
 }
