@@ -389,6 +389,14 @@
 
         </a>
 
+        @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
+        <a href="{{ route('organization.index') }}"
+           class="{{ request()->routeIs('organization.*') ? 'active' : '' }}"
+           data-label="Organization">
+            <span class="ico">♧</span>
+            <span class="nav-text">Organization</span>
+        </a>
+        @endif
         <a href="#" data-label="Branches">
             <span class="ico">⌂</span>
             <span class="nav-text">Branches</span>

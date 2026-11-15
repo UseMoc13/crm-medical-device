@@ -18,6 +18,9 @@
 
 
     <div class="actions">
+        @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
+            <a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
+        @endif
 
         <a
             href="{{ route('users.create') }}"
