@@ -85,4 +85,38 @@
 @media(max-width:800px){.todo-assignment-file{flex-wrap:wrap}}
 @media(max-width:650px){.todo-dashboard-stats{grid-template-columns:1fr}.todo-assignee-choice{align-items:flex-start;flex-direction:column}.todo-submission-controls{align-items:stretch;flex-direction:column}.todo-submission-controls>.btn,.todo-submission-controls form>.btn{width:100%}.todo-assignment-head{align-items:flex-start}}
 
+/* A7.4.7 — filtered/paginated recipient selector (single _style.blade.php). */
+#todo-work-only{margin-top:30px;padding-top:4px}
+#todo-work-only>.todo-section:first-child{margin-top:22px;padding-top:20px;border-top:1px solid #e5eaf1}
+.todo-recipient-picker{border:1px solid #e5eaf1;border-radius:12px;background:#fff;padding:18px;margin-top:14px}
+.todo-recipient-picker-intro,.todo-recipient-toolbar,.todo-recipient-pagination,.todo-selected-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.todo-recipient-picker-intro strong,.todo-selected-head h5{color:#17284f;font-size:13px;font-weight:700;margin:0}
+.todo-recipient-picker-intro p,.todo-selected-head p{font-size:11px;color:#8793a6;line-height:1.6;margin:5px 0 0}
+.todo-recipient-limit{font-size:10px;font-weight:700;border-radius:6px;padding:6px 9px;background:#f0f4f9;color:#51617b}
+.todo-recipient-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+.todo-recipient-toolbar{border-top:1px solid #edf1f6;padding-top:13px;margin-bottom:10px;font-size:11px;color:#65748b}
+.todo-recipient-toolbar>div{display:flex;gap:7px;flex-wrap:wrap}
+.todo-recipient-toolbar .btn,.todo-recipient-pagination .btn,.todo-selected-head .btn{padding:7px 10px;font-size:11px;min-height:33px}
+.todo-recipient-results{border:1px solid #e5eaf1;border-radius:9px;background:#f8fafc;max-height:288px;overflow:auto;padding:7px;display:grid;align-content:start;gap:7px}
+.todo-recipient-row{background:#fff;border:1px solid #e5eaf1;padding:10px 12px;display:flex;align-items:center;gap:11px;border-radius:8px}
+.todo-recipient-row input,.todo-recipient-flag input{accent-color:#168a82;width:16px;height:16px;flex:0 0 16px}
+.todo-recipient-avatar{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;background:#eaf7f3;border-radius:9px;color:#167d70;font-size:12px;font-weight:750}
+.todo-recipient-person{min-width:0;flex:1}
+.todo-recipient-person strong,.todo-selected-person-info strong{font-size:12px;color:#223a5c;display:block;overflow-wrap:anywhere}
+.todo-recipient-person small,.todo-selected-person-info small{font-size:10px;color:#8590a2;margin-top:3px;display:block;overflow-wrap:anywhere}
+.todo-recipient-pagination{margin:12px 0 18px;color:#67768e;font-size:11px}
+.todo-selected-head{border-top:1px solid #edf1f6;padding-top:16px;margin-bottom:11px}
+.todo-selected-person{border:1px solid #e5eaf1;border-radius:9px;background:#f8fafc;padding:11px 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:7px 0}
+.todo-selected-person-info{min-width:160px;flex:1}
+.todo-selected-person-flags{display:flex;flex-wrap:wrap;align-items:center;gap:15px}
+.todo-recipient-flag{display:inline-flex!important;gap:6px;align-items:center;white-space:nowrap;font-size:11px!important;color:#34415c!important;font-weight:500!important;margin:0!important;cursor:pointer}
+.todo-recipient-remove{background:#fff;border:1px solid #f1d8d8;border-radius:6px;color:#b7434b;cursor:pointer;padding:7px 10px;font-size:11px}
+.todo-recipient-remove:hover{background:#fff0f0}
+.todo-recipient-stale{color:#b97828!important}
+.todo-recipient-message{padding:14px;color:#8290a3;font-size:11px;line-height:1.6;margin:0}
+.todo-recipient-error{border-radius:7px;background:#fff0f0;color:#b7434b;padding:10px 12px;font-size:11px;margin-top:10px}
+.todo-preview-panel{max-height:calc(100vh - 112px);overflow-y:auto}
+@media(max-width:900px){.todo-preview-panel{max-height:none;overflow:visible}}
+@media(max-width:620px){.todo-recipient-filter-grid{grid-template-columns:1fr}.todo-selected-person-flags{width:100%}.todo-recipient-picker{padding:13px}}
+
 </style>

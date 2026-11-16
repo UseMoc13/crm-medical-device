@@ -7,9 +7,11 @@
     $currentAssignees = $record?->assignments?->pluck('assigned_user_id')->all() ?? [];
     $currentRequired = $record?->assignments?->where('submission_required', true)->pluck('assigned_user_id')->all() ?? [];
     $currentMandatory = $record?->assignments?->where('completion_required', true)->pluck('assigned_user_id')->all() ?? [];
-    $selectedAssignees = old('assignee_ids', $currentAssignees);
-    $selectedRequired = old('required_assignee_ids', $currentRequired);
-    $selectedMandatory = old('mandatory_assignee_ids', $currentMandatory);
+    // Restore explicitly cleared checkboxes after validation errors.
+    $pickerResubmitted = (bool) old('_recipient_picker_submitted', false);
+    $selectedAssignees = $pickerResubmitted ? old('assignee_ids', []) : $currentAssignees;
+    $selectedRequired = $pickerResubmitted ? old('required_assignee_ids', []) : $currentRequired;
+    $selectedMandatory = $pickerResubmitted ? old('mandatory_assignee_ids', []) : $currentMandatory;
 @endphp
 <div class="todo-form-layout">
     <div class="todo-form-main">
@@ -37,30 +39,65 @@
 
         <div id="todo-work-only">
             <div class="todo-section"><h4>Assignment & Submission Requirements</h4><p>Set each assignee as Mandatory or Optional. Separately choose whether they must upload a file before marking their own assignment complete.</p></div>
-            @if($assigneeOptions->isEmpty())
-                <p class="todo-form-message">No active users are available in your branch.</p>
-            @else
-                <div class="todo-assignee-choices">
-                    @foreach($assigneeOptions as $person)
-                        @php $personId = (string) $person->user_id; @endphp
-                        <div class="todo-assignee-choice">
-                            <div class="todo-assignee-left">
-                                <input type="checkbox" id="todo-assign-{{ $loop->index }}" name="assignee_ids[]" value="{{ $personId }}"
-                                    data-assignee-name="{{ $person->name }}" @checked(in_array($personId, $selectedAssignees, true))>
-                                <label for="todo-assign-{{ $loop->index }}"><span class="todo-assignee-avatar">{{ mb_strtoupper(mb_substr((string)$person->name,0,1)) }}</span><span><strong>{{ $person->name }}</strong><small>{{ $personId === (string)auth()->id() ? 'You' : 'Active colleague' }}</small></span></label>
-                            </div>
-                            <div class="todo-assignee-rules">
-                                <label class="todo-file-required"><input type="checkbox" name="mandatory_assignee_ids[]" value="{{ $personId }}" @checked(in_array($personId,$selectedMandatory,true))><span>Mandatory</span></label>
-                                <label class="todo-file-required"><input type="checkbox" name="required_assignee_ids[]" value="{{ $personId }}" @checked(in_array($personId,$selectedRequired,true))><span>File required</span></label>
-                            </div>
-                        </div>
-                    @endforeach
+            <div class="todo-recipient-picker" id="todo-recipient-picker" data-url="{{ route('todos.recipient-options') }}">
+                <input type="hidden" name="_recipient_picker_submitted" value="1">
+                <div class="todo-recipient-picker-intro">
+                    <div><strong>Choose Recipients</strong><p>Filter by Role, Branch or Team. Then tick individual users. Filtering never assigns anyone automatically.</p></div>
+                    <span class="todo-recipient-limit">Maximum 20 assignees</span>
                 </div>
-                <p class="todo-form-footnote">No assignee selected means a solo Work task. Assigned users can view the task and submit their own files, but cannot edit or delete the task.</p>
-                @error('assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
-                @error('required_assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
-                @error('mandatory_assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
-            @endif
+                <div class="todo-recipient-filter-grid">
+                    <div class="todo-field"><label for="todo-filter-role">Role</label>
+                        <select id="todo-filter-role"><option value="">All roles</option>
+                            @foreach($recipientFilters['roles'] as $role)
+                                <option value="{{ $role->role_id }}">{{ $role->role_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="todo-field"><label for="todo-filter-branch">Branch</label>
+                        <select id="todo-filter-branch"><option value="">All permitted branches</option>
+                            @foreach($recipientFilters['branches'] as $branch)
+                                <option value="{{ $branch->branch_id }}">{{ $branch->branch_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="todo-field"><label for="todo-filter-team">Team</label>
+                        <select id="todo-filter-team"><option value="">All visible teams</option>
+                            @foreach($recipientFilters['teams'] as $team)
+                                <option value="{{ $team->team_id }}">{{ $team->team_name }} ({{ ucfirst($team->team_type) }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="todo-field"><label for="todo-filter-user">Search name or email</label>
+                        <input id="todo-filter-user" type="search" maxlength="150" autocomplete="off" placeholder="Find a colleague...">
+                    </div>
+                </div>
+                <div class="todo-recipient-toolbar">
+                    <span id="todo-recipient-result-count" aria-live="polite">Loading available users…</span>
+                    <div>
+                        <button type="button" class="btn" id="todo-recipient-select-page">Select displayed</button>
+                        <button type="button" class="btn" id="todo-recipient-reset-filters">Reset filters</button>
+                    </div>
+                </div>
+                <div id="todo-recipient-results" class="todo-recipient-results" aria-live="polite" aria-busy="true"></div>
+                <div class="todo-recipient-pagination">
+                    <button type="button" class="btn" id="todo-recipient-prev">← Previous</button>
+                    <span id="todo-recipient-page-label">Page 1</span>
+                    <button type="button" class="btn" id="todo-recipient-next">Next →</button>
+                </div>
+                <div class="todo-selected-head">
+                    <div><h5>Selected Assignees <span id="todo-selected-count">0</span>/20</h5>
+                        <p>Manage Mandatory / Optional completion and File Required / Optional for each recipient.</p></div>
+                    <button type="button" class="btn" id="todo-recipient-clear">Clear selection</button>
+                </div>
+                <div id="todo-recipient-selected" class="todo-recipient-selected"></div>
+                <div id="todo-recipient-hidden-inputs"></div>
+                <p class="todo-recipient-error" role="alert" id="todo-recipient-error" hidden></p>
+            </div>
+            <p class="todo-form-footnote">No assignee selected means a solo Work task. Creator can update task details; each assignee can submit their own files. Team membership alone does not grant access to this task.</p>
+            @error('assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
+            @error('assignee_ids.*')<small class="todo-error">{{ $message }}</small>@enderror
+            @error('required_assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
+            @error('mandatory_assignee_ids')<small class="todo-error">{{ $message }}</small>@enderror
 
             <div class="todo-section"><h4>Related CRM Activity</h4><p>Link this task to one of your Activity records, if relevant.</p></div>
             <div class="todo-field"><label for="todo-activity">Activity <span class="todo-optional">Optional</span></label>
@@ -90,26 +127,63 @@
 (() => {
     const $ = id => document.getElementById(id);
     const form = $('todo-form'); if (!form) return;
-    const label = id => { const el=$(id); return el?.options[el.selectedIndex]?.text || '—'; };
+    const picker = $('todo-recipient-picker');
     const work = $('todo-work-only');
-    const assigneeBoxes = [...form.querySelectorAll('input[name="assignee_ids[]"]')];
-    const requiredBoxes = [...form.querySelectorAll('input[name="required_assignee_ids[]"]')];
-    const mandatoryBoxes = [...form.querySelectorAll('input[name="mandatory_assignee_ids[]"]')];
-    const fill = () => {
-        const isWork = $('todo-visibility').value === 'work';
-        work.hidden = !isWork;
-        $('todo-activity').disabled = !isWork;
-        for (const box of assigneeBoxes) box.disabled = !isWork;
-        for (const box of mandatoryBoxes) {
-            const selected = assigneeBoxes.some(a => a.value === box.value && a.checked);
-            box.disabled = !isWork || !selected;
-            if (!selected) box.checked = false;
-        }
-        for (const box of requiredBoxes) {
-            const selected = assigneeBoxes.some(a => a.value === box.value && a.checked);
-            box.disabled = !isWork || !selected;
-            if (!selected) box.checked = false;
-        }
+    const maxAssignees = 20;
+    const selected = new Map();
+    const initialPeople = {{ \Illuminate\Support\Js::from($selectedRecipients ?? []) }};
+    const initialMandatory = {{ \Illuminate\Support\Js::from(array_values($selectedMandatory ?? [])) }};
+    const initialRequired = {{ \Illuminate\Support\Js::from(array_values($selectedRequired ?? [])) }};
+    for (const person of initialPeople) {
+        selected.set(String(person.id), {
+            ...person, mandatory: initialMandatory.includes(String(person.id)),
+            required: initialRequired.includes(String(person.id))
+        });
+    }
+
+    let visiblePeople = [];
+    let page = 1;
+    let lastPage = 1;
+    let total = 0;
+    let loading = false;
+    let requestId = 0;
+    let searchTimer;
+
+    function showError(message) {
+        const node = $('todo-recipient-error');
+        node.textContent = message || '';
+        node.hidden = !message;
+    }
+    function label(id) {
+        const el = $(id);
+        return el?.options?.[el.selectedIndex]?.text || '—';
+    }
+    function el(tag, cls, txt) {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (txt !== undefined) node.textContent = txt;
+        return node;
+    }
+    function inputField(name, value) {
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = name; input.value = value;
+        return input;
+    }
+    function isWork() { return $('todo-visibility').value === 'work'; }
+    function updateHiddenInputs() {
+        const wrap = $('todo-recipient-hidden-inputs');
+        wrap.replaceChildren();
+        if (!isWork()) return;
+        selected.forEach((person, id) => {
+            wrap.appendChild(inputField('assignee_ids[]', id));
+            if (person.mandatory) wrap.appendChild(inputField('mandatory_assignee_ids[]', id));
+            if (person.required) wrap.appendChild(inputField('required_assignee_ids[]', id));
+        });
+    }
+    function updatePreview() {
+        const personal = !isWork();
+        work.hidden = personal;
+        $('todo-activity').disabled = personal;
         $('todo-preview-title').textContent = $('todo-title').value.trim() || 'New Task';
         $('todo-preview-visibility').textContent = label('todo-visibility');
         $('todo-preview-priority').textContent = label('todo-priority');
@@ -118,26 +192,166 @@
         const end = $('todo-day').value;
         $('todo-preview-due').textContent = start && end
             ? `${start} ${$('todo-start-time').value} → ${end} ${$('todo-time').value}`
+            : start ? `From ${start} ${$('todo-start-time').value}`
             : end ? `Deadline ${end} ${$('todo-time').value}` : 'Not scheduled';
-        const recipients = assigneeBoxes.filter(box => box.checked && isWork);
-        $('todo-preview-assignees').textContent = !isWork ? 'Only me' : recipients.length
-            ? recipients.map(b=>b.dataset.assigneeName).join(', ') : 'Solo Work task';
-        $('todo-preview-mandatory').textContent = !isWork ? 'Not applicable'
-            : `${mandatoryBoxes.filter(b=>b.checked && !b.disabled).length} mandatory / ${recipients.length} assigned`;
-        $('todo-preview-required').textContent = !isWork ? 'Not applicable'
-            : `${requiredBoxes.filter(b=>b.checked && !b.disabled).length} required / ${recipients.length} assigned`;
-        $('todo-preview-activity').textContent = isWork && $('todo-activity').value ? label('todo-activity') : 'Not linked';
+        const recipients = [...selected.values()];
+        $('todo-preview-assignees').textContent = personal ? 'Only me' : recipients.length
+            ? recipients.map(p => p.name).join(', ') : 'Solo Work task';
+        $('todo-preview-mandatory').textContent = personal ? 'Not applicable'
+            : `${recipients.filter(p=>p.mandatory).length} mandatory / ${recipients.length} assigned`;
+        $('todo-preview-required').textContent = personal ? 'Not applicable'
+            : `${recipients.filter(p=>p.required).length} required / ${recipients.length} assigned`;
+        $('todo-preview-activity').textContent = !personal && $('todo-activity').value
+            ? label('todo-activity') : 'Not linked';
         $('todo-preview-description').textContent = $('todo-description').value.trim() || 'No description provided.';
-    };
-    form.addEventListener('change', event => {
-        if (event.target.matches('input[name="assignee_ids[]"]') && event.target.checked) {
-            const box = mandatoryBoxes.find(b => b.value === event.target.value);
-            if (box) box.checked = true;
+        updateHiddenInputs();
+    }
+    function togglePerson(person, checked) {
+        const id = String(person.id);
+        if (checked) {
+            if (!selected.has(id) && selected.size >= maxAssignees) {
+                showError(`Maximum ${maxAssignees} recipients per task. Remove a recipient first.`);
+                return false;
+            }
+            if (!selected.has(id)) selected.set(id, {...person, mandatory: true, required: false});
+        } else {
+            selected.delete(id);
         }
+        showError('');
+        renderSelected();
+        renderResults();
+        return true;
+    }
+    function renderResults() {
+        const root = $('todo-recipient-results');
+        root.replaceChildren();
+        if (loading) {
+            root.appendChild(el('p', 'todo-recipient-message', 'Loading recipients…'));
+        } else if (!visiblePeople.length) {
+            root.appendChild(el('p', 'todo-recipient-message', 'No eligible users match your filters. Try another role, branch or team.'));
+        } else {
+            visiblePeople.forEach(person => {
+                const row = el('div', 'todo-recipient-row');
+                const mark = el('input');
+                mark.type = 'checkbox'; mark.checked = selected.has(String(person.id));
+                mark.setAttribute('aria-label', `Assign ${person.name}`);
+                mark.addEventListener('change', () => {
+                    if (!togglePerson(person, mark.checked)) mark.checked = false;
+                });
+                const avatar = el('span', 'todo-recipient-avatar', (person.name || '?').charAt(0).toUpperCase());
+                const detail = el('div', 'todo-recipient-person');
+                detail.appendChild(el('strong', '', person.name));
+                detail.appendChild(el('small', '', [person.roles.join(' / ') || 'No role', person.branch].join(' · ')));
+                row.append(mark, avatar, detail);
+                root.appendChild(row);
+            });
+        }
+        $('todo-recipient-result-count').textContent = `${total} matching users · ${selected.size} selected`;
+        $('todo-recipient-page-label').textContent = `Page ${page} of ${lastPage}`;
+        $('todo-recipient-prev').disabled = loading || page <= 1;
+        $('todo-recipient-next').disabled = loading || page >= lastPage;
+        $('todo-recipient-select-page').disabled = loading || visiblePeople.length === 0;
+        root.setAttribute('aria-busy', loading ? 'true' : 'false');
+    }
+    function makeFlag(person, key, labelText) {
+        const labelNode = el('label', 'todo-recipient-flag');
+        const checkbox = el('input'); checkbox.type='checkbox'; checkbox.checked=!!person[key];
+        checkbox.addEventListener('change', () => {
+            person[key] = checkbox.checked;
+            updatePreview();
+        });
+        labelNode.append(checkbox, document.createTextNode(labelText));
+        return labelNode;
+    }
+    function renderSelected() {
+        const root = $('todo-recipient-selected');
+        root.replaceChildren();
+        if (!selected.size) {
+            root.appendChild(el('p','todo-recipient-message','No recipients selected. This will be your own solo Work task.'));
+        } else {
+            selected.forEach((person, id) => {
+                const row = el('div', 'todo-selected-person');
+                const info = el('div', 'todo-selected-person-info');
+                info.appendChild(el('strong','',person.name));
+                info.appendChild(el('small','',[person.roles?.join(' / ') || 'No role',person.branch].join(' · ')));
+                if (person.retained_only) info.appendChild(el('small','todo-recipient-stale','Previously assigned · no longer eligible for new assignment'));
+                const flags = el('div','todo-selected-person-flags');
+                flags.append(makeFlag(person, 'mandatory', 'Mandatory'), makeFlag(person, 'required', 'File required'));
+                const remove = el('button','todo-recipient-remove','Remove');
+                remove.type = 'button'; remove.setAttribute('aria-label',`Remove ${person.name}`);
+                remove.addEventListener('click',()=>togglePerson(person,false));
+                row.append(info,flags,remove);
+                root.appendChild(row);
+            });
+        }
+        $('todo-selected-count').textContent = String(selected.size);
+        updatePreview();
+    }
+    async function loadRecipients() {
+        const ticket = ++requestId;
+        loading = true;
+        renderResults();
+        const params = new URLSearchParams({page:String(page)});
+        for (const [name, field] of [['search','todo-filter-user'],['role_id','todo-filter-role'],
+            ['branch_id','todo-filter-branch'],['team_id','todo-filter-team']]) {
+            const value = $(field).value.trim();
+            if (value) params.set(name, value);
+        }
+        try {
+            const response = await fetch(`${picker.dataset.url}?${params.toString()}`, {
+                credentials:'same-origin', headers:{Accept:'application/json', 'X-Requested-With':'XMLHttpRequest'}
+            });
+            if (!response.ok) throw new Error(`Cannot load recipients (HTTP ${response.status}).`);
+            const payload = await response.json();
+            if (ticket !== requestId) return;
+            visiblePeople = payload.data || [];
+            total = payload.pagination?.total || 0;
+            page = payload.pagination?.page || 1;
+            lastPage = payload.pagination?.last_page || 1;
+            showError('');
+        } catch (err) {
+            if (ticket !== requestId) return;
+            visiblePeople = []; total = 0; lastPage = 1;
+            showError(err.message || 'Cannot load recipients. Refresh the page and try again.');
+        } finally {
+            if (ticket === requestId) { loading = false; renderResults(); }
+        }
+    }
+    function resetAndLoad() { page=1; loadRecipients(); }
+    for (const id of ['todo-filter-role','todo-filter-branch','todo-filter-team']) {
+        $(id).addEventListener('change', resetAndLoad);
+    }
+    $('todo-filter-user').addEventListener('input',()=>{
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(resetAndLoad, 250);
+    });
+    $('todo-recipient-reset-filters').addEventListener('click',()=>{
+        ['todo-filter-role','todo-filter-branch','todo-filter-team','todo-filter-user'].forEach(id=>$(id).value='');
+        resetAndLoad();
+    });
+    $('todo-recipient-select-page').addEventListener('click',()=>{
+        const newOnes = visiblePeople.filter(p => !selected.has(String(p.id)));
+        if (newOnes.length + selected.size > maxAssignees) {
+            showError(`Selecting this page would exceed the ${maxAssignees}-assignee limit. Choose recipients individually.`);
+            return;
+        }
+        newOnes.forEach(p=>selected.set(String(p.id),{...p,mandatory:true,required:false}));
+        showError('');renderSelected();renderResults();
+    });
+    $('todo-recipient-clear').addEventListener('click',()=>{
+        selected.clear();showError('');renderSelected();renderResults();
+    });
+    $('todo-recipient-prev').addEventListener('click',()=>{ if(page>1){page--;loadRecipients();} });
+    $('todo-recipient-next').addEventListener('click',()=>{ if(page<lastPage){page++;loadRecipients();} });
+    form.addEventListener('change', event => {
         if (event.target.id === 'todo-start-day' && event.target.value && !$('todo-start-time').value) $('todo-start-time').value = '09:00';
         if (event.target.id === 'todo-day' && event.target.value && !$('todo-time').value) $('todo-time').value = '17:00';
-        fill();
+        updatePreview();
     });
-    form.addEventListener('input', fill); fill();
+    form.addEventListener('input', updatePreview);
+    // If a filter change was queued, do not silently submit an outdated search selection.
+    form.addEventListener('submit',updateHiddenInputs);
+    renderSelected();
+    loadRecipients();
 })();
 </script>

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\User;
+use App\Services\CrmTodoRecipientDirectory;
 use App\Models\WorkspaceTask;
 use App\Models\WorkspaceTaskAssignment;
-use App\Services\CrmPermissionResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -105,31 +105,56 @@ class TodoController extends Controller
             ->orderByDesc('activity_date')->limit(200)->get(['activity_id','subject','activity_date']);
     }
 
-    /** Active users in the creator's branch, except protected Super Admin who can choose all. */
-    private function assigneeOptions()
+    private function recipients(): CrmTodoRecipientDirectory
     {
-        $user = Auth::guard('web')->user();
-        $query = User::query()->where('status', 'active');
-        if (!app(CrmPermissionResolver::class)->isSuperAdmin($user)) {
-            if ($user->branch_id === null) {
-                $query->where('user_id', $user->getKey());
-            } else {
-                $query->where('branch_id', $user->branch_id);
-            }
-        }
-        return $query->orderBy('name')->limit(500)->get(['user_id','name','branch_id']);
+        return app(CrmTodoRecipientDirectory::class);
+    }
+
+    private function recipientFormData(?WorkspaceTask $todo = null): array
+    {
+        $actor = Auth::guard('web')->user();
+        $existing = $todo?->assignments?->pluck('assigned_user_id')->all() ?? [];
+        // Distinguish an intentionally empty selection from an initial edit.
+        $ids = old('_recipient_picker_submitted')
+            ? old('assignee_ids', [])
+            : $existing;
+        return [
+            'recipientFilters' => $this->recipients()->filterOptions($actor),
+            'selectedRecipients' => $this->recipients()->selected($actor, (array) $ids, $todo),
+        ];
+    }
+
+    /** Server-side paginated directory. The browser's filters never confer rights. */
+    public function recipientOptions(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $filters = $request->validate([
+            'search' => ['nullable','string','max:150'],
+            'role_id' => ['nullable','uuid'],
+            'branch_id' => ['nullable','uuid'],
+            'team_id' => ['nullable','uuid'],
+            'page' => ['nullable','integer','min:1','max:100000'],
+        ]);
+        $result = $this->recipients()->search(Auth::guard('web')->user(), $filters);
+        return response()->json([
+            'data' => $result->getCollection()->map(fn (User $user) => $this->recipients()->person($user))->values(),
+            'pagination' => [
+                'page' => $result->currentPage(),
+                'last_page' => $result->lastPage(),
+                'total' => $result->total(),
+                'per_page' => $result->perPage(),
+            ],
+        ]);
     }
 
     public function create(): View
     {
-        return view('todos.create', [
+        return view('todos.create', array_merge([
             'activities' => $this->activities(),
-            'assigneeOptions' => $this->assigneeOptions(),
-        ]);
+        ], $this->recipientFormData()));
     }
 
     /** @return array{data:array, assignee_ids:array, required_ids:array} */
-    private function validated(Request $request): array
+    private function validated(Request $request, ?WorkspaceTask $current = null): array
     {
         $data = $request->validate([
             'title' => ['required','string','max:150'],
@@ -167,12 +192,7 @@ class TodoController extends Controller
             ]);
         }
         if ($data['visibility'] === 'work') {
-            $allowed = $this->assigneeOptions()->pluck('user_id')->map(fn ($v) => (string) $v)->all();
-            if (array_diff($assignees, $allowed)) {
-                throw ValidationException::withMessages([
-                    'assignee_ids' => 'Only active users in your authorized assignment scope may be selected.',
-                ]);
-            }
+            $this->recipients()->assertAssignable(Auth::guard('web')->user(), $assignees, $current);
         }
         if ($data['visibility'] === 'personal') $data['activity_id'] = null;
         if (!empty($data['activity_id'])) {
@@ -276,14 +296,14 @@ class TodoController extends Controller
         return view('todos.edit', [
             'todo'=>$todo,
             'activities'=>$this->activities(),
-            'assigneeOptions'=>$this->assigneeOptions(),
+            ...$this->recipientFormData($todo),
         ]);
     }
 
     public function update(Request $request, WorkspaceTask $todo): RedirectResponse
     {
         $todo = $this->findOwned($todo);
-        $payload = $this->validated($request);
+        $payload = $this->validated($request, $todo);
         DB::transaction(function () use ($todo, $payload) {
             $record = $this->mine()->whereKey($todo->getKey())->lockForUpdate()->firstOrFail();
             $this->syncAssignments($record, $payload['assignee_ids'], $payload['required_ids'], $payload['mandatory_ids']);

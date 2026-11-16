@@ -6,6 +6,8 @@ use App\Http\Middleware\EnsureCrmAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([EnsureCrmAuthenticated::class])->group(function () {
+    // Must precede Route::resource; otherwise /recipient-options binds as {todo}.
+    Route::get('todos/recipient-options', [TodoController::class, 'recipientOptions'])->name('todos.recipient-options');
     Route::patch('todos/{todo}/complete', [TodoController::class, 'complete'])->name('todos.complete');
     // Specific submission / archive routes must come before the resource show route.
     Route::post('todos/{todo}/submission/files', [WorkspaceTaskSubmissionController::class, 'upload'])->name('todos.submission.upload');
