@@ -41,6 +41,8 @@ final class WorkspaceNotificationCenter
             ->where('status', 'active')->exists()) {
             return false;
         }
+        // Per-recipient preference is applied to *new* notifications only; existing inbox rows stay intact.
+        if (!app(WorkspaceNotificationPreferences::class)->allows($recipientId, $kind, $targetType)) return false;
         return DB::table('workspace_notifications')->insertOrIgnore([
             'notification_id' => (string) Str::uuid(),
             'recipient_user_id' => $recipientId,

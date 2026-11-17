@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-head">
     <div><h1>Notifications</h1><p>Review workspace updates, approvals, and upcoming reminders.</p></div>
-    <div class="actions"><a class="btn" href="{{ route('workspace-notifications.index', ['filter'=>'unread']) }}">Unread ({{ $unreadCount }})</a><a class="btn" href="{{ route('workspace-notifications.index') }}">All</a></div>
+    <div class="actions"><a class="btn" href="{{ route('workspace-notifications.index', ['filter'=>'unread']) }}">Unread ({{ $unreadCount }})</a><a class="btn" href="{{ route('workspace-notifications.index') }}">All</a><a class="btn" href="{{ route('workspace-notifications.settings') }}">Notification Settings</a></div>
 </div>
 <section class="card wsn-inbox">
     <div class="card-head wsn-card-head"><div><h3>{{ $filter === 'unread' ? 'Unread Notifications' : 'Notification Inbox' }}</h3><p>{{ $notifications->total() }} items</p></div>

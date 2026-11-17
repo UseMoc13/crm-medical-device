@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\WorkspaceNotification;
+use App\Models\WorkspaceNotificationPreference;
 use App\Services\WorkspaceNotificationCenter;
+use App\Services\WorkspaceNotificationPreferences;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +32,49 @@ final class WorkspaceNotificationController extends Controller
             ->paginate(20)->withQueryString();
         $unreadCount = $this->mine()->whereNull('read_at')->count();
         return view('workspace-notifications.index', compact('notifications', 'filter', 'unreadCount'));
+    }
+
+    /** Read-only polling. Response contains generic text and no raw target identifiers. */
+    public function poll(): JsonResponse
+    {
+        $count = $this->mine()->whereNull('read_at')->count();
+        $recent = $this->mine()->orderByDesc('created_at')->orderByDesc('notification_id')
+            ->limit(5)->get();
+        return response()->json([
+            'unread_count' => $count,
+            'notifications' => $recent->map(fn (WorkspaceNotification $notice) => [
+                'id' => (string) $notice->getKey(),
+                'title' => (string) $notice->title,
+                'message' => (string) $notice->message,
+                'created_label' => $notice->created_at?->diffForHumans() ?? '',
+                'is_unread' => $notice->read_at === null,
+            ])->values()->all(),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function settings(WorkspaceNotificationPreferences $preferences): View
+    {
+        $this->mine();
+        $settings = $preferences->forUser((string) Auth::guard('web')->id());
+        return view('workspace-notifications.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $rules = ['reminder_lead_minutes' => ['required', 'integer', Rule::in(WorkspaceNotificationPreferences::LEAD_OPTIONS)]];
+        foreach (WorkspaceNotificationPreferences::FLAGS as $field) {
+            $rules[$field] = ['sometimes', 'boolean'];
+        }
+        $data = $request->validate($rules);
+        $payload = ['reminder_lead_minutes' => (int) $data['reminder_lead_minutes']];
+        foreach (WorkspaceNotificationPreferences::FLAGS as $field) {
+            $payload[$field] = $request->boolean($field);
+        }
+        WorkspaceNotificationPreference::query()->updateOrCreate(
+            ['user_id' => (string) Auth::guard('web')->id()], $payload
+        );
+        return redirect()->route('workspace-notifications.settings')
+            ->with('success', 'Notification preferences saved.');
     }
 
     public function open(WorkspaceNotification $notification, WorkspaceNotificationCenter $center): RedirectResponse
