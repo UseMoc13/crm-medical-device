@@ -410,7 +410,7 @@
             <span class="nav-text">Branches</span>
         </a>
 
-        <a href="#" data-label="Notifications">
+        <a href="{{ route('workspace-notifications.index') }}" data-label="Notifications">
             <span class="ico">🔔</span>
             <span class="nav-text">Notifications</span>
         </a>

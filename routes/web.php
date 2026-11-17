@@ -320,6 +320,9 @@ require __DIR__ . '/calendar.php';
 // A7.4.10: private personal notes
 require __DIR__ . '/notes.php';
 
+// A7.4.11.1: private notifications and reminders
+require __DIR__ . '/workspace_notifications.php';
+
 // A7.4.5 Organization hierarchy (Super Admin only)
 require __DIR__ . '/organization.php';
 

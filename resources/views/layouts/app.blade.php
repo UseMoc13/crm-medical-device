@@ -12,6 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     @include('notes._style')
+    @include('workspace-notifications._style')
 
     <style>
         .crm-toast-area {
@@ -185,12 +186,7 @@
                 <div class="top-actions">
                     @include('notes._topbar')
 
-                    <button
-                        class="icon-btn"
-                        type="button"
-                        aria-label="Notifications">
-                        🔔
-                    </button>
+                    @include('workspace-notifications._topbar')
 
                     <div class="profile">
 
