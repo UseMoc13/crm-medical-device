@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\WorkspaceCalendarEvent;
 use App\Models\WorkspacePersonalNote;
+use App\Services\WorkspaceNoteMentions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -103,7 +104,11 @@ final class WorkspacePersonalNoteController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
-        $note = WorkspacePersonalNote::create(['owner_user_id' => $this->actor()] + $data);
+        $note = DB::transaction(function () use ($data): WorkspacePersonalNote {
+            $note = WorkspacePersonalNote::create(['owner_user_id' => $this->actor()] + $data);
+            app(WorkspaceNoteMentions::class)->synchronize($note, (string)($note->body ?? ''), $this->actor());
+            return $note;
+        });
         return redirect()->route('notes.show', ['note' => $note->getKey()])
             ->with('success', 'Personal note created successfully.');
     }
@@ -126,6 +131,8 @@ final class WorkspacePersonalNoteController extends Controller
         $data = $this->validated($request);
         DB::transaction(function () use ($note, $data): void {
             $record = $this->mine()->whereKey($note->getKey())->lockForUpdate()->firstOrFail();
+            app(WorkspaceNoteMentions::class)->synchronize($record, (string)($data['body'] ?? ''), $this->actor());
+            $data['revision'] = (int)$record->revision + 1;
             $record->update($data);
         });
         return redirect()->route('notes.show', ['note' => $note->getKey()])
@@ -137,7 +144,7 @@ final class WorkspacePersonalNoteController extends Controller
         $note = $this->findMine($note);
         DB::transaction(function () use ($note): void {
             $locked = $this->mine()->whereKey($note->getKey())->lockForUpdate()->firstOrFail();
-            $locked->update(['is_pinned' => !$locked->is_pinned]);
+            $locked->update(['is_pinned' => !$locked->is_pinned, 'revision' => (int)$locked->revision + 1]);
         });
         return back()->with('success', 'Note pin updated.');
     }
@@ -147,7 +154,7 @@ final class WorkspacePersonalNoteController extends Controller
         $note = $this->findMine($note);
         DB::transaction(function () use ($note): void {
             $locked = $this->mine()->whereKey($note->getKey())->lockForUpdate()->firstOrFail();
-            $locked->update(['archived_at' => now()]);
+            $locked->update(['archived_at' => now(), 'revision' => (int)$locked->revision + 1]);
         });
         return redirect()->route('notes.index')->with('success', 'Note archived.');
     }
@@ -157,7 +164,7 @@ final class WorkspacePersonalNoteController extends Controller
         $note = $this->findMine($note);
         DB::transaction(function () use ($note): void {
             $locked = $this->mine()->whereKey($note->getKey())->lockForUpdate()->firstOrFail();
-            $locked->update(['archived_at' => null]);
+            $locked->update(['archived_at' => null, 'revision' => (int)$locked->revision + 1]);
         });
         return redirect()->route('notes.show', ['note' => $note->getKey()])
             ->with('success', 'Note restored.');

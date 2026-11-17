@@ -48,7 +48,7 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
     {
         if (config('database.default') === 'sqlite' &&
             config('database.connections.sqlite.database') === ':memory:' && extension_loaded('pdo_sqlite')) {
-            foreach (['workspace_personal_notes','workspace_calendar_day_exclusions','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','user_roles','roles','users'] as $table) {
+            foreach (['workspace_note_mentions','workspace_personal_notes','workspace_calendar_day_exclusions','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','user_roles','roles','users'] as $table) {
                 Schema::dropIfExists($table);
             }
         }
@@ -93,12 +93,17 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
             $t->uuid('assignment_id')->primary(); $t->uuid('task_id');
             $t->uuid('assigned_user_id');
         });
+        Schema::create('workspace_note_mentions', function (Blueprint $t): void {
+            $t->uuid('mention_id')->primary(); $t->uuid('note_id'); $t->string('target_type'); $t->uuid('target_id');
+            $t->timestamps();
+        });
         Schema::create('workspace_personal_notes', function (Blueprint $t): void {
             $t->uuid('note_id')->primary(); $t->uuid('owner_user_id');
             $t->string('title'); $t->text('body')->nullable();
             $t->boolean('is_pinned')->default(false); $t->timestamp('archived_at')->nullable();
             $t->timestamp('remind_at')->nullable(); $t->uuid('task_id')->nullable();
             $t->uuid('calendar_event_id')->nullable(); $t->uuid('activity_id')->nullable();
+            $t->unsignedInteger('revision')->default(0);
             $t->timestamps();
         });
     }
