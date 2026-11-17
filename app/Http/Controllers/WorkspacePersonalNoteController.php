@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Activity;
-use App\Models\WorkspaceCalendarEvent;
 use App\Models\WorkspacePersonalNote;
 use App\Services\WorkspaceNoteMentions;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,17 +28,6 @@ final class WorkspacePersonalNoteController extends Controller
     private function findMine(WorkspacePersonalNote $note): WorkspacePersonalNote
     {
         return $this->mine()->whereKey($note->getKey())->firstOrFail();
-    }
-
-    private function references(): array
-    {
-        $id = $this->actor();
-        return [
-            'activities' => Activity::query()->where('user_id', $id)->orderByDesc('activity_date')
-                ->limit(100)->get(['activity_id', 'subject', 'activity_date']),
-            'calendarEvents' => WorkspaceCalendarEvent::query()->where('owner_user_id', $id)
-                ->orderByDesc('starts_at')->limit(100)->get(['calendar_event_id', 'title', 'starts_at']),
-        ];
     }
 
     public function index(Request $request): View
@@ -72,13 +59,21 @@ final class WorkspacePersonalNoteController extends Controller
 
     public function create(Request $request): View
     {
-        $defaults = [
-            'calendar_event_id' => $request->query('calendar_event_id'),
-            'activity_id' => $request->query('activity_id'),
-            'remind_day' => $request->query('date'),
-        ];
-        // Prefills are display-only; writes revalidate ownership below.
-        return view('notes.create', ['defaults' => $defaults, ...$this->references()]);
+        // Deep links from Activity/Calendar prefill an in-text mention rather
+        // than the retired single-link dropdown. Inaccessible IDs are ignored.
+        $actor = $this->actor();
+        $service = app(WorkspaceNoteMentions::class);
+        $tokens = [];
+        foreach (['activity_id' => 'activity', 'calendar_event_id' => 'calendar'] as $key => $type) {
+            $id = (string) $request->query($key, '');
+            if (!\Illuminate\Support\Str::isUuid($id)) continue;
+            $target = $service->target($type, $id, $actor);
+            if (!$target) continue;
+            $label = trim(str_replace([']', "\r", "\n"], ' ', (string) $target['title']));
+            $label = \Illuminate\Support\Str::limit($label ?: 'Untitled', 100, '');
+            $tokens[] = '@[' . ($type === 'activity' ? 'Activity' : 'Calendar') . ':' . $label . '](' . $type . ':' . $id . ')';
+        }
+        return view('notes.create', ['defaults' => ['body' => implode("\n", $tokens)]]);
     }
 
     private function validated(Request $request): array
@@ -93,10 +88,15 @@ final class WorkspacePersonalNoteController extends Controller
             'activity_id' => ['nullable', 'uuid', Rule::exists('activities', 'activity_id')->where('user_id', $id)],
             'calendar_event_id' => ['nullable', 'uuid', Rule::exists('workspace_calendar_events', 'calendar_event_id')->where('owner_user_id', $id)],
         ]);
-        $data['is_pinned'] = $request->boolean('is_pinned');
-        $data['remind_at'] = !empty($data['remind_day'])
-            ? $data['remind_day'].' '.(($data['remind_time'] ?? null) ?: '09:00').':00'
-            : null;
+        // With the new title/body-only page, missing legacy fields are NOT
+        // commands to unpin, clear reminders, or remove old link metadata.
+        // Explicit legacy API/form inputs remain validated for compatibility.
+        if ($request->exists('is_pinned')) $data['is_pinned'] = $request->boolean('is_pinned');
+        if ($request->exists('remind_day') || $request->exists('remind_time')) {
+            $data['remind_at'] = !empty($data['remind_day'])
+                ? $data['remind_day'].' '.(($data['remind_time'] ?? null) ?: '09:00').':00'
+                : null;
+        }
         unset($data['remind_day'], $data['remind_time']);
         return $data;
     }
@@ -115,14 +115,14 @@ final class WorkspacePersonalNoteController extends Controller
 
     public function show(WorkspacePersonalNote $note): View
     {
-        $note = $this->findMine($note)->load(['activity', 'calendarEvent']);
+        $note = $this->findMine($note);
         return view('notes.show', compact('note'));
     }
 
     public function edit(WorkspacePersonalNote $note): View
     {
         $note = $this->findMine($note);
-        return view('notes.edit', ['note' => $note, ...$this->references()]);
+        return view('notes.edit', compact('note'));
     }
 
     public function update(Request $request, WorkspacePersonalNote $note): RedirectResponse
@@ -131,7 +131,7 @@ final class WorkspacePersonalNoteController extends Controller
         $data = $this->validated($request);
         DB::transaction(function () use ($note, $data): void {
             $record = $this->mine()->whereKey($note->getKey())->lockForUpdate()->firstOrFail();
-            app(WorkspaceNoteMentions::class)->synchronize($record, (string)($data['body'] ?? ''), $this->actor());
+            app(WorkspaceNoteMentions::class)->synchronize($record, (string)($data['body'] ?? $record->body ?? ''), $this->actor());
             $data['revision'] = (int)$record->revision + 1;
             $record->update($data);
         });

@@ -15,19 +15,18 @@
         </div>
         <div class="notes-floating-workspace">
             <div class="notes-floating-list" id="crmNotesList" role="listbox" aria-label="Personal notes"></div>
+            <div class="notes-floating-splitter" id="crmNotesSplit" role="separator" aria-orientation="vertical" aria-label="Resize note list and editor" aria-valuemin="20" aria-valuemax="70" aria-valuenow="35" tabindex="0" title="Drag to resize the note list"></div>
             <section class="notes-floating-editor" aria-label="Note editor" id="crmNotesEditor" hidden>
                 <label class="notes-floating-label" for="crmNotesTitle">Title</label>
                 <input type="text" id="crmNotesTitle" maxlength="150" placeholder="Untitled Note" autocomplete="off">
                 <div class="notes-floating-editor-row"><label class="notes-floating-label" for="crmNotesBody">Note</label><span class="notes-floating-hint">Type @ to mention CRM records</span></div>
                 <div class="notes-floating-textarea-wrap">
-                    <textarea id="crmNotesBody" rows="7" maxlength="10000" placeholder="Write your note. Type @ to find an Activity, TO-DO, or Calendar event..."></textarea>
+                    <div id="crmNotesBody" class="notes-rich-editor notes-floating-rich" data-placeholder="Write your note. Type @ to link an Activity, TO-DO, or Calendar event..." aria-label="Note content, type at sign to link CRM records"></div>
                     <div class="notes-mention-picker" id="crmNotesMentionPicker" hidden>
                         <div class="notes-mention-header"><strong>Mention a record</strong><select id="crmNotesMentionType" aria-label="Mention category"><option value="all">All</option><option value="activity">Activity</option><option value="todo">TO-DO</option><option value="calendar">Calendar</option></select></div>
                         <div id="crmNotesMentionResults" class="notes-mention-results"></div>
                     </div>
                 </div>
-                <div class="notes-floating-preview-caption">Clickable mention preview</div>
-                <div class="notes-floating-preview" id="crmNotesPreview" aria-label="Linked note preview"></div>
                 <div class="notes-floating-footer">
                     <span id="crmNotesSaveStatus" class="notes-floating-save-status" role="status" aria-live="polite">Ready</span>
                     <div class="notes-floating-editor-actions"><button class="btn notes-floating-delete" type="button" id="crmNotesDelete">Delete</button><a class="btn" id="crmNotesDetails" href="{{ route('notes.index') }}">Details</a><button class="btn primary" type="button" id="crmNotesSave">Save</button></div>
@@ -39,6 +38,7 @@
         <div class="notes-floating-bottom"><span><span class="notes-floating-private-icon">🔒</span> Visible only to you</span><a href="{{ route('notes.index') }}">View all notes</a></div>
     </div>
 </aside>
+@include('notes._rich_runtime')
 <script>
 (() => {
     'use strict';
@@ -62,18 +62,18 @@
         list: document.getElementById('crmNotesList'), filter: document.getElementById('crmNotesFilter'),
         new: document.getElementById('crmNotesNew'), editor: document.getElementById('crmNotesEditor'),
         empty: document.getElementById('crmNotesNoSelection'), title: document.getElementById('crmNotesTitle'),
-        body: document.getElementById('crmNotesBody'), preview: document.getElementById('crmNotesPreview'),
+        body: document.getElementById('crmNotesBody'), split: document.getElementById('crmNotesSplit'),
         status: document.getElementById('crmNotesSaveStatus'), save: document.getElementById('crmNotesSave'),
         details: document.getElementById('crmNotesDetails'), remove: document.getElementById('crmNotesDelete'),
         confirm: document.getElementById('crmNotesConfirm'), cancel: document.getElementById('crmNotesCancelDelete'),
         yes: document.getElementById('crmNotesConfirmDelete'), picker: document.getElementById('crmNotesMentionPicker'),
         mentionType: document.getElementById('crmNotesMentionType'), results: document.getElementById('crmNotesMentionResults'),
     };
+    const rich = window.CrmNotesRichEditor.editor(ui.body, () => {changed();schedulePicker();});
     let notes = [], currentId = null, dirty = false, saving = false, saveTimer = null, conflict = false;
     let pickerTimer = null, mentionRange = null, searchSerial = 0, activeRequest = null;
-    let minimized = false, opened = false, dragging = null;
-    const emptyHtml = '<p>No content yet. Type a note to get started.</p>';
-    let settings = {x: null, y: null, width: null, height: null, open: false, minimized: false, selected: null};
+    let minimized = false, opened = false, dragging = null, splitting = null;
+    let settings = {x: null, y: null, width: null, height: null, split:35, open: false, minimized: false, selected: null};
     try { settings = {...settings, ...JSON.parse(sessionStorage.getItem(storageKey) || '{}')}; } catch (_) {}
     const persist = () => { try {sessionStorage.setItem(storageKey, JSON.stringify(settings));} catch (_) {} };
     const selected = () => notes.find(n => n.id === currentId) || null;
@@ -93,28 +93,10 @@
     };
     const status = (value, problem=false) => {ui.status.textContent = value; ui.status.classList.toggle('error', problem);};
     const text = (el, value) => { el.textContent = value == null ? '' : String(value); };
-    const tokenRegex = /@\[(Activity|TO-DO|Calendar):([^\]\r\n]{1,120})\]\((activity|todo|calendar):([0-9a-fA-F-]{36})\)/g;
-    const renderPreview = (value) => {
-        ui.preview.replaceChildren();
-        if (!value.trim()) {ui.preview.innerHTML = emptyHtml; return;}
-        let pos = 0;
-        for (const m of value.matchAll(tokenRegex)) {
-            if (m.index > pos) ui.preview.append(document.createTextNode(value.slice(pos, m.index)));
-            const expected = m[1].toLowerCase() === 'to-do' ? 'todo' : m[1].toLowerCase();
-            const target = m[3];
-            const label = `@${m[1]}: ${m[2]}`;
-            if (expected === target && /^[0-9a-fA-F-]{36}$/.test(m[4])) {
-                const a = document.createElement('a'); a.textContent = label;
-                a.href = `${api[target]}/${encodeURIComponent(m[4])}`;
-                a.className = 'notes-mention-link'; a.title = 'Open linked CRM record';
-                ui.preview.append(a);
-            } else ui.preview.append(document.createTextNode(m[0]));
-            pos = m.index + m[0].length;
-        }
-        if (pos < value.length) ui.preview.append(document.createTextNode(value.slice(pos)));
-    };
     const setPanelState = () => {
         panel.hidden = !opened; panel.classList.toggle('is-minimized', minimized);
+        ui.list.parentElement.style.setProperty('--notes-list-width', `${clamp(Number(settings.split)||35,20,70)}%`);
+        ui.split.setAttribute('aria-valuenow',String(Math.round(Number(settings.split)||35)));
         openButton.setAttribute('aria-expanded', String(opened));
         settings.open = opened; settings.minimized = minimized; persist();
         if (opened) restoreGeometry();
@@ -143,7 +125,7 @@
             b.className = 'notes-floating-list-item' + (note.id === currentId ? ' active' : '');
             b.setAttribute('role','option'); b.setAttribute('aria-selected', String(note.id === currentId));
             const title = document.createElement('strong'); title.textContent = (note.is_pinned ? '★ ' : '') + note.title;
-            const excerpt = document.createElement('small'); excerpt.textContent = note.body.slice(0,72) || 'Empty note';
+            const excerpt = document.createElement('small'); excerpt.textContent = (window.CrmNotesRichEditor.excerpt(note.body).slice(0,72) || 'Empty note');
             b.append(title,excerpt); b.addEventListener('click',()=>{ void choose(note.id); }); ui.list.append(b);
         }
     };
@@ -155,35 +137,31 @@
         const note = selected();
         ui.editor.hidden = !note; ui.empty.hidden = !!note;
         if (!note) {items(); return;}
-        ui.title.value = note.title;ui.body.value = note.body;ui.preview.classList.remove('is-pending');
-        ui.details.href = note.detail_url; renderPreview(note.body);
+        ui.title.value = note.title;rich.setValue(note.body);
+        ui.details.href = note.detail_url;
         status('Saved · ' + note.updated);items();
-        // The server renders the authoritative, permission-filtered links.
-        try {
-            const detail = await fetchJson(`${api.base}/${id}`);
-            if (currentId === id && !dirty) ui.preview.innerHTML = detail.note.preview_html;
-        } catch (_) { /* The editable text remains available; errors appear on save. */ }
+        // Visible links are inserted as DOM anchors, not literal storage tokens.
     };
     const saveNow = async () => {
         clearTimeout(saveTimer);
         if (!dirty || saving || !selected() || conflict) return;
+        if (rich.getValue().length > 10000) { status('Note exceeds 10,000 characters. Shorten it before saving.',true); return; }
         const note = selected();
-        const values = {title:ui.title.value, body:ui.body.value,revision:note.revision};
+        const values = {title:ui.title.value, body:rich.getValue(),revision:note.revision};
         saving = true; status('Saving...');
         try {
             const result = await fetchJson(`${api.base}/${note.id}`, 'PATCH',values);
             note.title = result.note.title; note.body = result.note.body;note.revision = result.note.revision;
             note.updated = result.note.updated;
-            dirty = (ui.title.value !== values.title || ui.body.value !== values.body);
+            dirty = (ui.title.value !== values.title || rich.getValue() !== values.body);
             items();status(dirty ? 'Unsaved changes' : 'Saved · '+note.updated);
-            if (!dirty) { ui.preview.classList.remove('is-pending'); ui.preview.innerHTML = result.note.preview_html; }
             if (dirty) saveTimer = setTimeout(()=>{void saveNow();},500);
         } catch (error) {
             if (error.status === 409) conflict = true;
             status(error.status === 409 ? 'Conflict: another tab changed this note. Copy your draft, then reload.' : `Save failed: ${error.message}`,true);
         } finally {saving = false;}
     };
-    const changed = () => {dirty = true; status('Unsaved changes');renderPreview(ui.body.value);ui.preview.classList.add('is-pending');items();clearTimeout(saveTimer);saveTimer=setTimeout(()=>{void saveNow();},850);};
+    const changed = () => {dirty = true; status('Unsaved changes');items();clearTimeout(saveTimer);saveTimer=setTimeout(()=>{void saveNow();},850);};
     const refresh = async (preferred=null) => {
         const result = await fetchJson(api.index);
         notes = result.notes || [];
@@ -204,7 +182,6 @@
     });
     ui.filter.addEventListener('input',items);
     ui.title.addEventListener('input',changed);
-    ui.body.addEventListener('input',()=>{changed();schedulePicker();});
     ui.body.addEventListener('click',schedulePicker);
     ui.body.addEventListener('keyup',e=>{if (e.key === 'Escape') pickerHide(); else schedulePicker();});
     ui.save.addEventListener('click',()=>{void saveNow();});
@@ -217,13 +194,7 @@
         catch(error){status(`Delete failed: ${error.message}`,true);}
         ui.confirm.hidden=true;
     });
-    function activeMention() {
-        const caret = ui.body.selectionStart;
-        const before = ui.body.value.slice(0, caret);
-        const match = before.match(/(?:^|\s)@([^@\s]{0,60})$/);
-        if (!match) return null;
-        return {start: caret - match[1].length - 1, end:caret,query:match[1]};
-    }
+    function activeMention() {return rich.getMention();}
     function schedulePicker() {
         clearTimeout(pickerTimer);
         const range = activeMention();
@@ -249,18 +220,59 @@
                 b.addEventListener('mousedown',e=>e.preventDefault());
                 b.addEventListener('click',()=>{
                     if (!mentionRange)return;
-                    const safeLabel=String(item.title).replace(/[\]\r\n]/g,' ').slice(0,100).trim() || 'Untitled';
-                    const token=`@[${typeName}:${safeLabel}](${item.type}:${item.id})`;
-                    const {start,end}=mentionRange;
-                    ui.body.value=ui.body.value.slice(0,start)+token+ui.body.value.slice(end);
-                    ui.body.focus();ui.body.setSelectionRange(start+token.length,start+token.length);
-                    pickerHide();changed();
+                    const range=mentionRange;
+                    pickerHide();
+                    rich.insertMention(item,range);
                 });
                 ui.results.append(b);
             }
         }catch(error){if(serial===searchSerial)text(ui.results,`Mention search failed: ${error.message}`);}
     }
     ui.mentionType.addEventListener('change',()=>{if (mentionRange)void searchMention(mentionRange.query);});
+    // Divider inside the window: resize list vs editor without resizing the outer panel.
+    const splitBounds=()=>{
+        const width=ui.list.parentElement.getBoundingClientRect().width;
+        if (!width) return [20,70];
+        const mobile=window.innerWidth<=700;
+        const min=Math.max(20,(mobile?82:110)/width*100);
+        const max=Math.min(70,(width-(mobile?145:180)-8)/width*100);
+        return [Math.min(min,max),Math.max(min,max)];
+    };
+    const updateSplit=(value)=>{
+        const [min,max]=splitBounds();
+        settings.split=clamp(Number(value)||35,min,max);
+        ui.list.parentElement.style.setProperty('--notes-list-width',settings.split+'%');
+        ui.split.setAttribute('aria-valuenow',String(Math.round(settings.split)));
+        ui.split.setAttribute('aria-valuemin',String(Math.round(min)));
+        ui.split.setAttribute('aria-valuemax',String(Math.round(max)));
+    };
+    ui.split.addEventListener('pointerdown',e=>{
+        if (e.button!==0)return;
+        const workspace=ui.list.parentElement.getBoundingClientRect();
+        splitting={left:workspace.left,width:workspace.width};
+        ui.split.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    });
+    ui.split.addEventListener('pointermove',e=>{
+        if(!splitting)return;
+        const minList=window.innerWidth<=700?82:110;
+        const minEditor=window.innerWidth<=700?145:180;
+        const minPct=Math.max(20,minList/splitting.width*100);
+        const maxPct=Math.min(70,(splitting.width-minEditor-8)/splitting.width*100);
+        updateSplit(clamp((e.clientX-splitting.left)/splitting.width*100,minPct,Math.max(minPct,maxPct)));
+    });
+    const endSplit=()=>{if(splitting){splitting=null;persist();}};
+    if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(()=>{if(opened && !minimized) updateSplit(settings.split);}).observe(ui.list.parentElement);
+    }
+    ui.split.addEventListener('pointerup',endSplit);
+    ui.split.addEventListener('pointercancel',endSplit);
+    ui.split.addEventListener('keydown',e=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+        e.preventDefault();
+        updateSplit(e.key==='Home'?20:e.key==='End'?70:settings.split+(e.key==='ArrowLeft'?-5:5));
+        persist();
+    });
     document.addEventListener('keydown',e=>{
         if (e.key === 'Escape') {if(!ui.picker.hidden){pickerHide();return;}if(opened){minimized=true;setPanelState();openButton.focus();}}
     });
@@ -288,7 +300,7 @@
         if(!dirty || !selected() || conflict)return;
         // Before page navigation: best-effort send. Do not cache private note bodies in browser storage.
         const data=new FormData();data.append('_token',token);data.append('_method','PATCH');
-        data.append('title',ui.title.value);data.append('body',ui.body.value);data.append('revision',String(selected().revision));
+        data.append('title',ui.title.value);data.append('body',rich.getValue());data.append('revision',String(selected().revision));
         navigator.sendBeacon?.(`${api.base}/${selected().id}`,data);
     });
     if (settings.open) {opened=true;minimized=!!settings.minimized;setPanelState();if(!minimized)void refresh().catch(e=>status(`Unable to restore: ${e.message}`,true));}

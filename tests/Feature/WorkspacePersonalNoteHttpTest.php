@@ -48,7 +48,7 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
     {
         if (config('database.default') === 'sqlite' &&
             config('database.connections.sqlite.database') === ':memory:' && extension_loaded('pdo_sqlite')) {
-            foreach (['workspace_note_mentions','workspace_personal_notes','workspace_calendar_day_exclusions','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','user_roles','roles','users'] as $table) {
+            foreach (['workspace_note_mentions','workspace_personal_notes','workspace_calendar_day_exclusions','workspace_collaboration_members','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','user_roles','roles','users'] as $table) {
                 Schema::dropIfExists($table);
             }
         }
@@ -92,6 +92,10 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
         Schema::create('workspace_task_assignments', function (Blueprint $t): void {
             $t->uuid('assignment_id')->primary(); $t->uuid('task_id');
             $t->uuid('assigned_user_id');
+        });
+        Schema::create('workspace_collaboration_members', function (Blueprint $t): void {
+            $t->uuid('member_id')->primary(); $t->uuid('activity_id')->nullable();
+            $t->uuid('task_id')->nullable(); $t->uuid('user_id'); $t->string('access_role');
         });
         Schema::create('workspace_note_mentions', function (Blueprint $t): void {
             $t->uuid('mention_id')->primary(); $t->uuid('note_id'); $t->string('target_type'); $t->uuid('target_id');
@@ -143,8 +147,47 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
             'title'=>'Updated Follow-up', 'body'=>'Updated private content',
         ])->assertRedirect();
         $this->assertDatabaseHas('workspace_personal_notes', [
-            'note_id'=>$note->getKey(), 'title'=>'Updated Follow-up', 'is_pinned'=>0,
+            'note_id'=>$note->getKey(), 'title'=>'Updated Follow-up', 'is_pinned'=>1,
         ]);
+        $this->assertSame('2026-11-20 10:30', $note->fresh()->remind_at?->format('Y-m-d H:i'));
+        $this->assertSame($this->activityId, (string) $note->fresh()->activity_id);
+    }
+
+    public function test_edit_page_uses_title_and_body_only_without_erasing_legacy_metadata(): void
+    {
+        $note = $this->makeNote($this->owner, [
+            'is_pinned' => true,
+            'activity_id' => $this->activityId,
+            'calendar_event_id' => $this->calendarId,
+            'remind_at' => '2026-11-21 09:00:00',
+        ]);
+        $this->actingAs($this->owner, 'web')->get(route('notes.edit', ['note'=>$note->getKey()]))
+            ->assertOk()->assertSee('Note content')
+            ->assertDontSee('Link CRM Context')
+            ->assertDontSee('name="remind_day"', false)
+            ->assertDontSee('name="calendar_event_id"', false)
+            ->assertDontSee('Clickable mention preview');
+
+        $this->actingAs($this->owner, 'web')->put(route('notes.update', ['note'=>$note->getKey()]), [
+            'title'=>'Simple note', 'body'=>'Just a personal note',
+        ])->assertRedirect();
+        $fresh = $note->fresh();
+        $this->assertTrue($fresh->is_pinned);
+        $this->assertSame('2026-11-21 09:00', $fresh->remind_at?->format('Y-m-d H:i'));
+        $this->assertSame($this->activityId, (string)$fresh->activity_id);
+        $this->assertSame($this->calendarId, (string)$fresh->calendar_event_id);
+    }
+
+    public function test_create_from_activity_prefills_an_in_text_mention(): void
+    {
+        $this->actingAs($this->owner,'web')
+            ->get(route('notes.create', ['activity_id'=>$this->activityId]))
+            ->assertOk()
+            ->assertSee('@[Activity:Owner Meeting](activity:' . $this->activityId . ')');
+        $this->actingAs($this->other,'web')
+            ->get(route('notes.create', ['activity_id'=>$this->activityId]))
+            ->assertOk()
+            ->assertDontSee('@[Activity:Owner Meeting](activity:' . $this->activityId . ')');
     }
 
     public function test_another_user_cannot_view_edit_pin_archive_or_delete_private_note(): void
