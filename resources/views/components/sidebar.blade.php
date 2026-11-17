@@ -83,6 +83,13 @@
             <span class="nav-text">To-Do</span>
         </a>
 
+        <a href="{{ route('workspace-notifications.index') }}"
+           class="{{ request()->routeIs('workspace-notifications.*') ? 'active' : '' }}"
+           data-label="Notifications">
+            <span class="ico">@include('workspace-notifications._bell_icon')</span>
+            <span class="nav-text">Notifications</span>
+        </a>
+
         <a href="#" data-label="Favorites">
             <span class="ico">★</span>
             <span class="nav-text">Favorites</span>
@@ -410,10 +417,6 @@
             <span class="nav-text">Branches</span>
         </a>
 
-        <a href="{{ route('workspace-notifications.index') }}" data-label="Notifications">
-            <span class="ico">🔔</span>
-            <span class="nav-text">Notifications</span>
-        </a>
 
         <a href="#" data-label="Audit Logs">
             <span class="ico">◉</span>

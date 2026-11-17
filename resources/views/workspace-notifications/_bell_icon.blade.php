@@ -1,0 +1,5 @@
+{{-- Shared outline icon for topbar, sidebar and notification empty state. No emoji or external icon library. --}}
+<svg class="wsn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+    <path d="M10 21h4" />
+</svg>

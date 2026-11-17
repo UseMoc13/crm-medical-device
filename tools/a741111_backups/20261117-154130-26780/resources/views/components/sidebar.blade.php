@@ -1,0 +1,453 @@
+<aside class="sidebar">
+
+    {{-- Mobile Close Button --}}
+    <button
+        type="button"
+        class="sidebar-close"
+        id="sidebarClose"
+        aria-label="Close sidebar">
+        ×
+    </button>
+
+
+    {{-- =====================================================
+         BRAND
+    ====================================================== --}}
+
+    <div class="brand">
+
+        <img
+            src="{{ asset('assets/logo.png') }}"
+            alt="CRM Medical Device">
+
+        <h3>CRM Medical Device</h3>
+
+        <small>Customer Relationship Management</small>
+
+    </div>
+
+
+    {{-- =====================================================
+         NAVIGATION
+    ====================================================== --}}
+
+    <nav class="nav">
+
+
+        {{-- =================================================
+             OVERVIEW
+        ================================================== --}}
+
+        <div class="nav-group">
+            Overview
+        </div>
+
+        <a
+            href="{{ route('dashboard') }}"
+            class="{{ request()->routeIs('dashboard') ? 'active' : '' }}"
+            data-label="Dashboard">
+
+            <span class="ico">⌂</span>
+
+            <span class="nav-text">
+                Dashboard
+            </span>
+
+        </a>
+
+
+        {{-- =================================================
+             GENERAL & WORKSPACE
+        ================================================== --}}
+
+        <div class="nav-group">
+            General & Workspace
+        </div>
+
+        <a href="{{ route('activities.index') }}"
+        class="{{ request()->routeIs('activities.*') ? 'active' : '' }}"
+        data-label="Activities">
+        <span class="ico">✓</span>
+        <span class="nav-text">Activities</span>
+        </a>
+
+        <a href="{{ route('calendar.index') }}" class="{{ request()->routeIs('calendar.*') ? 'active' : '' }}" data-label="Calendar">
+            <span class="ico">▣</span>
+            <span class="nav-text">Calendar</span>
+        </a>
+
+        <a href="{{ route('todos.index') }}"
+        class="{{ request()->routeIs('todos.*') ? 'active' : '' }}"
+        data-label="To-Do">
+            <span class="ico">☑</span>
+            <span class="nav-text">To-Do</span>
+        </a>
+
+        <a href="#" data-label="Favorites">
+            <span class="ico">★</span>
+            <span class="nav-text">Favorites</span>
+        </a>
+
+        <a
+            href="{{ route('announcements.index') }}"
+            class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}"
+            data-label="Announcements">
+
+            <span class="ico">▤</span>
+            <span class="nav-text">Announcements</span>
+        </a>
+
+        <a
+            href="{{ route('announcement-management.index') }}"
+            class="{{ request()->routeIs('announcement-management.*') ? 'active' : '' }}"
+            data-label="Announcement Management">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Announcement Management</span>
+        </a>
+
+
+        {{-- =================================================
+             CUSTOMER & LEAD
+        ================================================== --}}
+
+        <div class="nav-group">
+            Customer & Lead
+        </div>
+
+        <a
+            href="{{ route('customers.index') }}"
+            class="{{ request()->routeIs('customers.*') ? 'active' : '' }}"
+            data-label="Customers">
+
+            <span class="ico">♙</span>
+            <span class="nav-text">Customers</span>
+
+        </a>
+
+
+        <a
+            href="{{ route('contacts.index') }}"
+            class="{{ request()->routeIs('contacts.*') ? 'active' : '' }}"
+            data-label="Contacts">
+
+            <span class="ico">♧</span>
+            <span class="nav-text">Contacts</span>
+
+        </a>
+
+
+        <a
+            href="{{ route('leads.index') }}"
+            class="{{ request()->routeIs('leads.*') ? 'active' : '' }}"
+            data-label="Leads">
+
+            <span class="ico">●</span>
+            <span class="nav-text">Leads</span>
+
+        </a>
+
+
+        {{-- =================================================
+             SALES CRM
+        ================================================== --}}
+
+        <div class="nav-group">
+            Sales CRM
+        </div>
+
+        <a
+            href="{{ route('opportunities.index') }}"
+            class="{{ request()->routeIs('opportunities.*') ? 'active' : '' }}"
+            data-label="opportunities">
+
+            <span class="ico">◈</span>
+            <span class="nav-text">Opportunities</span>
+        </a>
+
+        <a
+            href="{{ route('quotations.index') }}"
+            class="{{ request()->routeIs('quotations.*') ? 'active' : '' }}"
+            data-label="quotations">
+
+            <span class="ico">▤</span>
+            <span class="nav-text">Quotations</span>
+        </a>
+
+        
+        <a
+            href="{{ route('sales-orders.index') }}"
+            class="{{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"
+            data-label="Sales Orders"
+>
+            <span class="ico">▥</span>
+            <span class="nav-text">Sales Orders</span>
+        </a>
+
+
+        <a
+            href="{{ route('contracts.index') }}"
+            class="{{ request()->routeIs('contracts.*') ? 'active' : '' }}"
+            data-label="Contracts"
+        >
+            <span class="ico">▱</span>
+            <span class="nav-text">Contracts</span>
+        </a>
+
+    
+
+        {{-- =================================================
+             PRODUCT & INVENTORY
+        ================================================== --}}
+
+        <div class="nav-group">
+            Product & Inventory
+        </div>
+
+        <a
+            href="{{ route('products.index') }}"
+            class="{{ request()->routeIs('products.*') ? 'active' : '' }}"
+            data-label="products">
+
+            <span class="ico">▦</span>
+            <span class="nav-text">Products</span>
+        </a>
+
+        <a
+            href="{{ route('product-categories.index') }}"
+            class="{{ request()->routeIs('product-categories.*') ? 'active' : '' }}"
+            data-label="categories">
+
+            <span class="ico">▤</span>
+            <span class="nav-text">Categories</span>
+        </a>
+
+        <a
+            href="{{ route('brands.index') }}"
+            class="{{ request()->routeIs('brands.*') ? 'active' : '' }}"
+            data-label="brands">
+
+            <span class="ico">◆</span>
+            <span class="nav-text">Brands</span>
+        </a>
+
+        <a
+            href="{{ route('warehouses.index') }}"
+            class="{{ request()->routeIs('warehouses.*') ? 'active' : '' }}"
+            data-label="warehouses">
+
+            <span class="ico">⌂</span>
+            <span class="nav-text">Warehouses</span>
+        </a>
+
+        <a
+            href="{{ route('inventories.index') }}"
+            class="{{ request()->routeIs('inventories.*') ? 'active' : '' }}"
+            data-label="inventories">
+
+            <span class="ico">▥</span>
+            <span class="nav-text">Inventory</span>
+        </a>
+
+        <a
+            href="{{ route('stock-movements.index') }}"
+            class="{{ request()->routeIs('stock-movements.*') ? 'active' : '' }}"
+            data-label="stock-movements">
+
+            <span class="ico">↕</span>
+            <span class="nav-text">Stock Movements</span>
+        </a>
+
+        <a
+            href="{{ route('serial-numbers.index') }}"
+            class="{{ request()->routeIs('serial-numbers.*') ? 'active' : '' }}"
+            data-label="serial-numbers">
+
+            <span class="ico">▣</span>
+            <span class="nav-text">Serial Numbers</span>
+        </a>
+
+
+        {{-- ================================================
+             INSTALLATION & WARRANTY
+        ================================================== --}}
+
+        <div class="nav-group">
+            Installation & Warranty
+        </div>
+
+        <a
+            href="{{ route('deliveries.index') }}"
+            class="{{ request()->routeIs('deliveries.*') ? 'active' : '' }}"
+            data-label="Deliveries">
+
+            <span class="ico">➜</span>
+            <span class="nav-text">Deliveries</span>
+
+        </a>
+
+
+        <a href="{{ route('installations.index') }}"
+            class="{{ request()->routeIs('installations.*') ? 'active' : '' }}"
+            data-label="Installations">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Installations</span>
+        </a>
+
+        <a href="{{ route('warranties.index') }}"
+            class="{{ request()->routeIs('warranties.*') ? 'active' : '' }}"
+            data-label="Warranty">
+
+            <span class="ico">✓</span>
+            <span class="nav-text">Warranty</span>
+        </a>
+
+
+        {{-- =================================================
+             SERVICE & MAINTENANCE
+        ================================================== --}}
+
+        <div class="nav-group">
+            Service & Maintenance
+        </div>
+
+        <a href="{{ route('service-tickets.index') }}"
+            class="{{ request()->routeIs('service-tickets.*') ? 'active' : '' }}"
+            data-label="service-tickets">
+            
+            <span class="ico">⚑</span>
+            <span class="nav-text">Service Tickets</span>
+        </a>
+
+        <a href="{{ route('maintenance.index') }}"
+            class="{{ request()->routeIs('maintenance.*') ? 'active' : '' }}"
+            data-label="Maintenance">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Maintenance</span>
+        </a>
+
+        <a href="{{ route('service-history.index') }}"
+            class="{{ request()->routeIs('service-history.*') ? 'active' : '' }}"
+            data-label="Service History">
+
+            <span class="ico">◷</span>
+            <span class="nav-text">Service History</span>
+        </a>
+
+
+        {{-- =================================================
+             BILLING & REPORTING
+        ================================================== --}}
+
+        <div class="nav-group">
+            Billing & Reporting
+        </div>
+
+        <a href="{{ route('invoices.index') }}"
+            class="{{ request()->routeIs('invoices.*') ? 'active' : '' }}"
+            data-label="Invoices">
+
+            <span class="ico">▤</span>
+            <span class="nav-text">Invoices</span>
+        </a>
+
+        <a href="{{ route('reports.index') }}"
+            class="{{ request()->routeIs('reports.*') ? 'active' : '' }}"
+            data-label="Reports">
+
+            <span class="ico">▥</span>
+            <span class="nav-text">Reports</span>
+        </a>
+
+
+        {{-- =================================================
+             ADMINISTRATION
+        ================================================== --}}
+
+        <div class="nav-group">
+            Administration
+        </div>
+
+        <a
+            href="{{ route('users.index') }}"
+            class="{{ request()->routeIs('users.*') ? 'active' : '' }}"
+            data-label="Users">
+
+            <span class="ico">♙</span>
+            <span class="nav-text">Users</span>
+        </a>
+
+        <a
+            href="{{ route('roles.index') }}"
+            class="{{ request()->routeIs('roles.*') ? 'active' : '' }}"
+            data-label="Roles">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Roles</span>
+
+        </a>
+
+        @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
+        <a href="{{ route('organization.index') }}"
+           class="{{ request()->routeIs('organization.*') ? 'active' : '' }}"
+           data-label="Organization">
+            <span class="ico">♧</span>
+            <span class="nav-text">Organization</span>
+        </a>
+        @endif
+        @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
+        <a href="{{ route('teams.index') }}"
+           class="{{ request()->routeIs('teams.*') ? 'active' : '' }}"
+           data-label="Teams">
+            <span class="ico">♟</span>
+            <span class="nav-text">Teams</span>
+        </a>
+        @endif
+        <a href="#" data-label="Branches">
+            <span class="ico">⌂</span>
+            <span class="nav-text">Branches</span>
+        </a>
+
+        <a href="{{ route('workspace-notifications.index') }}" data-label="Notifications">
+            <span class="ico">🔔</span>
+            <span class="nav-text">Notifications</span>
+        </a>
+
+        <a href="#" data-label="Audit Logs">
+            <span class="ico">◉</span>
+            <span class="nav-text">Audit Logs</span>
+        </a>
+
+        
+
+    </nav>
+
+
+    {{-- =====================================================
+         SIDEBAR FOOTER
+    ====================================================== --}}
+
+    <div class="sidebar-footer">
+
+        <a href="#" data-label="Settings">
+            <span class="ico">⚙</span>
+            <span class="nav-text">Settings</span>
+        </a>
+
+        <a href="#" data-label="Logout">
+            <span class="ico">⇥</span>
+            <span class="nav-text">Logout</span>
+        </a>
+
+    </div>
+
+</aside>
+
+
+{{-- Mobile Overlay --}}
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay">
+</div>

@@ -9,7 +9,7 @@
 @endphp
 <details class="wsn-topbar" id="wsnTopbar">
     <summary class="icon-btn wsn-bell" aria-label="Notifications, {{ $wsnUnreadCount }} unread" title="Notifications">
-        <span aria-hidden="true">🔔</span>
+        @include('workspace-notifications._bell_icon')
         @if($wsnUnreadCount > 0)<span class="wsn-count">{{ $wsnUnreadCount > 99 ? '99+' : $wsnUnreadCount }}</span>@endif
     </summary>
     <div class="wsn-dropdown" role="region" aria-label="Recent notifications">

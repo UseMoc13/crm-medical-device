@@ -25,7 +25,7 @@
                 </div>
             </div>
         @empty
-            <div class="wsn-inbox-empty"><span aria-hidden="true">🔔</span><h4>All caught up</h4><p>New assignments, collaboration invitations, review decisions and reminders will appear here.</p></div>
+            <div class="wsn-inbox-empty">@include('workspace-notifications._bell_icon')<h4>All caught up</h4><p>New assignments, collaboration invitations, review decisions and reminders will appear here.</p></div>
         @endforelse
     </div>
     @if($notifications->hasPages())<div class="wsn-pagination">{{ $notifications->links() }}</div>@endif
