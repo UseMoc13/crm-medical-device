@@ -7,7 +7,7 @@
 @endphp
 <div class="page-head todo-page-head">
     <div><h1>To-Do Management</h1><p>Plan assignments, track deadlines, and review work submissions in one workspace.</p></div>
-    <div class="actions"><a href="{{ route('todos.create') }}" class="btn primary">+ New To-Do</a></div>
+    <div class="actions"><a href="{{ route('todos.shared') }}" class="btn">Shared with Me</a><a href="{{ route('todos.create') }}" class="btn primary">+ New To-Do</a></div>
 </div>
 <div class="todo-dashboard-stats">
     <div class="card todo-dashboard-stat"><div class="todo-stat-icon total">☑</div><div><span>Visible Tasks</span><strong>{{ (int) ($summary->total ?? 0) }}</strong><small>My tasks and assigned work</small></div></div>

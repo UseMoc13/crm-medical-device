@@ -10,6 +10,7 @@
         <p>Manage customer interactions, follow-ups, meetings, and other CRM activities.</p>
     </div>
     <div class="actions">
+        <a href="{{ route('activities.shared') }}" class="btn">Shared with Me</a>
         <a href="{{ route('activities.create') }}" class="btn primary">+ New Activity</a>
     </div>
 </div>

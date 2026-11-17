@@ -113,4 +113,5 @@
         <div class="activity-show-info"><span>Created At</span><strong>{{ $activity->created_at?->format('d M Y, H:i') ?? '—' }}</strong></div>
     </div></div>
 </section>
+@include('workspace-collaboration._panel', ['entityType'=>'activity', 'entity'=>$activity])
 @endsection

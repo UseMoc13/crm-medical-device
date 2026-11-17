@@ -319,6 +319,11 @@ class TodoController extends Controller
                 ? $payload['assignee_ids'][0] : null;
             $data['completed_at'] = $data['status'] === 'completed' ? ($record->completed_at ?? now()) : null;
             $record->update($data);
+            // A7.4.8: revoke explicit collaborators when task becomes personal.
+            // Avoid restoring a previous grant if task is switched back to Work.
+            if ($record->visibility === 'personal') {
+                DB::table('workspace_collaboration_members')->where('task_id', $record->getKey())->delete();
+            }
         });
         return redirect()->route('todos.show', ['todo'=>$todo->getKey()])
             ->with('success', 'To-Do updated successfully.');
