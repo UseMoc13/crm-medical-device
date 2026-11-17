@@ -271,6 +271,8 @@
 
     @includeIf('components.global-delete-confirm')
 
+    @include('notes._floating')
+
 </body>
 
 </html>

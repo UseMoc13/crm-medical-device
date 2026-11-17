@@ -172,9 +172,35 @@ final class WorkspaceFloatingNoteHttpTest extends TestCase
 
     public function test_untrusted_markup_is_escaped_in_preview(): void
     {
-        $note=$this->create();
-        $this->actingAs($this->owner,'web')->patchJson(route('notes.floating.save',['note'=>$note['id']]),
-            ['revision'=>0,'title'=>'Safety','body'=>'<script>alert(1)</script>'])
-            ->assertOk()->assertDontSee('<script>',false)->assertSee('&lt;script&gt;',false);
+        $note = $this->create();
+        $body = '<script>alert(1)</script>\n<img src=x onerror=alert(2)>';
+        // The API deliberately returns the raw body for round-trip plain-text editing.
+        // Escape assertions MUST target preview_html, not the complete JSON response.
+        $response = $this->actingAs($this->owner, 'web')
+            ->patchJson(route('notes.floating.save', ['note' => $note['id']]), [
+                'revision' => 0, 'title' => 'Safety', 'body' => $body,
+            ])->assertOk()->assertJsonPath('note.body', $body);
+
+        $preview = (string) $response->json('note.preview_html');
+        $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $preview);
+        $this->assertStringContainsString('&lt;img src=x onerror=alert(2)&gt;', $preview);
+        $this->assertStringNotContainsString('<script', $preview);
+        $this->assertStringNotContainsString('<img', $preview);
+    }
+
+    public function test_mention_label_markup_is_escaped_but_link_remains_clickable(): void
+    {
+        $note = $this->create();
+        $body = '@[Activity:<svg/onload=alert(3)>](activity:' . $this->activity . ')';
+        $response = $this->actingAs($this->owner, 'web')
+            ->patchJson(route('notes.floating.save', ['note' => $note['id']]), [
+                'revision' => 0, 'title' => 'Safe mention', 'body' => $body,
+            ])->assertOk()->assertJsonPath('note.body', $body);
+
+        $preview = (string) $response->json('note.preview_html');
+        $this->assertStringContainsString('class="notes-mention-link"', $preview);
+        $this->assertStringContainsString('&lt;svg/onload=alert(3)&gt;', $preview);
+        $this->assertStringNotContainsString('<svg', $preview);
+        $this->assertDatabaseCount('workspace_note_mentions', 1);
     }
 }
