@@ -16,6 +16,9 @@ $checks = [
     'Review timestamp uses datetime cast' => $model->hasCast('reviewed_at','datetime'),
 ];
 $test = new \App\Models\WorkspaceTaskAssignment();
+// Standalone CLI script: no Laravel container / DB connection is bootstrapped.
+// Give Eloquent a date format before exercising its reviewed_at datetime cast.
+$test->setDateFormat('Y-m-d H:i:s');
 $test->fill([
     'status'=>'completed','review_status'=>'pending_review',
     'reviewed_by_user_id'=>'11111111-1111-4111-8111-111111111111',

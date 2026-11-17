@@ -29,6 +29,9 @@ final class WorkspaceTaskAssignmentReviewFillableTest extends TestCase
     public function test_creator_review_metadata_is_preserved(): void
     {
         $assignment = new WorkspaceTaskAssignment();
+        // This is a pure PHPUnit test (without Laravel app bootstrap).
+        // A datetime cast otherwise asks Eloquent for a database connection's date format.
+        $assignment->setDateFormat('Y-m-d H:i:s');
         $assignment->fill([
             'review_status' => 'approved',
             'reviewed_by_user_id' => '11111111-1111-4111-8111-111111111111',
