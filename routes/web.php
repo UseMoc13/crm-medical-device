@@ -320,6 +320,9 @@ require __DIR__ . '/calendar.php';
 // A7.4.10: private personal notes
 require __DIR__ . '/notes.php';
 
+// A7.4.12.1: read-only workspace audit, permission-gated.
+require __DIR__ . '/workspace_audit.php';
+
 // A7.4.11.1: private notifications and reminders
 require __DIR__ . '/workspace_notifications.php';
 

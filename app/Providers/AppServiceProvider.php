@@ -15,6 +15,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         CrmCreatorAttribution::register();
+        // A7.4.12.1: append-only structured audit, in the same DB transaction as source.
+        \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceTaskReview::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceTask::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceNotificationPreference::observe(\App\Observers\WorkspaceAuditObserver::class);
         // A7.4.11.1: notifications share the same DB transaction as their source action.
         \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceTaskAssignmentNotificationObserver::class);
         \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceCollaborationMemberNotificationObserver::class);

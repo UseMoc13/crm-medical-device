@@ -418,10 +418,14 @@
         </a>
 
 
-        <a href="#" data-label="Audit Logs">
-            <span class="ico">◉</span>
+                @if(app(\App\Services\WorkspaceAuditAccess::class)->canView(auth('web')->user()))
+        <a href="{{ route('workspace-audit.index') }}"
+           class="{{ request()->routeIs('workspace-audit.*') ? 'active' : '' }}"
+           data-label="Audit Logs">
+            <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></span>
             <span class="nav-text">Audit Logs</span>
         </a>
+        @endif
 
         
 
