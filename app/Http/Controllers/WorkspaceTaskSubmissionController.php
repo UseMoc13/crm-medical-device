@@ -69,6 +69,11 @@ final class WorkspaceTaskSubmissionController extends Controller
         $saved = [];
         try {
             DB::transaction(function () use ($todo, $assignment, $newFiles, &$saved) {
+                // A7.4.9: serialize upload with task closure before locking the assignment.
+                $lockedTask = WorkspaceTask::query()->whereKey($todo->getKey())->lockForUpdate()->firstOrFail();
+                abort_unless($lockedTask->visibility === 'work' &&
+                    !in_array($lockedTask->status, ['completed','cancelled'], true), 422,
+                    'This task no longer accepts submissions.');
                 // Lock assignment so completion cannot race with upload.
                 $locked = WorkspaceTaskAssignment::query()->whereKey($assignment->getKey())
                     ->where('task_id', $todo->getKey())->lockForUpdate()->firstOrFail();
@@ -107,33 +112,48 @@ final class WorkspaceTaskSubmissionController extends Controller
     {
         $assignment = $this->ownAssignment($todo);
         DB::transaction(function () use ($todo, $assignment) {
-            $locked = WorkspaceTaskAssignment::query()->whereKey($assignment->getKey())
-                ->where('task_id', $todo->getKey())->lockForUpdate()->firstOrFail();
-            $currentTask = WorkspaceTask::query()->whereKey($todo->getKey())->firstOrFail();
+            // Task first, then assignment: identical lock order to creator review.
+            $currentTask = WorkspaceTask::query()->whereKey($todo->getKey())->lockForUpdate()->firstOrFail();
+            abort_unless($currentTask->visibility === 'work', 404);
             abort_if(in_array($currentTask->status,['completed','cancelled'],true),422,
                 'This task is no longer accepting submissions.');
+            $locked = WorkspaceTaskAssignment::query()->whereKey($assignment->getKey())
+                ->where('task_id', $currentTask->getKey())->lockForUpdate()->firstOrFail();
+            abort_unless((string) $locked->assigned_user_id === $this->actorId(), 404);
             if ($locked->submission_required && !$locked->files()->exists()) {
                 throw ValidationException::withMessages([
                     'files' => 'This assignment requires at least one file before completion.',
                 ]);
             }
             if ($locked->status !== 'completed') {
-                $locked->update(['status'=>'completed','completed_at'=>now()]);
+                $locked->update([
+                    'status'=>'completed', 'completed_at'=>now(),
+                    'review_status'=>'pending_review',
+                    'reviewed_by_user_id'=>null, 'reviewed_at'=>null, 'review_note'=>null,
+                ]);
                 if ($currentTask->status === 'todo') $currentTask->update(['status'=>'in_progress']);
             }
-        });
-        return back()->with('success','Your assignment is marked completed.');
+        }, 3);
+        return back()->with('success','Submission received. Awaiting the creator\'s review.');
     }
 
     public function removeFile(WorkspaceTask $todo, string $file): RedirectResponse
     {
         $assignment = $this->ownAssignment($todo);
-        abort_if(in_array($todo->status,['completed','cancelled'],true),422);
-        $document = $assignment->files()->whereKey($file)->firstOrFail();
-        abort_unless($document->uploaded_by_user_id === $this->actorId(), 403);
-        abort_if($assignment->status === 'completed',422, 'Submitted evidence is locked.');
-        $path = $document->stored_path;
-        $document->delete();
+        $path = DB::transaction(function () use ($todo, $assignment, $file) {
+            $lockedTask = WorkspaceTask::query()->whereKey($todo->getKey())->lockForUpdate()->firstOrFail();
+            abort_unless($lockedTask->visibility === 'work', 404);
+            abort_if(in_array($lockedTask->status,['completed','cancelled'],true),422);
+            $locked = WorkspaceTaskAssignment::query()->whereKey($assignment->getKey())
+                ->where('task_id', $lockedTask->getKey())->lockForUpdate()->firstOrFail();
+            abort_unless((string) $locked->assigned_user_id === $this->actorId(), 404);
+            abort_if($locked->status === 'completed',422, 'Submitted evidence is locked.');
+            $document = $locked->files()->whereKey($file)->firstOrFail();
+            abort_unless((string) $document->uploaded_by_user_id === $this->actorId(), 403);
+            $path = $document->stored_path;
+            $document->delete();
+            return $path;
+        }, 3);
         Storage::disk('local')->delete($path);
         return back()->with('success', 'Attachment removed.');
     }

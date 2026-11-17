@@ -69,5 +69,6 @@
 @if($todo->visibility === 'work')
 @include('workspace-collaboration._panel', ['entityType'=>'todo', 'entity'=>$todo])
 @endif
+@include('todos._review')
 @include('todos._style')
 @endsection

@@ -3,6 +3,7 @@
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\WorkspaceCollaborationController;
 use App\Http\Controllers\WorkspaceTaskSubmissionController;
+use App\Http\Controllers\WorkspaceTaskReviewController;
 use App\Http\Middleware\EnsureCrmAuthenticated;
 use Illuminate\Support\Facades\Route;
 
@@ -10,6 +11,9 @@ Route::middleware([EnsureCrmAuthenticated::class])->group(function () {
     Route::get('todos/shared', [WorkspaceCollaborationController::class, 'sharedTodos'])->name('todos.shared');
     Route::get('todos/recipient-options', [TodoController::class, 'recipientOptions'])->name('todos.recipient-options');
     Route::patch('todos/{todo}/complete', [TodoController::class, 'complete'])->name('todos.complete');
+    // A7.4.9: Creator-only approval/revision of a specific assignment.
+    Route::post('todos/{todo}/assignments/{assignment}/review', [WorkspaceTaskReviewController::class, 'decide'])
+        ->middleware('throttle:20,1')->whereUuid('todo')->whereUuid('assignment')->name('todos.assignments.review');
     Route::post('todos/{todo}/submission/files', [WorkspaceTaskSubmissionController::class, 'upload'])->name('todos.submission.upload');
     Route::patch('todos/{todo}/submission/complete', [WorkspaceTaskSubmissionController::class, 'complete'])->name('todos.submission.complete');
     Route::delete('todos/{todo}/submission/files/{file}', [WorkspaceTaskSubmissionController::class, 'removeFile'])->name('todos.submission.files.destroy');

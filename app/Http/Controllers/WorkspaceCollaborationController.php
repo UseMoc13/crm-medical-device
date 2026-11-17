@@ -134,11 +134,29 @@ final class WorkspaceCollaborationController extends Controller
             throw ValidationException::withMessages(['user_id' => 'The creator already has full access.']);
         }
         // A branch/team filter does not grant access: check the selected person again on POST.
-        $this->recipientDirectory()->assertAssignable(Auth::guard('web')->user(), [$data['user_id']]);
+        // The shared recipient directory is also used by the To-Do form, where its
+        // field is named assignee_ids. This collaboration form submits user_id,
+        // so map a rejected recipient to the field the user actually selected.
+        try {
+            $this->recipientDirectory()->assertAssignable(Auth::guard('web')->user(), [$data['user_id']]);
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+            if (!array_key_exists('assignee_ids', $errors)) {
+                throw $exception;
+            }
+            throw ValidationException::withMessages([
+                'user_id' => $errors['assignee_ids'],
+            ]);
+        }
         DB::transaction(function () use ($resource, $data) {
             // Lock the parent resource to serialize collaboration membership changes with its lifecycle.
             $locked = $resource::query()->whereKey($resource->getKey())->lockForUpdate()->firstOrFail();
             $this->acl()->assertOwner($locked);
+            // A7.4.8.1: Work -> Personal may have committed while this request waited
+            // for the row lock. Never allow a stale Work check to grant private access.
+            if ($locked instanceof WorkspaceTask) {
+                abort_unless($locked->visibility === 'work', 404);
+            }
             $members = $this->acl()->members($locked);
             if (!(clone $members)->where('user_id', $data['user_id'])->exists() && $members->count() >= 20) {
                 throw ValidationException::withMessages(['user_id'=>'Maximum 20 collaborators per record.']);
@@ -162,9 +180,15 @@ final class WorkspaceCollaborationController extends Controller
     private function remove(Activity|WorkspaceTask $resource, WorkspaceCollaborationMember $member): RedirectResponse
     {
         $this->acl()->assertOwner($resource);
-        abort_unless((string)$member->{$this->acl()->foreignKey($resource)} === (string)$resource->getKey(), 404);
-        // Entries remain as an audit trail, but access is revoked immediately.
-        $this->acl()->members($resource)->whereKey($member->getKey())->delete();
+        DB::transaction(function () use ($resource, $member) {
+            // Serialize revocations with invitation, progress writes, and Work->Personal.
+            $locked = $resource::query()->whereKey($resource->getKey())->lockForUpdate()->firstOrFail();
+            $this->acl()->assertOwner($locked);
+            // A child UUID from another parent must never be removable here.
+            $record = $this->acl()->members($locked)->whereKey($member->getKey())->firstOrFail();
+            $record->delete();
+        });
+        // Entries remain as an audit trail, but the permission grant is removed.
         return back()->with('success', 'Collaborator access revoked.');
     }
 
@@ -180,19 +204,33 @@ final class WorkspaceCollaborationController extends Controller
 
     private function entry(Request $request, Activity|WorkspaceTask $resource): RedirectResponse
     {
+        // Early authorization avoids disclosing validation results to outsiders.
         $this->acl()->assertCanWrite($resource);
+        if ($resource instanceof WorkspaceTask) {
+            abort_unless($resource->visibility === 'work', 404);
+        }
         $data = $request->validate([
             'entry_type' => ['required', Rule::in(['comment', 'progress'])],
             'body' => ['required', 'string', 'max:3000'],
         ]);
         $body = trim($data['body']);
         if ($body === '') throw ValidationException::withMessages(['body'=>'Enter a comment or progress update.']);
-        $this->acl()->entries($resource)->create([
-            $this->acl()->foreignKey($resource) => (string)$resource->getKey(),
-            'author_user_id' => $this->acl()->actorId(),
-            'entry_type' => $data['entry_type'],
-            'body' => $body,
-        ]);
+
+        DB::transaction(function () use ($resource, $data, $body) {
+            // The parent lock is also acquired by member add/remove. Re-check after
+            // acquiring it to ensure a revoked member cannot post a late entry.
+            $locked = $resource::query()->whereKey($resource->getKey())->lockForUpdate()->firstOrFail();
+            $this->acl()->assertCanWrite($locked);
+            if ($locked instanceof WorkspaceTask) {
+                abort_unless($locked->visibility === 'work', 404);
+            }
+            $this->acl()->entries($locked)->create([
+                $this->acl()->foreignKey($locked) => (string)$locked->getKey(),
+                'author_user_id' => $this->acl()->actorId(),
+                'entry_type' => $data['entry_type'],
+                'body' => $body,
+            ]);
+        });
         return back()->with('success', $data['entry_type'] === 'progress'
             ? 'Progress update recorded.' : 'Comment added successfully.');
     }

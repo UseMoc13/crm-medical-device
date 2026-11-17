@@ -240,7 +240,8 @@ class TodoController extends Controller
         $existing = $todo->assignments()->lockForUpdate()->get()->keyBy('assigned_user_id');
         foreach ($existing as $userId => $assignment) {
             if (!in_array((string) $userId, $users, true)) {
-                if ($assignment->status === 'completed' || $assignment->files()->exists()) {
+                if ($assignment->status === 'completed' || $assignment->files()->exists() ||
+                    \App\Models\WorkspaceTaskReview::query()->where('assignment_id', $assignment->getKey())->exists()) {
                     throw ValidationException::withMessages([
                         'assignee_ids' => 'Cannot remove an assignee with submitted files or completed work.',
                     ]);
@@ -286,8 +287,16 @@ class TodoController extends Controller
         $assignmentCount = $todo->assignments()->count();
         $completedCount = $todo->assignments()->where('status','completed')->count();
         $mandatoryCount = $todo->assignments()->where('completion_required', true)->count();
-        $mandatoryPendingCount = $todo->assignments()->where('completion_required',true)->where('status','!=','completed')->count();
-        return view('todos.show', compact('todo','activity','assignments','myAssignment','isOwner','assignmentCount','completedCount','mandatoryCount','mandatoryPendingCount'));
+        $mandatoryPendingCount = $todo->assignments()->where('completion_required',true)
+            ->where(fn (Builder $q) => $q->where('status','!=','completed')
+                ->orWhereNotIn('review_status', ['approved','legacy_accepted']))->count();
+        $reviewHistory = \App\Models\WorkspaceTaskReview::query()
+            ->where('task_id', $todo->getKey())
+            ->when(!$isOwner, fn (Builder $q) => $q->whereHas('assignment',
+                fn (Builder $a) => $a->where('assigned_user_id', $this->actorId())))
+            ->with(['actor', 'assignment.assignee'])
+            ->orderByDesc('created_at')->limit(25)->get();
+        return view('todos.show', compact('todo','activity','assignments','myAssignment','isOwner','assignmentCount','completedCount','mandatoryCount','mandatoryPendingCount','reviewHistory'));
     }
 
     public function edit(WorkspaceTask $todo): View
@@ -309,8 +318,10 @@ class TodoController extends Controller
             $this->syncAssignments($record, $payload['assignee_ids'], $payload['required_ids'], $payload['mandatory_ids']);
             $data = $payload['data'];
             if ($data['status'] === 'completed' && $record->assignments()
-                ->where('completion_required', true)->where('status','!=','completed')->exists()) {
-                throw ValidationException::withMessages(['status' => 'All mandatory assignees must finish before the task can be closed.']);
+                ->where('completion_required', true)
+                ->where(fn (Builder $q) => $q->where('status','!=','completed')
+                    ->orWhereNotIn('review_status', ['approved','legacy_accepted']))->exists()) {
+                throw ValidationException::withMessages(['status' => 'All mandatory submissions must be approved before closing this task.']);
             }
             if ($data['visibility'] === 'personal' && $record->assignments()->exists()) {
                 throw ValidationException::withMessages(['visibility' => 'Remove active assignments before making a task personal.']);
@@ -334,8 +345,10 @@ class TodoController extends Controller
         $todo = $this->findOwned($todo);
         DB::transaction(function () use ($todo) {
             $record = $this->mine()->whereKey($todo->getKey())->lockForUpdate()->firstOrFail();
-            if ($record->assignments()->where('completion_required', true)->where('status','!=','completed')->exists()) {
-                throw ValidationException::withMessages(['status'=>'Wait for mandatory assignees to finish before completing this task.']);
+            if ($record->assignments()->where('completion_required', true)
+                ->where(fn (Builder $q) => $q->where('status','!=','completed')
+                    ->orWhereNotIn('review_status', ['approved','legacy_accepted']))->exists()) {
+                throw ValidationException::withMessages(['status'=>'Approve all mandatory submissions before completing this task.']);
             }
             $record->update(['status'=>'completed','completed_at'=>$record->completed_at ?? now()]);
         });
