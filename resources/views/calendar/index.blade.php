@@ -15,7 +15,7 @@
 @endphp
 <div class="page-head">
     <div><h1>Calendar</h1><p>Track work activities, TO-DO deadlines, and your private appointments in one place.</p></div>
-    <div class="actions"><a class="btn primary" href="{{ route('calendar.create') }}">+ New Personal Event</a></div>
+    <div class="actions"><a class="btn" href="{{ route('notes.create') }}">+ New Personal Note</a><a class="btn primary" href="{{ route('calendar.create') }}">+ New Personal Event</a></div>
 </div>
 <div class="card calendar-main-card">
     <div class="card-head calendar-header">
@@ -52,7 +52,7 @@
                        @if($view === $mode) aria-current="page" @endif>{{ $label }}</a>
                 @endforeach
             </nav>
-            <div class="calendar-legend"><span><i class="calendar-dot activity"></i> Activity</span><span><i class="calendar-dot todo"></i> TO-DO</span><span><i class="calendar-dot personal"></i> Personal Event</span></div>
+            <div class="calendar-legend"><span><i class="calendar-dot note"></i> Note Reminder</span><span><i class="calendar-dot activity"></i> Activity</span><span><i class="calendar-dot todo"></i> TO-DO</span><span><i class="calendar-dot personal"></i> Personal Event</span></div>
         </div>
         <div class="calendar-scroll">
             <div class="calendar-grid" role="grid" aria-label="{{ $month->format('F Y') }}">
@@ -97,7 +97,7 @@
             <button type="button" class="calendar-day-close" id="calendarDayClose" aria-label="Close schedule">&times;</button>
         </div>
         <div class="calendar-day-dialog-body" id="calendarDayTimeline"></div>
-        <div class="calendar-day-dialog-foot"><a class="btn" id="calendarDayAdd" href="{{ route('calendar.create') }}">+ New Personal Event</a><button type="button" class="btn primary" id="calendarDayDone">Done</button></div>
+        <div class="calendar-day-dialog-foot"><a class="btn" id="calendarDayNote" href="{{ route('notes.create') }}">+ New Note</a><a class="btn" id="calendarDayAdd" href="{{ route('calendar.create') }}">+ New Personal Event</a><button type="button" class="btn primary" id="calendarDayDone">Done</button></div>
     </section>
 </div>
 <script>
@@ -116,6 +116,7 @@
     const title = document.getElementById('calendarDayTitle');
     const count = document.getElementById('calendarDayCount');
     const add = document.getElementById('calendarDayAdd');
+    const noteAdd = document.getElementById('calendarDayNote');
     const closeBtn = document.getElementById('calendarDayClose');
     let focusReturn = null;
     const node = (tag, css, content) => {
@@ -130,7 +131,7 @@
         title.textContent = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
         count.textContent = `${list.length} scheduled ${list.length === 1 ? 'item' : 'items'}`;
         const base = @json(route('calendar.create'));
-        add.href = `${base}?date=${encodeURIComponent(date)}`;
+        add.href = `${base}?date=${encodeURIComponent(date)}`;\n        noteAdd.href = `{{ route('notes.create') }}?date=${encodeURIComponent(date)}`;
         timeline.replaceChildren();
         if (!list.length) {
             timeline.append(node('div', 'calendar-day-empty', 'No events for this date. Add a personal event to get started.'));

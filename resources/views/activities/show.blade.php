@@ -114,4 +114,7 @@
     </div></div>
 </section>
 @include('workspace-collaboration._panel', ['entityType'=>'activity', 'entity'=>$activity])
+@if($isOwner)
+@include('notes._linked', ['linkType'=>'activity', 'linkId'=>$activity->getKey()])
+@endif
 @endsection

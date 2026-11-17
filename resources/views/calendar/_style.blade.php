@@ -106,4 +106,7 @@ body.calendar-modal-open{overflow:hidden}
 .calendar-remove-selected:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:760px){.calendar-view-toggle{justify-self:center}.calendar-toolbar .calendar-legend{justify-self:start}}
 @media(max-width:480px){.calendar-toggle-btn{min-width:73px;padding:0 9px}.calendar-mini-calendar{padding:9px}.calendar-mini-weekdays,.calendar-mini-days{gap:3px}}
+
+/* A7.4.10 Private note reminders; keep Calendar's existing palette and single stylesheet. */
+.calendar-dot.note{background:#8b6ac6}.calendar-event.note{background:#f4efff;color:#6c4b9c;border-color:#8b6ac6}.calendar-timeline-bar.note{background:#8b6ac6}.calendar-timeline-kind.note{color:#7152aa;background:#f3efff}
 </style>

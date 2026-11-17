@@ -92,6 +92,7 @@
         </div>
     </section>
 </div>
+@include('notes._linked', ['linkType'=>'calendar', 'linkId'=>$event->getKey()])
 <div class="calendar-confirm-backdrop" id="calendarConfirm" hidden>
     <div class="calendar-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="calendarDeleteTitle">
         <div class="calendar-confirm-icon">!</div>

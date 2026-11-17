@@ -11,6 +11,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    @include('notes._style')
 
     <style>
         .crm-toast-area {
@@ -182,6 +183,7 @@
 
 
                 <div class="top-actions">
+                    @include('notes._topbar')
 
                     <button
                         class="icon-btn"

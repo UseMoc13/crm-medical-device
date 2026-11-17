@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\WorkspaceCalendarEvent;
+use App\Models\WorkspacePersonalNote;
 use App\Models\WorkspaceCalendarDayExclusion;
 use App\Models\WorkspaceTask;
 use Carbon\CarbonImmutable;
@@ -43,6 +44,22 @@ class WorkspaceCalendarController extends Controller
         $start = $month->startOfMonth()->startOfDay();
         $end = $month->endOfMonth()->endOfDay();
         $events = [];
+
+        // A7.4.10: only the owner's active reminders can be placed on Personal Calendar.
+        if ($view !== 'work') {
+            $noteReminders = WorkspacePersonalNote::query()
+                ->where('owner_user_id', $owner)->whereNull('archived_at')
+                ->whereNotNull('remind_at')->whereBetween('remind_at', [$start, $end])
+                ->orderBy('remind_at')->limit(500)->get();
+            foreach ($noteReminders as $note) {
+                $events[] = [
+                    'kind' => 'note', 'title' => $note->title,
+                    'start' => $note->remind_at, 'end' => null,
+                    'url' => route('notes.show', ['note' => $note->getKey()]),
+                    'subtitle' => 'Private note reminder', 'all_day' => false,
+                ];
+            }
+        }
 
         if ($view !== 'work') {
             $personal = WorkspaceCalendarEvent::query()
