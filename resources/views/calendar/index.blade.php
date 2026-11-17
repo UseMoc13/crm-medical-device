@@ -131,7 +131,8 @@
         title.textContent = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'});
         count.textContent = `${list.length} scheduled ${list.length === 1 ? 'item' : 'items'}`;
         const base = @json(route('calendar.create'));
-        add.href = `${base}?date=${encodeURIComponent(date)}`;\n        noteAdd.href = `{{ route('notes.create') }}?date=${encodeURIComponent(date)}`;
+        add.href = `${base}?date=${encodeURIComponent(date)}`;
+        noteAdd.href = `{{ route('notes.create') }}?date=${encodeURIComponent(date)}`;
         timeline.replaceChildren();
         if (!list.length) {
             timeline.append(node('div', 'calendar-day-empty', 'No events for this date. Add a personal event to get started.'));
