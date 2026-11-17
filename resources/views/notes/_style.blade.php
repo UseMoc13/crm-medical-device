@@ -43,4 +43,74 @@
 .notes-floating-list-item small{white-space:nowrap}.notes-floating{overflow:auto}
 @media(max-width:700px){.notes-floating-list{min-width:0;width:auto}.notes-floating-workspace{grid-template-columns:minmax(0,var(--notes-list-width,35%)) 8px minmax(0,1fr)}.notes-floating-rich{min-height:150px}.notes-page-rich{min-height:250px}}
 
+/* A7.4.10.4 — full-width Create / Edit / Show, keep single Notes stylesheet. */
+.notes-editor-form,
+.notes-editor-simple,
+.notes-simple-detail,
+.notes-actions-card{
+    width:100%;max-width:none!important;min-width:0;box-sizing:border-box
+}
+.notes-editor-form .card,.notes-editor-form .card-body,
+.notes-simple-detail .card-body,.notes-actions-card .card-body{min-width:0}
+.notes-simple-detail .notes-note-body{max-width:none;overflow-wrap:anywhere}
+
+/* Independent vertical note-body resize handle within the floating window. */
+.notes-floating-textarea-wrap{
+    flex:0 0 auto;
+    height:var(--notes-body-height,175px);
+    min-height:120px;
+    max-height:none;
+    overflow:visible;
+    display:flex;
+    flex-direction:column
+}
+.notes-floating-editor .notes-rich-editor.notes-floating-rich{
+    flex:1 1 auto;min-height:0!important;max-height:none;overflow-y:auto
+}
+.notes-floating-body-resize{
+    box-sizing:border-box;display:flex;flex:0 0 14px;align-items:center;
+    justify-content:center;margin-top:2px;border:1px solid #e2e9ee;
+    border-radius:0 0 7px 7px;background:#f5f8fa;
+    cursor:ns-resize;touch-action:none;user-select:none;
+    color:#8095a2
+}
+.notes-floating-body-resize span{
+    display:block;width:35px;height:3px;border-radius:5px;
+    background:currentColor;box-shadow:0 -5px 0 currentColor
+}
+.notes-floating-body-resize:hover,
+.notes-floating-body-resize:focus-visible{
+    background:#e1f2ed;color:#16836e;outline:2px solid #168a82;outline-offset:-2px
+}
+@media(max-width:700px){
+    .notes-floating-body-resize{min-height:16px;flex-basis:16px}
+    .notes-editor-simple,.notes-simple-detail{max-width:none!important}
+}
+
+
+/* A7.4.10.5: Create/Edit mention chooser escapes card overflow via body portal. */
+.notes-mention-picker.notes-page-mention-portal{
+    position:fixed!important;
+    inset:auto auto auto auto;
+    right:auto!important;
+    left:12px;
+    top:12px;
+    z-index:50020!important;
+    box-sizing:border-box;
+    max-width:calc(100vw - 24px);
+    max-height:min(310px,calc(100dvh - 24px));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    background:#fff;
+    box-shadow:0 14px 38px rgba(21,38,75,.24);
+}
+.notes-page-mention-portal .notes-mention-results{max-height:none}
+.notes-page-mention-portal .notes-mention-results button{min-height:42px}
+.notes-page-mention-portal .notes-mention-results button:focus-visible{
+    outline:2px solid #168a82;outline-offset:-2px;background:#eaf7f3
+}
+@media(max-width:620px){
+    .notes-page-mention-portal .notes-mention-header{gap:5px}
+}
+
 </style>

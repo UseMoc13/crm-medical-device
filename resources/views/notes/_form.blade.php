@@ -42,12 +42,51 @@
     const rich=window.CrmNotesRichEditor.editor(body,()=>{textarea.value=rich.getValue();schedule();});
     rich.setValue(textarea.value);
     textarea.classList.add('is-enhanced');body.hidden=false;
+
+    // A7.4.10.5: render the mention chooser above ALL card/scroll clipping
+    // boundaries. The old in-card absolute popup was cropped by .card overflow.
+    // Moving it to document.body does not alter the selected text or API calls.
+    picker.classList.add('notes-page-mention-portal');
+    document.body.appendChild(picker);
+    const placePicker=()=>{
+        if(picker.hidden || !mention || !mention.node?.isConnected) return;
+        const caret=document.createRange();
+        let box;
+        try {
+            caret.setStart(mention.node,Math.max(0,mention.end-1));
+            caret.setEnd(mention.node,mention.end);
+            box=caret.getBoundingClientRect();
+        } catch(error) { box=body.getBoundingClientRect(); }
+        if(!box || (!box.width && !box.height)) box=body.getBoundingClientRect();
+        const w=Math.max(240,document.documentElement.clientWidth || window.innerWidth);
+        const h=window.innerHeight;
+        const width=Math.min(420,w-24);
+        const below=h-box.bottom-10;
+        const above=box.top-10;
+        const originalHeight=picker.getBoundingClientRect().height;
+        const desired=Math.min(310,Math.max(110,originalHeight));
+        const up=below<Math.min(190,desired) && above>below;
+        const available=Math.max(80,(up ? above : below)-10);
+        picker.style.width=width+'px';
+        picker.style.maxHeight=Math.min(310,available)+'px';
+        const contentHeight=picker.getBoundingClientRect().height;
+        picker.style.left=Math.max(12,Math.min(box.left,w-width-12))+'px';
+        picker.style.top=Math.max(8,Math.min(h-contentHeight-8,
+            up ? box.top-contentHeight-7 : box.bottom+7))+'px';
+    };
     const hide=()=>{picker.hidden=true;mention=null;serial++;};
+    const reposition=()=>{if(!picker.hidden)placePicker();};
+    window.addEventListener('resize',reposition,{passive:true});
+    document.addEventListener('scroll',reposition,true);
+    document.addEventListener('pointerdown',e=>{
+        if(!picker.hidden && !picker.contains(e.target) && !body.contains(e.target))hide();
+    });
     function schedule(){
         clearTimeout(timer);
         mention=rich.getMention();
         if(!mention){hide();return;}
         picker.hidden=false;
+        placePicker();
         timer=setTimeout(()=>{void search(mention.query);},200);
     }
     async function search(q){
@@ -58,7 +97,7 @@
             if(!r.ok)throw new Error('Search unavailable');
             const data=await r.json();if(i!==serial||picker.hidden)return;
             results.replaceChildren();
-            if(!data.items?.length){results.textContent='No accessible records found.';return;}
+            if(!data.items?.length){results.textContent='No accessible records found.';placePicker();return;}
             for(const item of data.items){
                 const b=document.createElement('button');b.type='button';
                 const label=document.createElement('small');label.textContent=item.type==='todo'?'TO-DO':item.type==='calendar'?'Calendar':'Activity';
@@ -68,11 +107,12 @@
                 b.addEventListener('click',()=>{const range=mention;hide();rich.insertMention(item,range);textarea.value=rich.getValue();});
                 results.append(b);
             }
-        }catch(error){if(i===serial)results.textContent=error.message;}
+            placePicker();
+        }catch(error){if(i===serial){results.textContent=error.message;placePicker();}}
     }
     body.addEventListener('keyup',e=>{if(e.key==='Escape')hide();else schedule();});
     body.addEventListener('click',schedule);
     type.addEventListener('change',()=>{if(mention)void search(mention.query);});
-    form.addEventListener('submit',()=>{textarea.value=rich.getValue();});
+    form.addEventListener('submit',()=>{hide();textarea.value=rich.getValue();});
 })();
 </script>

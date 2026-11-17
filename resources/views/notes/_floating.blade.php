@@ -20,8 +20,9 @@
                 <label class="notes-floating-label" for="crmNotesTitle">Title</label>
                 <input type="text" id="crmNotesTitle" maxlength="150" placeholder="Untitled Note" autocomplete="off">
                 <div class="notes-floating-editor-row"><label class="notes-floating-label" for="crmNotesBody">Note</label><span class="notes-floating-hint">Type @ to mention CRM records</span></div>
-                <div class="notes-floating-textarea-wrap">
+                <div class="notes-floating-textarea-wrap" id="crmNotesBodyWrap">
                     <div id="crmNotesBody" class="notes-rich-editor notes-floating-rich" data-placeholder="Write your note. Type @ to link an Activity, TO-DO, or Calendar event..." aria-label="Note content, type at sign to link CRM records"></div>
+                    <div id="crmNotesBodyResize" class="notes-floating-body-resize" role="separator" aria-orientation="horizontal" aria-label="Resize note writing area height" aria-valuemin="120" aria-valuemax="650" aria-valuenow="175" tabindex="0" title="Drag vertically to resize the note writing area. Arrow keys also work."><span aria-hidden="true"></span></div>
                     <div class="notes-mention-picker" id="crmNotesMentionPicker" hidden>
                         <div class="notes-mention-header"><strong>Mention a record</strong><select id="crmNotesMentionType" aria-label="Mention category"><option value="all">All</option><option value="activity">Activity</option><option value="todo">TO-DO</option><option value="calendar">Calendar</option></select></div>
                         <div id="crmNotesMentionResults" class="notes-mention-results"></div>
@@ -63,6 +64,7 @@
         new: document.getElementById('crmNotesNew'), editor: document.getElementById('crmNotesEditor'),
         empty: document.getElementById('crmNotesNoSelection'), title: document.getElementById('crmNotesTitle'),
         body: document.getElementById('crmNotesBody'), split: document.getElementById('crmNotesSplit'),
+        bodyWrap: document.getElementById('crmNotesBodyWrap'), bodyResize: document.getElementById('crmNotesBodyResize'),
         status: document.getElementById('crmNotesSaveStatus'), save: document.getElementById('crmNotesSave'),
         details: document.getElementById('crmNotesDetails'), remove: document.getElementById('crmNotesDelete'),
         confirm: document.getElementById('crmNotesConfirm'), cancel: document.getElementById('crmNotesCancelDelete'),
@@ -72,8 +74,8 @@
     const rich = window.CrmNotesRichEditor.editor(ui.body, () => {changed();schedulePicker();});
     let notes = [], currentId = null, dirty = false, saving = false, saveTimer = null, conflict = false;
     let pickerTimer = null, mentionRange = null, searchSerial = 0, activeRequest = null;
-    let minimized = false, opened = false, dragging = null, splitting = null;
-    let settings = {x: null, y: null, width: null, height: null, split:35, open: false, minimized: false, selected: null};
+    let minimized = false, opened = false, dragging = null, splitting = null, bodyDragging = null;
+    let settings = {x: null, y: null, width: null, height: null, split:35, bodyHeight:175, open: false, minimized: false, selected: null};
     try { settings = {...settings, ...JSON.parse(sessionStorage.getItem(storageKey) || '{}')}; } catch (_) {}
     const persist = () => { try {sessionStorage.setItem(storageKey, JSON.stringify(settings));} catch (_) {} };
     const selected = () => notes.find(n => n.id === currentId) || null;
@@ -100,6 +102,7 @@
         openButton.setAttribute('aria-expanded', String(opened));
         settings.open = opened; settings.minimized = minimized; persist();
         if (opened) restoreGeometry();
+        if (opened && !minimized) applyBodyHeight(settings.bodyHeight);
     };
     const clamp = (v, min, max) => Math.min(Math.max(v, min), Math.max(min, max));
     const restoreGeometry = () => {
@@ -273,6 +276,57 @@
         updateSplit(e.key==='Home'?20:e.key==='End'?70:settings.split+(e.key==='ArrowLeft'?-5:5));
         persist();
     });
+
+    // A7.4.10.4: resize only the note writing area (NOT the entire floating panel).
+    // Only the numeric height is stored in per-user sessionStorage; note content stays in PostgreSQL.
+    const bodyHeightBounds = () => {
+        // The editor scrolls when the outer window is too short; keep the footer reachable.
+        const editorHeight = ui.editor.getBoundingClientRect().height || Math.max(300, panel.clientHeight - 155);
+        return [120, Math.max(230, Math.min(700, Math.round(editorHeight - 115)))];
+    };
+    const applyBodyHeight = (height) => {
+        const [min, max] = bodyHeightBounds();
+        const requested = Number(height);
+        const next = Math.round(clamp(Number.isFinite(requested) && requested > 0 ? requested : 175, min, max));
+        settings.bodyHeight = next;
+        ui.bodyWrap.style.setProperty('--notes-body-height', `${next}px`);
+        ui.bodyResize.setAttribute('aria-valuemin', String(min));
+        ui.bodyResize.setAttribute('aria-valuemax', String(max));
+        ui.bodyResize.setAttribute('aria-valuenow', String(next));
+    };
+    ui.bodyResize.addEventListener('pointerdown', e => {
+        if (e.button !== 0 || minimized || ui.editor.hidden) return;
+        bodyDragging = {
+            pointerId: e.pointerId,
+            startY: e.clientY,
+            startHeight: ui.bodyWrap.getBoundingClientRect().height,
+        };
+        ui.bodyResize.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    });
+    ui.bodyResize.addEventListener('pointermove', e => {
+        if (!bodyDragging || bodyDragging.pointerId !== e.pointerId) return;
+        applyBodyHeight(bodyDragging.startHeight + (e.clientY - bodyDragging.startY));
+    });
+    const finishBodyResize = () => {
+        if (!bodyDragging) return;
+        bodyDragging = null;
+        persist();
+    };
+    ui.bodyResize.addEventListener('pointerup', finishBodyResize);
+    ui.bodyResize.addEventListener('pointercancel', finishBodyResize);
+    ui.bodyResize.addEventListener('lostpointercapture', finishBodyResize);
+    ui.bodyResize.addEventListener('keydown', e => {
+        if (!['ArrowUp','ArrowDown','Home','End'].includes(e.key)) return;
+        e.preventDefault();
+        const [min, max] = bodyHeightBounds();
+        const current = Number(settings.bodyHeight) || 175;
+        const next = e.key === 'Home' ? min : e.key === 'End' ? max
+            : current + (e.key === 'ArrowUp' ? -16 : 16);
+        applyBodyHeight(next);
+        persist();
+    });
+
     document.addEventListener('keydown',e=>{
         if (e.key === 'Escape') {if(!ui.picker.hidden){pickerHide();return;}if(opened){minimized=true;setPanelState();openButton.focus();}}
     });
@@ -295,7 +349,7 @@
         if (window.matchMedia('(max-width: 700px)').matches || minimized) return;
         const rect=panel.getBoundingClientRect();settings.width=Math.round(rect.width);settings.height=Math.round(rect.height);persist();
     });
-    window.addEventListener('resize',()=>{if(opened)restoreGeometry();});
+    window.addEventListener('resize',()=>{if(opened){restoreGeometry();if(!minimized)applyBodyHeight(settings.bodyHeight);}});
     window.addEventListener('pagehide',()=>{
         if(!dirty || !selected() || conflict)return;
         // Before page navigation: best-effort send. Do not cache private note bodies in browser storage.
