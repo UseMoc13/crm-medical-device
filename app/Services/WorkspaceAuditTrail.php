@@ -16,9 +16,10 @@ final class WorkspaceAuditTrail
         'notification_preferences.updated',
         'role.audit_access_changed', 'assignment.requirements_changed',
         'collaboration.role_changed', 'todo.schedule_changed',
+        'delivery.status_changed', 'installation.status_changed', 'invoice.status_changed',
     ];
 
-    public const SUBJECTS = ['todo', 'assignment', 'activity', 'notification_preferences', 'role'];
+    public const SUBJECTS = ['todo', 'assignment', 'activity', 'notification_preferences', 'role', 'delivery', 'installation', 'invoice'];
 
     private const FIELDS = [
         'task_id', 'assignment_id', 'member_id', 'member_role', 'assignee_user_id',

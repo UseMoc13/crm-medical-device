@@ -357,6 +357,13 @@ class InvoiceController extends Controller
                     'status' => $target,
                     'updated_at' => now(),
                 ]);
+            // A7.5.3.1: same transaction as status update; rollback both on failure.
+            app(\App\Services\WorkspaceAuditTrail::class)->record(
+                'invoice.status_changed',
+                'invoice',
+                (string) $existing->invoice_id,
+                ['status_from' => $current, 'status_to' => $target]
+            );
             return null;
         }, 3);
 

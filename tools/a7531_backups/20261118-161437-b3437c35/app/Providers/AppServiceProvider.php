@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Providers;
+
+use App\Support\CrmCreatorAttribution;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        //
+    }
+
+    public function boot(): void
+    {
+        CrmCreatorAttribution::register();
+        // A7.4.12.1: append-only structured audit, in the same DB transaction as source.
+        \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceTaskReview::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceTask::observe(\App\Observers\WorkspaceAuditObserver::class);
+        \App\Models\WorkspaceNotificationPreference::observe(\App\Observers\WorkspaceAuditObserver::class);
+        // A7.4.12.2: structured, text-free coverage for schedule and access-rule changes.
+        \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceAuditCoverageObserver::class);
+        \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceAuditCoverageObserver::class);
+        \App\Models\WorkspaceTask::observe(\App\Observers\WorkspaceAuditCoverageObserver::class);
+        // A7.4.11.1: notifications share the same DB transaction as their source action.
+        \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceTaskAssignmentNotificationObserver::class);
+        \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceCollaborationMemberNotificationObserver::class);
+        \App\Models\WorkspaceTaskReview::observe(\App\Observers\WorkspaceTaskReviewNotificationObserver::class);
+    }
+}
