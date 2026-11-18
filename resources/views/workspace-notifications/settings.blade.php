@@ -15,6 +15,7 @@
                 'collaboration_enabled' => ['Collaboration invitations', 'You have been invited to an Activity or Work TO-DO.'],
                 'submission_enabled' => ['Submissions to review', 'An assignee has completed work that awaits your review.'],
                 'review_enabled' => ['Approval and revision decisions', 'A creator has approved or requested revisions to your submission.'],
+                'crm_status_enabled' => ['CRM status updates', 'Opt in to status changes for CRM records you can still access.'],
             ] as $field => [$heading, $description])
                 <label class="wsn-settings-choice">
                     <span><strong>{{ $heading }}</strong><small>{{ $description }}</small></span>

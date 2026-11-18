@@ -68,6 +68,7 @@ final class WorkspaceNotificationController extends Controller
         $data = $request->validate($rules);
         $payload = ['reminder_lead_minutes' => (int) $data['reminder_lead_minutes']];
         foreach (WorkspaceNotificationPreferences::FLAGS as $field) {
+            if ($field === 'crm_status_enabled' && !\Illuminate\Support\Facades\Schema::hasColumn('workspace_notification_preferences', 'crm_status_enabled')) continue;
             $payload[$field] = $request->boolean($field);
         }
         WorkspaceNotificationPreference::query()->updateOrCreate(

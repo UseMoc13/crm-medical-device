@@ -20,6 +20,9 @@ final class WorkspaceNotificationCenter
         'activity' => ['activities.show', 'activity'],
         'calendar' => ['calendar.show', 'event'],
         'note' => ['notes.show', 'note'],
+        'delivery' => ['deliveries.show', 'delivery'],
+        'installation' => ['installations.show', 'installation'],
+        'invoice' => ['invoices.show', 'invoice'],
     ];
 
     public function send(
@@ -90,6 +93,7 @@ final class WorkspaceNotificationCenter
                                 });
                         });
                 })->exists(),
+            'delivery', 'installation', 'invoice' => app(CrmStatusNotificationAccess::class)->canOpen($user, (string) $notice->target_type, $id),
             default => false,
         };
     }

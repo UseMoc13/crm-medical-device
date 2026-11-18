@@ -14,11 +14,14 @@ final class WorkspaceNotificationPreferences
         'assignment_enabled', 'collaboration_enabled', 'submission_enabled',
         'review_enabled', 'reminder_note_enabled', 'reminder_calendar_enabled',
         'reminder_activity_enabled', 'reminder_todo_enabled',
+        'crm_status_enabled',
     ];
 
     public function defaults(): array
     {
-        return array_fill_keys(self::FLAGS, true) + ['reminder_lead_minutes' => 1440];
+        $defaults = array_fill_keys(self::FLAGS, true);
+        $defaults['crm_status_enabled'] = false; // explicit opt-in
+        return $defaults + ['reminder_lead_minutes' => 1440];
     }
 
     public function forUser(string $userId): array
@@ -40,6 +43,7 @@ final class WorkspaceNotificationPreferences
             'collaboration' => 'collaboration_enabled',
             'submission' => 'submission_enabled',
             'approval', 'revision' => 'review_enabled',
+            'crm_status' => 'crm_status_enabled',
             'reminder' => match ($targetType) {
                 'note' => 'reminder_note_enabled',
                 'calendar' => 'reminder_calendar_enabled',

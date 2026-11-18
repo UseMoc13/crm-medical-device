@@ -364,6 +364,7 @@ class InvoiceController extends Controller
                 (string) $existing->invoice_id,
                 ['status_from' => $current, 'status_to' => $target]
             );
+            app(\App\Services\CrmStatusNotificationPublisher::class)->changed('invoice', (string) $existing->invoice_id, auth('web')->id() ? (string) auth('web')->id() : null);
             return null;
         }, 3);
 

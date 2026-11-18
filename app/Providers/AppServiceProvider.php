@@ -28,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
         // A7.5.3.1: append-only CRM status audit for Eloquent transitions.
         \App\Models\Delivery::observe(\App\Observers\CrmCrossModuleStatusAuditObserver::class);
         \App\Models\Installation::observe(\App\Observers\CrmCrossModuleStatusAuditObserver::class);
+        // A7.5.3.2: opt-in private CRM status notifications.
+        \App\Models\Delivery::observe(\App\Observers\CrmCrossModuleStatusNotificationObserver::class);
+        \App\Models\Installation::observe(\App\Observers\CrmCrossModuleStatusNotificationObserver::class);
         // A7.4.11.1: notifications share the same DB transaction as their source action.
         \App\Models\WorkspaceTaskAssignment::observe(\App\Observers\WorkspaceTaskAssignmentNotificationObserver::class);
         \App\Models\WorkspaceCollaborationMember::observe(\App\Observers\WorkspaceCollaborationMemberNotificationObserver::class);

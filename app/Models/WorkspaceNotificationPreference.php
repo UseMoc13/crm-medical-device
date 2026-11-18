@@ -16,6 +16,7 @@ final class WorkspaceNotificationPreference extends Model
         'submission_enabled', 'review_enabled',
         'reminder_note_enabled', 'reminder_calendar_enabled',
         'reminder_activity_enabled', 'reminder_todo_enabled',
+        'crm_status_enabled',
         'reminder_lead_minutes',
     ];
 
@@ -30,6 +31,7 @@ final class WorkspaceNotificationPreference extends Model
             'reminder_calendar_enabled' => 'boolean',
             'reminder_activity_enabled' => 'boolean',
             'reminder_todo_enabled' => 'boolean',
+            'crm_status_enabled' => 'boolean',
             'reminder_lead_minutes' => 'integer',
         ];
     }
