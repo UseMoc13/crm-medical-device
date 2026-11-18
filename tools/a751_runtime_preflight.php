@@ -15,7 +15,7 @@ $check = static function (string $label, bool $ok) use (&$checks): void {
     $checks[] = $ok;
     echo ($ok ? '[PASS] ' : '[FAIL] ') . $label . PHP_EOL;
 };
-$check('Artisan crm:integration:audit discovered', \Illuminate\Support\Facades\Artisan::has('crm:integration:audit'));
+$check('Artisan crm:integration:audit discovered', array_key_exists('crm:integration:audit', \Illuminate\Support\Facades\Artisan::all()));
 $check('Integration audit service resolves', app(\App\Services\CrmIntegrationAudit::class) instanceof \App\Services\CrmIntegrationAudit);
 $definitions = app(\App\Services\CrmIntegrationAudit::class)->definitions();
 $check('Audit catalog has 30+ checks', count($definitions) >= 30);
