@@ -1,0 +1,37 @@
+    public function destroy(string $invoice): RedirectResponse
+    {
+        // Keep the existing scope check, then verify status again while locked.
+        $existing = $this->findInvoice($invoice);
+
+        if (!in_array($existing->status, self::DELETABLE, true)) {
+            return back()->with(
+                'error',
+                "A {$existing->status} invoice cannot be deleted. Cancel it first if it is still Sent."
+            );
+        }
+
+        $deleted = DB::transaction(function () use ($existing): bool {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($current, self::DELETABLE, true)) {
+                return false;
+            }
+
+            DB::table('invoice_items')
+                ->where('invoice_id', $existing->invoice_id)
+                ->delete();
+
+            DB::table('invoices')
+                ->where('invoice_id', $existing->invoice_id)
+                ->delete();
+            return true;
+        }, 3);
+
+        if (!$deleted) {
+            return back()->with('error', 'Invoice status changed. Reload the invoice before deleting.');
+        }
+
+        return redirect()
+            ->route('invoices.index')
+            ->with('success', 'Invoice successfully deleted.');
+    }

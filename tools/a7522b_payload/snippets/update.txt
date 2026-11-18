@@ -1,0 +1,66 @@
+    public function update(Request $request, string $invoice): RedirectResponse
+    {
+        // Scope authorization happens before acquiring a write lock.
+        $existing = $this->findInvoice($invoice);
+
+        if (!in_array($existing->status, self::EDITABLE, true)) {
+            return redirect()
+                ->route('invoices.show', $existing->invoice_id)
+                ->with('error', "A {$existing->status} invoice can no longer be edited.");
+        }
+
+        $validated = $request->validate(array_merge(
+            $this->itemRules(),
+            [
+                'invoice_date' => ['required', 'date'],
+                'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
+                'discount' => ['nullable', 'numeric', 'min:0'],
+                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'notes' => ['nullable', 'string'],
+            ]
+        ));
+
+        $calc = $this->calculate($validated);
+
+        if (is_string($calc)) {
+            return back()->withInput()->withErrors(['items' => $calc]);
+        }
+
+        // Re-check the CURRENT status inside the transaction. A concurrent
+        // Paid/Cancelled request must never allow a stale form to rewrite items.
+        $updated = DB::transaction(function () use ($existing, $validated, $calc): bool {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($current, self::EDITABLE, true)) {
+                return false;
+            }
+
+            DB::table('invoices')
+                ->where('invoice_id', $existing->invoice_id)
+                ->update([
+                    'invoice_date' => $validated['invoice_date'],
+                    'due_date' => $validated['due_date'] ?? null,
+                    'subtotal' => $calc['subtotal'],
+                    'tax' => $calc['tax'],
+                    'discount' => $calc['discount'],
+                    'total_amount' => $calc['total'],
+                    'notes' => $validated['notes'] ?? null,
+                    'updated_at' => now(),
+                ]);
+
+            DB::table('invoice_items')
+                ->where('invoice_id', $existing->invoice_id)
+                ->delete();
+
+            $this->insertItems($existing->invoice_id, $calc['items']);
+            return true;
+        }, 3);
+
+        if (!$updated) {
+            return back()->withInput()->with('error', 'Invoice status changed. Reload the invoice before editing.');
+        }
+
+        return redirect()
+            ->route('invoices.show', $existing->invoice_id)
+            ->with('success', 'Invoice successfully updated.');
+    }

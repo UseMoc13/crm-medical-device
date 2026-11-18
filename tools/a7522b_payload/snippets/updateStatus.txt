@@ -1,0 +1,41 @@
+    public function updateStatus(Request $request, string $invoice): RedirectResponse
+    {
+        // findInvoice() also enforces the current reporting/customer scope.
+        $existing = $this->findInvoice($invoice);
+
+        $request->validate([
+            'status' => ['required', 'in:' . implode(',', self::STATUSES)],
+        ]);
+
+        $target = (string) $request->input('status');
+
+        // Lock the row and evaluate the transition against its latest state.
+        // Fail closed for legacy/unknown statuses such as "unpaid"; never map
+        // them to Draft or Sent implicitly.
+        $previousRejected = DB::transaction(function () use ($existing, $target): ?string {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($target, self::TRANSITIONS[$current] ?? [], true)) {
+                return $current;
+            }
+
+            DB::table('invoices')
+                ->where('invoice_id', $existing->invoice_id)
+                ->update([
+                    'status' => $target,
+                    'updated_at' => now(),
+                ]);
+            return null;
+        }, 3);
+
+        if ($previousRejected !== null) {
+            return back()->with(
+                'error',
+                "Cannot change status from {$previousRejected} to {$target}."
+            );
+        }
+
+        return redirect()
+            ->route('invoices.show', $existing->invoice_id)
+            ->with('success', "Invoice marked as {$target}.");
+    }

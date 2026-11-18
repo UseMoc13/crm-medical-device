@@ -262,6 +262,7 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, string $invoice): RedirectResponse
     {
+        // Scope authorization happens before acquiring a write lock.
         $existing = $this->findInvoice($invoice);
 
         if (!in_array($existing->status, self::EDITABLE, true)) {
@@ -287,7 +288,15 @@ class InvoiceController extends Controller
             return back()->withInput()->withErrors(['items' => $calc]);
         }
 
-        DB::transaction(function () use ($existing, $validated, $calc) {
+        // Re-check the CURRENT status inside the transaction. A concurrent
+        // Paid/Cancelled request must never allow a stale form to rewrite items.
+        $updated = DB::transaction(function () use ($existing, $validated, $calc): bool {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($current, self::EDITABLE, true)) {
+                return false;
+            }
+
             DB::table('invoices')
                 ->where('invoice_id', $existing->invoice_id)
                 ->update([
@@ -306,7 +315,12 @@ class InvoiceController extends Controller
                 ->delete();
 
             $this->insertItems($existing->invoice_id, $calc['items']);
-        });
+            return true;
+        }, 3);
+
+        if (!$updated) {
+            return back()->withInput()->with('error', 'Invoice status changed. Reload the invoice before editing.');
+        }
 
         return redirect()
             ->route('invoices.show', $existing->invoice_id)
@@ -318,27 +332,40 @@ class InvoiceController extends Controller
      */
     public function updateStatus(Request $request, string $invoice): RedirectResponse
     {
+        // findInvoice() also enforces the current reporting/customer scope.
         $existing = $this->findInvoice($invoice);
 
         $request->validate([
             'status' => ['required', 'in:' . implode(',', self::STATUSES)],
         ]);
 
-        $target = $request->input('status');
+        $target = (string) $request->input('status');
 
-        if (!in_array($target, self::TRANSITIONS[$existing->status] ?? [], true)) {
+        // Lock the row and evaluate the transition against its latest state.
+        // Fail closed for legacy/unknown statuses such as "unpaid"; never map
+        // them to Draft or Sent implicitly.
+        $previousRejected = DB::transaction(function () use ($existing, $target): ?string {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($target, self::TRANSITIONS[$current] ?? [], true)) {
+                return $current;
+            }
+
+            DB::table('invoices')
+                ->where('invoice_id', $existing->invoice_id)
+                ->update([
+                    'status' => $target,
+                    'updated_at' => now(),
+                ]);
+            return null;
+        }, 3);
+
+        if ($previousRejected !== null) {
             return back()->with(
                 'error',
-                "Cannot change status from {$existing->status} to {$target}."
+                "Cannot change status from {$previousRejected} to {$target}."
             );
         }
-
-        DB::table('invoices')
-            ->where('invoice_id', $existing->invoice_id)
-            ->update([
-                'status' => $target,
-                'updated_at' => now(),
-            ]);
 
         return redirect()
             ->route('invoices.show', $existing->invoice_id)
@@ -350,6 +377,7 @@ class InvoiceController extends Controller
      */
     public function destroy(string $invoice): RedirectResponse
     {
+        // Keep the existing scope check, then verify status again while locked.
         $existing = $this->findInvoice($invoice);
 
         if (!in_array($existing->status, self::DELETABLE, true)) {
@@ -359,7 +387,13 @@ class InvoiceController extends Controller
             );
         }
 
-        DB::transaction(function () use ($existing) {
+        $deleted = DB::transaction(function () use ($existing): bool {
+            $current = app(\App\Services\CrmInvoiceRowGuard::class)
+                ->lockedStatus((string) $existing->invoice_id);
+            if (!in_array($current, self::DELETABLE, true)) {
+                return false;
+            }
+
             DB::table('invoice_items')
                 ->where('invoice_id', $existing->invoice_id)
                 ->delete();
@@ -367,7 +401,12 @@ class InvoiceController extends Controller
             DB::table('invoices')
                 ->where('invoice_id', $existing->invoice_id)
                 ->delete();
-        });
+            return true;
+        }, 3);
+
+        if (!$deleted) {
+            return back()->with('error', 'Invoice status changed. Reload the invoice before deleting.');
+        }
 
         return redirect()
             ->route('invoices.index')

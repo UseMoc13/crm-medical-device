@@ -242,6 +242,10 @@ class DeliveryController extends Controller
             if ($validated['status'] === 'in_transit') {
                 $this->dispatchAllocatedUnits($locked);
             }
+            // A7.5.2.2a: verify dispatch provenance before finalizing Delivery.
+            if ($validated['status'] === 'delivered') {
+                app(\App\Services\CrmDeliveryCompletionGuard::class)->assertCanComplete($locked);
+            }
             if ($validated['status'] === 'delivered' && empty($locked->delivery_date)) {
                 $locked->delivery_date = today();
             }
