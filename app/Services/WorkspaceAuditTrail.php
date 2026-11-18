@@ -14,15 +14,18 @@ final class WorkspaceAuditTrail
         'collaboration.granted', 'collaboration.revoked',
         'review.decision', 'todo.status_changed', 'todo.visibility_changed',
         'notification_preferences.updated',
+        'role.audit_access_changed', 'assignment.requirements_changed',
+        'collaboration.role_changed', 'todo.schedule_changed',
     ];
 
-    public const SUBJECTS = ['todo', 'assignment', 'activity', 'notification_preferences'];
+    public const SUBJECTS = ['todo', 'assignment', 'activity', 'notification_preferences', 'role'];
 
     private const FIELDS = [
         'task_id', 'assignment_id', 'member_id', 'member_role', 'assignee_user_id',
         'collaborator_user_id', 'status_from', 'status_to', 'review_from',
         'review_to', 'decision', 'visibility_from', 'visibility_to',
         'changed_settings',
+        'audit_access_from', 'audit_access_to', 'member_role_from', 'member_role_to',
     ];
 
     public function record(string $event, string $subject, ?string $id,

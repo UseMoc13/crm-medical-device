@@ -150,6 +150,7 @@ class RoleController extends Controller
             if (! $role->role_id) $role = Role::where('role_name', $validated['role_name'])->firstOrFail();
             $access = $this->requestedAccess($request, $validated['role_name']);
             $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access), $this->requestedScopeAccess($request));
+            app(\App\Services\WorkspaceRoleAuditGrant::class)->synchronizeFromRoleForm($request, $role);
             return $role;
         });
 
@@ -223,6 +224,7 @@ class RoleController extends Controller
             $role->update($validated);
             $access = $this->requestedAccess($request, $validated['role_name']);
             $this->syncPermissions($role, $access, $this->requestedWorkflowAccess($request, $access), $this->requestedScopeAccess($request));
+            app(\App\Services\WorkspaceRoleAuditGrant::class)->synchronizeFromRoleForm($request, $role);
         });
 
 
@@ -317,7 +319,7 @@ class RoleController extends Controller
                 $scopeSelected[$slug] = $storedScopes->get(Catalog::key($slug, 'view'));
             }
         }
-        return ['scopePages'=>$scopePages, 'scopeSelected'=>$scopeSelected,
+        return ['auditViewEnabled' => $role ? app(\App\Services\WorkspaceRoleAuditGrant::class)->isGranted($role) : false, 'scopePages'=>$scopePages, 'scopeSelected'=>$scopeSelected,
             'workflowActions'=>Workflow::ACTIONS, 'workflowSelected'=>$workflowSelected,
             'workflowTemplates'=>$workflowTemplates,
             'accessPages'=>Catalog::PAGES, 'accessActions'=>Catalog::ACTIONS,

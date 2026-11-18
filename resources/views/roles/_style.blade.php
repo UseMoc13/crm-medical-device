@@ -1137,4 +1137,14 @@
         width: 100%;
     }
 }
+/* A7.4.12.2 — Role Audit Access (single Roles stylesheet) */
+.role-audit-permission {padding-bottom:10px}
+.role-audit-choice {display:flex;align-items:flex-start;gap:13px;padding:18px;border:1px solid #cfdfed;background:#f6fafc;border-radius:10px;cursor:pointer}
+.role-audit-choice:focus-within {outline:2px solid #24978d;outline-offset:2px}
+.role-audit-choice input[type=checkbox] {width:18px;height:18px;accent-color:#15978f;flex-shrink:0;margin:2px 0 0}
+.role-audit-choice-text {display:grid;gap:6px;min-width:0}
+.role-audit-choice-text strong,.role-audit-readonly strong,.role-audit-status {font-size:13px;font-weight:700;color:#17284f}
+.role-audit-choice-text small,.role-audit-readonly span {font-size:12px;line-height:1.55;color:#64748b}
+.role-audit-readonly {border:1px solid #e0e8ef;border-radius:9px;padding:16px;display:grid;gap:7px;background:#f8fafc}
+.role-audit-error {margin-top:9px;color:#c33f54;font-size:12px}
 </style>

@@ -127,6 +127,7 @@
                             </div>
                         </div>
                     </section>
+                    @include('roles._audit_access')
                 </div>
                 <aside class="role-editor-aside" aria-label="Live role preview">
                     <div class="role-preview-panel">

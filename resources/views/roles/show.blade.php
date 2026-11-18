@@ -46,6 +46,13 @@
         </div>
     </div>
 </div>
+<div class="card role-detail-card role-audit-summary" style="margin-top:20px">
+    <div class="card-head"><div><h3>Audit Trail Access</h3><p>Role-level read-only permission for Workspace Audit Logs.</p></div></div>
+    <div class="card-body">
+        <strong class="role-audit-status">{{ $isProtected ? 'Automatic: Super Admin' : (($auditViewEnabled ?? false) ? 'Enabled' : 'Not granted') }}</strong>
+        <p class="role-help" style="margin:9px 0 0">Only Super Admin can grant or revoke this permission in the Role Editor. No access to personal Notes content or submission files is provided.</p>
+    </div>
+</div>
 <div class="card role-detail-card" style="margin-top:20px">
     <div class="card-head"><div><h3>Module & Page Permissions</h3><p>Permissions granted to this role, grouped by CRM module.</p></div><span class="role-detail-counter">{{ $allowedPages }} Pages · {{ $allowedPermissions }} Permissions</span></div>
     <div class="card-body">
