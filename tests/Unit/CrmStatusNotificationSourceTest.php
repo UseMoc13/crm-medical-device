@@ -18,7 +18,7 @@ final class CrmStatusNotificationSourceTest extends TestCase
         $publisher = file_get_contents(__DIR__.'/../../app/Services/CrmStatusNotificationPublisher.php');
         $this->assertStringContainsString("->where('status', 'active')", $publisher);
         $this->assertStringContainsString('->canOpen($recipient, $type, $id)', $publisher);
-        $this->assertStringContainsString("->allows($userId, 'crm_status', $type)", $publisher);
+        $this->assertStringContainsString('->allows($userId, \'crm_status\', $type)', $publisher);
         $this->assertStringContainsString("'crm_status_enabled'", $publisher);
         $this->assertStringContainsString('array_slice(array_values($candidates), 0, 2)', $publisher);
         $this->assertStringNotContainsString('customer_name', $publisher);
