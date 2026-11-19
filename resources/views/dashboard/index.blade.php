@@ -76,7 +76,7 @@
         </div>
 
         <div class="trend">
-            Customer database
+            {{ $statHints['customers'] }}
         </div>
 
     </div>
@@ -95,7 +95,7 @@
         </div>
 
         <div class="trend">
-            Current leads
+            {{ $statHints['leads'] }}
         </div>
 
     </div>
@@ -114,7 +114,7 @@
         </div>
 
         <div class="trend">
-            Active opportunities
+            {{ $statHints['opportunities'] }}
         </div>
 
     </div>
@@ -133,7 +133,7 @@
         </div>
 
         <div class="trend">
-            Current service tickets
+            {{ $statHints['service_tickets'] }}
         </div>
 
     </div>
@@ -167,10 +167,16 @@
 
         <div class="card-body">
 
-            <div class="empty">
-
-                Sales data will appear here.
-
+            <div class="dash-a763-sales" role="list" aria-label="Accessible sales indicators">
+                @forelse($salesCards as $sale)
+                    <div class="dash-a763-metric" role="listitem">
+                        <div class="dash-a763-metric-label">{{ $sale['label'] }}</div>
+                        <strong class="dash-a763-metric-value">{{ $sale['value'] }}</strong>
+                        <small class="dash-a763-metric-hint">{{ $sale['hint'] }}</small>
+                    </div>
+                @empty
+                    <div class="empty">No sales metrics available for your access.</div>
+                @endforelse
             </div>
 
         </div>
@@ -602,6 +608,13 @@
             transition: none;
         }
     }
+    /* A7.6.3: isolated sales KPI grid; announcement slider remains unchanged. */
+    .dash-a763-sales { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; }
+    .dash-a763-metric { display:flex; flex-direction:column; gap:5px; min-width:0; padding:14px; border:1px solid #e5e9f0; border-radius:10px; background:#fbfcfe; }
+    .dash-a763-metric-label { color:#64748b; font-size:12px; font-weight:600; }
+    .dash-a763-metric-value { color:#17284f; font-size:20px; font-weight:700; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .dash-a763-metric-hint { color:#7e899b; font-size:11px; line-height:1.5; }
+    @media (max-width:640px) { .dash-a763-sales { grid-template-columns:1fr; } }
 </style>
 
 <script>
