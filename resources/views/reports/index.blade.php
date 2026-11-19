@@ -47,9 +47,13 @@
     <div class="actions">
         <button type="button" class="btn" onclick="window.print()">Print</button>
 
-        <a href="{{ route('reports.export.invoices', $currentRange) }}" class="btn primary">
-            Export Invoices (CSV)
-        </a>
+        @if($canExportInvoiceCsv)
+            <a href="{{ route('reports.export.invoices', $currentRange) }}" class="btn primary">
+                Export Invoices (CSV)
+            </a>
+        @else
+            <span class="btn" title="Invoice View permission and full Invoice scope required" aria-disabled="true">Export Invoices (CSV) — Restricted</span>
+        @endif
     </div>
 </div>
 
@@ -251,6 +255,7 @@
         </div>
 
         <div class="card-body">
+            @if($canViewReportDetails)
             @include('reports._bars', [
                 'rows' => $topCustomers->map(fn ($row) => [
                     'label' => $row->name,
@@ -261,6 +266,9 @@
                 ]),
                 'emptyText' => 'No issued invoices in this period.',
             ])
+            @else
+                <div class="rp-empty">Invoice details restricted for this account.</div>
+            @endif
         </div>
     </section>
 
@@ -279,6 +287,7 @@
         </div>
 
         <div class="card-body">
+            @if($canViewReportDetails)
             @include('reports._bars', [
                 'rows' => $topProducts->map(fn ($row) => [
                     'label' => $row->name,
@@ -288,6 +297,9 @@
                 ]),
                 'emptyText' => 'No product sales in this period.',
             ])
+            @else
+                <div class="rp-empty">Invoice details restricted for this account.</div>
+            @endif
         </div>
     </section>
 

@@ -42,6 +42,12 @@ class ReportController extends Controller
         $toDate = $to->toDateString();
         $today = today()->toDateString();
 
+        // A7.6.5.7: permission check precedes sensitive customer/product queries.
+        $reportPrivacy = app(\App\Services\CrmReportPrivacyPilot::class)
+            ->forViewer(Auth::guard('web')->user());
+        $canViewReportDetails = $reportPrivacy['customer_product_details'];
+        $canExportInvoiceCsv = $reportPrivacy['invoice_csv'];
+
         /* ---------- Invoice KPI ---------- */
 
         $kpi = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
@@ -78,7 +84,7 @@ class ReportController extends Controller
 
         /* ---------- Top customers ---------- */
 
-        $topCustomers = app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
+        $topCustomers = $canViewReportDetails ? app(CrmReportingDataScope::class)->invoices(DB::table('invoices as i'), 'i.sales_order_id')
             ->leftJoin('sales_orders as so', 'so.sales_order_id', '=', 'i.sales_order_id')
             ->leftJoin('quotations as q', 'q.quotation_id', '=', 'so.quotation_id')
             ->leftJoin('opportunities as o', 'o.opportunity_id', '=', 'q.opportunity_id')
@@ -94,11 +100,11 @@ class ReportController extends Controller
             )
             ->orderByDesc('amount')
             ->limit(5)
-            ->get();
+            ->get() : collect();
 
         /* ---------- Top products ---------- */
 
-        $topProducts = app(CrmReportingDataScope::class)->invoices(DB::table('invoice_items as ii')
+        $topProducts = $canViewReportDetails ? app(CrmReportingDataScope::class)->invoices(DB::table('invoice_items as ii')
             ->join('invoices as i', 'i.invoice_id', '=', 'ii.invoice_id'), 'i.sales_order_id')
             ->leftJoin('products as p', 'p.product_id', '=', 'ii.product_id')
             ->whereIn('i.status', self::ISSUED)
@@ -113,7 +119,7 @@ class ReportController extends Controller
             )
             ->orderByDesc('amount')
             ->limit(5)
-            ->get();
+            ->get() : collect();
 
         /* ---------- Service & Maintenance ---------- */
 
@@ -194,6 +200,8 @@ class ReportController extends Controller
             'statusBreakdown' => $statusBreakdown,
             'topCustomers' => $topCustomers,
             'topProducts' => $topProducts,
+            'canViewReportDetails' => $canViewReportDetails,
+            'canExportInvoiceCsv' => $canExportInvoiceCsv,
             'tickets' => $tickets,
             'maintenance' => $maintenance,
             'pipeline' => $pipeline,
@@ -209,7 +217,8 @@ class ReportController extends Controller
         $this->assertReportsView();
 
         // A7.6.5.4: optional least-privilege pilot. OFF by default.
-        if ((bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false)) {
+        if ((bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false)
+            || (bool) config('crm_reporting.report_customer_product_privacy_pilot_enabled', false)) {
             abort_unless(app(\App\Services\CrmInvoiceCsvPolicy::class)
                 ->canExport(Auth::guard('web')->user()), 403);
         }

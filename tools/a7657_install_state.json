@@ -1,0 +1,16 @@
+{
+    "stage": "A7.6.5.7",
+    "after": {
+        "app/Http/Controllers/ReportController.php": "f6cd74104f7a00578976019fb2ab02df8784e32a0262134e6fc21d3aa8c19583",
+        "resources/views/reports/index.blade.php": "41580a78062a243cb933c9a51d0556dcc662c5a6556a185ee0e07328a7cbaa4a",
+        "config/crm_reporting.php": "b0f4cb8385a19e865d0a3a57fffd0d3990373aa1b740574009ab7f96982a05f6"
+    },
+    "adds": {
+        "app/Services/CrmReportPrivacyPilot.php": "a47a1aedfe3b5e33fa8a9e25a82fc5e25a4acd9d4c0fd26bfc643aef58769b9d",
+        "tests/Unit/CrmReportPrivacyPilotPolicyTest.php": "1f3480c5691b06dfdeafcde029c5f425c4ea9befa15e22df80597e07148188e2",
+        "tests/Unit/CrmReportPrivacyPilotSourceTest.php": "ae25e44c492ba12ea8274cc4edb21d75fdb9a8b3cea2d172eece6f9917705c39",
+        "tests/Feature/CrmReportPrivacyPilotHttpTest.php": "6c407a0668bd511a83766549d572b4e1bca5b54c8599c866d28907d389ad228d"
+    },
+    "backup": "C:/Users/William/Desktop/crm-medical-device/tools/a7657_backups/20261119-174204-155e3f61",
+    "flag_default": "OFF"
+}
