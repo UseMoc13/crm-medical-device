@@ -57,7 +57,7 @@ final class CrmDashboardViewerIsolationTest extends TestCase
             });
             Schema::connection($connection)->create('activities', function (Blueprint $t) {
                 $t->uuid('activity_id')->primary(); $t->uuid('user_id');
-                $t->string('title'); $t->text('description')->nullable(); $t->timestamp('created_at');
+                $t->string('subject'); $t->text('description')->nullable(); $t->timestamp('created_at');
             });
             Schema::connection($connection)->create('workspace_collaboration_members', function (Blueprint $t) {
                 $t->uuid('activity_id'); $t->uuid('user_id');
@@ -95,6 +95,9 @@ final class CrmDashboardViewerIsolationTest extends TestCase
     public function test_dashboard_only_returns_owned_and_explicit_collaborative_text(): void
     {
         $this->sandbox(function (string $role, string $mine, string $other): void {
+            // Mirror the production Activity schema: subject, not title.
+            self::assertTrue(Schema::hasColumn('activities', 'subject'));
+            self::assertFalse(Schema::hasColumn('activities', 'title'));
             $this->grant($role, 'customer_lead.access');
             $this->grant($role, 'crm_page.customers.view', 'own');
             $this->grant($role, 'crm_page.activities.view', 'own');
@@ -110,9 +113,9 @@ final class CrmDashboardViewerIsolationTest extends TestCase
             ]);
             $collaborationId = (string) Str::uuid();
             DB::table('activities')->insert([
-                ['activity_id'=>(string)Str::uuid(), 'user_id'=>$mine, 'title'=>'Owned', 'description'=>'Owned only', 'created_at'=>'2026-11-19 10:00:00'],
-                ['activity_id'=>$collaborationId, 'user_id'=>$other, 'title'=>'Shared', 'description'=>'Explicit collaboration', 'created_at'=>'2026-11-19 09:00:00'],
-                ['activity_id'=>(string)Str::uuid(), 'user_id'=>$other, 'title'=>'Secret', 'description'=>'Not shared', 'created_at'=>'2026-11-19 11:00:00'],
+                ['activity_id'=>(string)Str::uuid(), 'user_id'=>$mine, 'subject'=>'Owned', 'description'=>'Owned only', 'created_at'=>'2026-11-19 10:00:00'],
+                ['activity_id'=>$collaborationId, 'user_id'=>$other, 'subject'=>'Shared', 'description'=>'Explicit collaboration', 'created_at'=>'2026-11-19 09:00:00'],
+                ['activity_id'=>(string)Str::uuid(), 'user_id'=>$other, 'subject'=>'Secret', 'description'=>'Not shared', 'created_at'=>'2026-11-19 11:00:00'],
             ]);
             DB::table('workspace_collaboration_members')->insert(['activity_id'=>$collaborationId, 'user_id'=>$mine]);
             $writes = [];
@@ -135,7 +138,7 @@ final class CrmDashboardViewerIsolationTest extends TestCase
         $this->sandbox(function (string $role, string $mine): void {
             $this->grant($role, 'customer_lead.access');
             DB::table('activities')->insert(['activity_id'=>(string)Str::uuid(),
-                'user_id'=>$mine, 'title'=>'Owned but no page grant', 'created_at'=>'2026-11-19 10:00:00']);
+                'user_id'=>$mine, 'subject'=>'Owned but no page grant', 'created_at'=>'2026-11-19 10:00:00']);
             $result = app(CrmDashboardViewData::class)->forCurrentUser();
             self::assertCount(0, $result['recentActivities']);
             self::assertSame([], $result['salesCards']);

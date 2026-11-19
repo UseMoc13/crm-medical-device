@@ -115,7 +115,7 @@ final class CrmDashboardViewData
             || !Schema::hasTable('activities')) {
             return collect();
         }
-        foreach (['activity_id', 'user_id', 'title', 'description', 'created_at'] as $column) {
+        foreach (['activity_id', 'user_id', 'subject', 'description', 'created_at'] as $column) {
             if (!Schema::hasColumn('activities', $column)) return collect();
         }
 
@@ -148,7 +148,7 @@ final class CrmDashboardViewData
         if ((bool) config('crm_data_scope.activities_enabled', false)) {
             $query = $this->dataScope->apply($query, $actor, 'activities', $scope);
         }
-        return $query->select('activity_id', 'title', 'description', 'created_at')
+        return $query->select('activity_id', 'subject as title', 'description', 'created_at')
             ->orderByDesc('created_at')->limit(5)->get();
     }
 }

@@ -18,7 +18,7 @@ $check('Activity row-scope service available', app(\App\Services\CrmDataScope::c
 $check('Dashboard route available', \Illuminate\Support\Facades\Route::has('dashboard'));
 $check('Activities table available', \Illuminate\Support\Facades\Schema::hasTable('activities'));
 $check('Activities user_id column available', \Illuminate\Support\Facades\Schema::hasColumn('activities','user_id'));
-$check('Activities text columns available', \Illuminate\Support\Facades\Schema::hasColumn('activities','title') && \Illuminate\Support\Facades\Schema::hasColumn('activities','description'));
+$check('Activities subject and description columns available', \Illuminate\Support\Facades\Schema::hasColumn('activities','subject') && \Illuminate\Support\Facades\Schema::hasColumn('activities','description'));
 $check('Dashboard view compiles as named view', view()->exists('dashboard.index'));
 $check('Announcement view available', view()->exists('dashboard.index') && \Illuminate\Support\Facades\Route::has('announcements.index'));
 $passed = count(array_filter($checks)); $count = count($checks);
