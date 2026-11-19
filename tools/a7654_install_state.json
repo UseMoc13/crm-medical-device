@@ -1,0 +1,8 @@
+{
+    "stage": "A7.6.5.4",
+    "patched": {
+        "app/Http/Controllers/ReportController.php": "c744e4f712aba7e211c9460ef4415a3ec3da4f30562a84b435dada37aff23b5e",
+        "app/Services/CrmFinancialRoleEntitlementAudit.php": "fe3cc688c3028e18e2f5c6def8d836d1cbd76b4c5d8c3427f97c38ad1b34651f",
+        "app/Console/Commands/AuditCrmFinancialRoleEntitlements.php": "080e13d0e1a1e3525319ebde5f3779a83af3df7b1952c434be5133f9aefbaceb"
+    }
+}

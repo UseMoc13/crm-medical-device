@@ -208,6 +208,12 @@ class ReportController extends Controller
     {
         $this->assertReportsView();
 
+        // A7.6.5.4: optional least-privilege pilot. OFF by default.
+        if ((bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false)) {
+            abort_unless(app(\App\Services\CrmInvoiceCsvPolicy::class)
+                ->canExport(Auth::guard('web')->user()), 403);
+        }
+
         $request->validate([
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],

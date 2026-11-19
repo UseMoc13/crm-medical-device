@@ -20,12 +20,14 @@ final class AuditCrmFinancialRoleEntitlements extends Command
             $this->line('A7.6.5.3 Financial Role Entitlement Review [POLICY METADATA ONLY; READ-ONLY]');
             $this->line('Status: '.$result['status'].' | Roles '.$s['roles_checked']
                 .' | Reports enabled '.$s['reports_capable_roles']
+                .' | Reports/no Invoice KPI '.$s['reports_without_invoice_kpi']
                 .' | CSV/Invoice KPI mismatch '.$s['csv_without_invoice_kpi']
+                .' | CSV strict pilot '.($result['csv_pilot_enabled'] ? 'ON' : 'OFF')
                 .' | Downstream scope review '.$s['downstream_scope_review']);
             foreach ($result['single_role_preview'] as $role) {
                 if (!$role['reports_page']) continue;
                 $this->line('['.$role['review_code'].'] '.$role['role']
-                    .' | Reports YES | CSV YES | Dashboard Invoice KPI '
+                    .' | Reports YES | CSV '.($role['csv_export'] ? 'YES' : 'NO').' | Dashboard Invoice KPI '
                     .($role['dashboard_invoice_kpis'] ? 'YES' : 'NO')
                     .' | Invoice scope '.$role['invoice_scope']);
             }

@@ -26,7 +26,7 @@ final class CrmFinancialRoleEntitlementAudit
      * @param list<array{permission_name:string,data_scope:?string}> $grants
      * @return array{reports_page:bool,csv_export:bool,dashboard_invoice_kpis:bool,invoice_scope:string,review_code:string}
      */
-    public static function assessRole(bool $superAdmin, array $grants, bool $downstreamScope): array
+    public static function assessRole(bool $superAdmin, array $grants, bool $downstreamScope, bool $csvPilotEnabled = false): array
     {
         if ($superAdmin) {
             return [
@@ -52,12 +52,13 @@ final class CrmFinancialRoleEntitlementAudit
         $decision = CrmScopedKpiQuery::scopeDecision('invoices', $invoiceScopes);
         $kpi = $invoiceAllowed && $decision === 'all';
         $scopeLabel = $invoiceScopes === [] ? 'missing' : $decision;
+        $csv = $reports && (!$csvPilotEnabled || $kpi);
         $review = !$reports ? 'no_reports_grant'
-            : (!$kpi ? 'reports_csv_without_invoice_kpi'
+            : (!$kpi ? ($csvPilotEnabled ? 'reports_only_csv_restricted' : 'reports_csv_without_invoice_kpi')
                 : ($downstreamScope ? 'downstream_sales_scope_may_differ' : 'eligible_for_numeric_comparison'));
 
         return [
-            'reports_page' => $reports, 'csv_export' => $reports,
+            'reports_page' => $reports, 'csv_export' => $csv,
             'dashboard_invoice_kpis' => $kpi, 'invoice_scope' => $scopeLabel,
             'review_code' => $review,
         ];
@@ -99,8 +100,9 @@ final class CrmFinancialRoleEntitlementAudit
 
         $salesScope = (bool) config('crm_data_scope.customers_enabled', false)
             || (bool) config('crm_data_scope.opportunities_enabled', false);
+        $csvPilotEnabled = (bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false);
         $results = [];
-        $reportsCount = $csvWithoutKpi = $eligible = $downstream = 0;
+        $reportsCount = $reportsWithoutKpi = $csvWithoutKpi = $eligible = $downstream = 0;
         foreach ($roles as $role) {
             $grants = [];
             foreach ($grantRows->get($role->role_id, collect()) as $g) {
@@ -108,9 +110,10 @@ final class CrmFinancialRoleEntitlementAudit
                     'data_scope' => $g->data_scope === null ? null : (string) $g->data_scope];
             }
             $super = (bool) $role->is_system && strtolower(trim((string) $role->role_name)) === 'super admin';
-            $assessment = self::assessRole($super, $grants, $salesScope);
+            $assessment = self::assessRole($super, $grants, $salesScope, $csvPilotEnabled);
             if ($assessment['reports_page']) $reportsCount++;
-            if ($assessment['review_code'] === 'reports_csv_without_invoice_kpi') $csvWithoutKpi++;
+            if ($assessment['reports_page'] && !$assessment['dashboard_invoice_kpis']) $reportsWithoutKpi++;
+            if ($assessment['csv_export'] && !$assessment['dashboard_invoice_kpis']) $csvWithoutKpi++;
             if ($assessment['review_code'] === 'eligible_for_numeric_comparison') $eligible++;
             if ($assessment['review_code'] === 'downstream_sales_scope_may_differ') $downstream++;
 
@@ -119,7 +122,7 @@ final class CrmFinancialRoleEntitlementAudit
                 ...$assessment,
             ];
         }
-        $status = ($reportsCount > 0 && $csvWithoutKpi === 0 && $downstream === 0)
+        $status = ($reportsCount > 0 && $reportsWithoutKpi === 0 && $downstream === 0)
             ? 'ELIGIBLE_FOR_NUMERIC_COMPARISON' : 'REVIEW_REQUIRED';
         return [
             'stage' => 'A7.6.5.3', 'read_only' => true,
@@ -127,11 +130,13 @@ final class CrmFinancialRoleEntitlementAudit
             'business_rows_read' => false, 'status' => $status,
             'summary' => [
                 'roles_checked' => count($results), 'reports_capable_roles' => $reportsCount,
+                'reports_without_invoice_kpi' => $reportsWithoutKpi,
                 'csv_without_invoice_kpi' => $csvWithoutKpi,
                 'eligible_for_numeric_comparison' => $eligible,
                 'downstream_scope_review' => $downstream,
             ],
             'downstream_sales_scope_enabled' => $salesScope,
+            'csv_pilot_enabled' => $csvPilotEnabled,
             'single_role_preview' => $results,
             'caveat' => 'Single-role grants only; multi-role unions and record-level access are not evaluated. No financial values compared.',
         ];
@@ -145,9 +150,11 @@ final class CrmFinancialRoleEntitlementAudit
             'status' => $status, 'schema_missing' => $missing,
             'summary' => [
                 'roles_checked' => 0, 'reports_capable_roles' => 0,
+                'reports_without_invoice_kpi' => 0,
                 'csv_without_invoice_kpi' => 0,
                 'eligible_for_numeric_comparison' => 0, 'downstream_scope_review' => 0,
             ],
+            'csv_pilot_enabled' => (bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false),
             'single_role_preview' => [],
             'caveat' => 'No completeness or parity claim can be made without the required policy schema.',
         ];

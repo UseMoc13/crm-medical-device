@@ -1,0 +1,4 @@
+Known approved pre-patch source fingerprints (no secrets):
+app/Services/CrmFinancialRoleEntitlementAudit.php: 4e29369b0b3cb6a36c11e2856d51db1e770db04d4990dc47ed95a01d2ecc4c29
+app/Console/Commands/AuditCrmFinancialRoleEntitlements.php: 2d8027267dc1c03aa9073f8103e77cdf7dc32510f04adbd95565df09ed370c49
+app/Http/Controllers/ReportController.php: fd51e2b820eff05791481ce365d33a16429bb164
