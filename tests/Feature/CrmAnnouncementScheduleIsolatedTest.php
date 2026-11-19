@@ -57,11 +57,37 @@ final class CrmAnnouncementScheduleIsolatedTest extends TestCase
         $this->isolated(function (): void {
             $now = now();
             $ids = array_map(static fn () => (string) Str::uuid(), range(1, 3));
+            // Every row in a bulk insert MUST contain the same columns.
+            // Otherwise the first row's column list can misplace scheduled_at.
             DB::table('announcements')->insert([
-                ['announcement_id'=>$ids[0], 'title'=>'Published', 'status'=>'published', 'published_at'=>$now->copy()->subDay()],
-                ['announcement_id'=>$ids[1], 'title'=>'Due', 'status'=>'scheduled', 'scheduled_at'=>$now->copy()->subHour()],
-                ['announcement_id'=>$ids[2], 'title'=>'Future', 'status'=>'scheduled', 'scheduled_at'=>$now->copy()->addDay()],
+                [
+                    'announcement_id' => $ids[0], 'title' => 'Published', 'status' => 'published',
+                    'scheduled_at' => null, 'published_at' => $now->copy()->subDay(),
+                ],
+                [
+                    'announcement_id' => $ids[1], 'title' => 'Due', 'status' => 'scheduled',
+                    'scheduled_at' => $now->copy()->subHour(), 'published_at' => null,
+                ],
+                [
+                    'announcement_id' => $ids[2], 'title' => 'Future', 'status' => 'scheduled',
+                    'scheduled_at' => $now->copy()->addDay(), 'published_at' => null,
+                ],
             ]);
+            // Validate the fixture BEFORE running any publisher command. A
+            // silent wrong-column insert must never be mistaken for a bug in
+            // the command, Eloquent connection, or scheduled task.
+            self::assertTrue(
+                DB::table('announcements')->where('announcement_id', $ids[1])
+                    ->where('status', 'scheduled')->whereNotNull('scheduled_at')
+                    ->whereNull('published_at')->where('scheduled_at', '<=', $now)->exists(),
+                'Fixture error: due item must have a past scheduled_at, not published_at.'
+            );
+            self::assertTrue(
+                DB::table('announcements')->where('announcement_id', $ids[2])
+                    ->where('status', 'scheduled')->whereNotNull('scheduled_at')
+                    ->whereNull('published_at')->where('scheduled_at', '>', $now)->exists(),
+                'Fixture error: future item must have a future scheduled_at.'
+            );
             $writes = [];
             DB::listen(static function ($event) use (&$writes): void {
                 if (preg_match('/^\s*(insert|update|delete|alter|drop|create|truncate)\b/i', $event->sql)) $writes[] = $event->sql;
