@@ -105,6 +105,7 @@
 </div>
 
 
+@if($canViewFinancial)
 {{-- FINANCIAL KPI --}}
 <div class="rp-section-title">
     Financial Overview
@@ -138,6 +139,12 @@
 </div>
 
 
+@else
+<div class="card rp-block"><div class="card-head"><h3>Financial Overview</h3></div>
+    <div class="card-body"><div class="rp-empty">Financial Overview restricted for this account.</div></div></div>
+@endif
+
+@if($canViewOperations)
 {{-- SERVICE KPI --}}
 <div class="rp-section-title">Service Overview</div>
 
@@ -176,6 +183,12 @@
 </div>
 
 
+@else
+<div class="card rp-block"><div class="card-head"><h3>Service Overview</h3></div>
+    <div class="card-body"><div class="rp-empty">Service Overview restricted for this account.</div></div></div>
+@endif
+
+@if($canViewFinancial)
 {{-- MONTHLY CHART --}}
 <section class="card rp-block" style="margin-top:26px">
     <div class="card-head">
@@ -221,9 +234,15 @@
 </section>
 
 
+@else
+<div class="card rp-block"><div class="card-head"><h3>Revenue by Month</h3></div>
+    <div class="card-body"><div class="rp-empty">Revenue by Month restricted for this account.</div></div></div>
+@endif
+
 {{-- STATUS + CUSTOMERS --}}
 <div class="rp-grid">
 
+    @if($canViewFinancial)
     <section class="card rp-block">
         <div class="card-head">
             <div>
@@ -245,6 +264,10 @@
             ])
         </div>
     </section>
+    @else
+    <section class="card rp-block"><div class="card-head"><h3>Invoices by Status</h3></div>
+        <div class="card-body"><div class="rp-empty">Invoices by Status restricted for this account.</div></div></section>
+    @endif
 
     <section class="card rp-block">
         <div class="card-head">
@@ -303,6 +326,7 @@
         </div>
     </section>
 
+    @if($canViewPipeline)
     <section class="card rp-block">
         <div class="card-head">
             <div>
@@ -324,10 +348,15 @@
             ])
         </div>
     </section>
+    @else
+    <section class="card rp-block"><div class="card-head"><h3>Sales Pipeline</h3></div>
+        <div class="card-body"><div class="rp-empty">Sales Pipeline restricted for this account.</div></div></section>
+    @endif
 
 </div>
 
 
+@if($canViewOperations)
 {{-- SERVICE DETAIL --}}
 <div class="rp-grid" style="margin-top:18px">
 
@@ -400,6 +429,12 @@
 </div>
 
 
+@else
+<div class="card rp-block"><div class="card-head"><h3>Service & Maintenance</h3></div>
+    <div class="card-body"><div class="rp-empty">Service & Maintenance restricted for this account.</div></div></div>
+@endif
+
+@if($canViewWarranty)
 {{-- WARRANTY --}}
 <section class="card rp-block" style="margin-top:18px">
     <div class="card-head">
@@ -444,6 +479,11 @@
 
     </div>
 </section>
+
+@else
+<div class="card rp-block"><div class="card-head"><h3>Warranty Status</h3></div>
+    <div class="card-body"><div class="rp-empty">Warranty Status restricted for this account.</div></div></div>
+@endif
 
 @include('reports._styles')
 

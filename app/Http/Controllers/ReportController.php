@@ -45,12 +45,19 @@ class ReportController extends Controller
         // A7.6.5.7: permission check precedes sensitive customer/product queries.
         $reportPrivacy = app(\App\Services\CrmReportPrivacyPilot::class)
             ->forViewer(Auth::guard('web')->user());
-        $canViewReportDetails = $reportPrivacy['customer_product_details'];
-        $canExportInvoiceCsv = $reportPrivacy['invoice_csv'];
+        // A7.6.5.8: group-level opt-in guards. All decisions precede business queries.
+        $aggregatePrivacy = app(\App\Services\CrmReportAggregatePrivacyPilot::class)
+            ->forViewer(Auth::guard('web')->user());
+        $canViewFinancial = $aggregatePrivacy['financial'];
+        $canViewOperations = $aggregatePrivacy['operations'];
+        $canViewPipeline = $aggregatePrivacy['pipeline'];
+        $canViewWarranty = $aggregatePrivacy['warranty'];
+        $canViewReportDetails = $reportPrivacy['customer_product_details'] && $canViewFinancial;
+        $canExportInvoiceCsv = $reportPrivacy['invoice_csv'] && $canViewFinancial;
 
         /* ---------- Invoice KPI ---------- */
 
-        $kpi = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
+        $kpi = $canViewFinancial ? app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->whereDate('invoice_date', '>=', $fromDate)
             ->whereDate('invoice_date', '<=', $toDate)
             ->selectRaw(
@@ -62,25 +69,25 @@ class ReportController extends Controller
                  COUNT(*) FILTER (WHERE status = 'Sent' AND due_date < ?) AS overdue_count",
                 [$today, $today]
             )
-            ->first();
+            ->first() : null;
 
-        $collectionRate = (float) $kpi->invoiced > 0
+        $collectionRate = $canViewFinancial && (float) $kpi->invoiced > 0
             ? round(((float) $kpi->paid / (float) $kpi->invoiced) * 100, 1)
             : 0;
 
         /* ---------- Monthly chart ---------- */
 
-        $monthly = $this->monthlySeries($from, $to);
+        $monthly = $canViewFinancial ? $this->monthlySeries($from, $to) : [];
 
         /* ---------- Status breakdown ---------- */
 
-        $statusBreakdown = app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
+        $statusBreakdown = $canViewFinancial ? app(CrmReportingDataScope::class)->invoices(DB::table('invoices'))
             ->whereDate('invoice_date', '>=', $fromDate)
             ->whereDate('invoice_date', '<=', $toDate)
             ->select('status', DB::raw('COUNT(*) AS total'), DB::raw('COALESCE(SUM(total_amount),0) AS amount'))
             ->groupBy('status')
             ->orderByDesc('amount')
-            ->get();
+            ->get() : collect();
 
         /* ---------- Top customers ---------- */
 
@@ -127,7 +134,7 @@ class ReportController extends Controller
             ->whereDate('opened_at', '>=', $fromDate)
             ->whereDate('opened_at', '<=', $toDate);
 
-        $tickets = [
+        $tickets = $canViewOperations ? [
             'total' => $ticketBase()->count(),
             'open' => $ticketBase()->whereNotIn('status', ['resolved', 'closed'])->count(),
             'avg_hours' => $ticketBase()
@@ -140,9 +147,10 @@ class ReportController extends Controller
             'by_priority' => $ticketBase()
                 ->select('priority', DB::raw('COUNT(*) AS total'))
                 ->groupBy('priority')->orderByDesc('total')->get(),
-        ];
+        ] : ['total' => 0, 'open' => 0, 'avg_hours' => null,
+            'by_status' => collect(), 'by_priority' => collect()];
 
-        $maintenance = [
+        $maintenance = $canViewOperations ? [
             'schedules' => app(CrmReportingDataScope::class)->schedules(DB::table('maintenance_schedules'))
                 ->whereDate('scheduled_date', '>=', $fromDate)
                 ->whereDate('scheduled_date', '<=', $toDate)
@@ -165,11 +173,12 @@ class ReportController extends Controller
                 ->whereDate('performed_at', '<=', $toDate)
                 ->select('result', DB::raw('COUNT(*) AS total'))
                 ->groupBy('result')->orderByDesc('total')->get(),
-        ];
+        ] : ['schedules' => 0, 'records' => 0, 'overdue_now' => 0,
+            'by_type' => collect(), 'by_result' => collect()];
 
         /* ---------- Pipeline & Warranty (snapshot saat ini) ---------- */
 
-        $pipeline = app(CrmReportingDataScope::class)->pipeline(DB::table('opportunities'))
+        $pipeline = $canViewPipeline ? app(CrmReportingDataScope::class)->pipeline(DB::table('opportunities'))
             ->select(
                 'stage',
                 DB::raw('COUNT(*) AS total'),
@@ -177,9 +186,9 @@ class ReportController extends Controller
             )
             ->groupBy('stage')
             ->orderByDesc('value')
-            ->get();
+            ->get() : collect();
 
-        $warranty = [
+        $warranty = $canViewWarranty ? [
             'by_status' => app(CrmReportingDataScope::class)->warranty(DB::table('warranties'))
                 ->select('status', DB::raw('COUNT(*) AS total'))
                 ->groupBy('status')->orderByDesc('total')->get(),
@@ -188,7 +197,7 @@ class ReportController extends Controller
                 ->whereDate('end_date', '>=', $today)
                 ->whereDate('end_date', '<=', today()->addDays(30)->toDateString())
                 ->count(),
-        ];
+        ] : ['by_status' => collect(), 'expiring_soon' => 0];
 
         return view('reports.index', [
             'from' => $from,
@@ -202,6 +211,10 @@ class ReportController extends Controller
             'topProducts' => $topProducts,
             'canViewReportDetails' => $canViewReportDetails,
             'canExportInvoiceCsv' => $canExportInvoiceCsv,
+            'canViewFinancial' => $canViewFinancial,
+            'canViewOperations' => $canViewOperations,
+            'canViewPipeline' => $canViewPipeline,
+            'canViewWarranty' => $canViewWarranty,
             'tickets' => $tickets,
             'maintenance' => $maintenance,
             'pipeline' => $pipeline,
@@ -218,7 +231,8 @@ class ReportController extends Controller
 
         // A7.6.5.4: optional least-privilege pilot. OFF by default.
         if ((bool) config('crm_reporting.csv_invoice_all_scope_pilot_enabled', false)
-            || (bool) config('crm_reporting.report_customer_product_privacy_pilot_enabled', false)) {
+            || (bool) config('crm_reporting.report_customer_product_privacy_pilot_enabled', false)
+            || (bool) config('crm_reporting.report_aggregate_privacy_pilot_enabled', false)) {
             abort_unless(app(\App\Services\CrmInvoiceCsvPolicy::class)
                 ->canExport(Auth::guard('web')->user()), 403);
         }
