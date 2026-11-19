@@ -37,6 +37,8 @@ final class CrmAnnouncementScheduleIsolatedTest extends TestCase
                 $table->timestamp('published_at')->nullable();
                 $table->timestamp('expires_at')->nullable();
                 $table->uuid('created_by')->nullable();
+                // Match announcements migration: Eloquent updates updated_at on publish.
+                $table->timestamps();
             });
             $callback();
         } finally {

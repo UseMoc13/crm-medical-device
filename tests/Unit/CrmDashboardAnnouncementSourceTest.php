@@ -27,7 +27,12 @@ final class CrmDashboardAnnouncementSourceTest extends TestCase
     {
         $root = dirname(__DIR__, 2);
         self::assertFileExists($root.'/app/Http/Controllers/ReportController.php');
-        self::assertFileDoesNotExist($root.'/app/Http/Controllers/Reportcontroller.php');
+        // Windows filesystems may report a differently cased path as existing.
+        // Check actual directory entry names with a case-sensitive comparison.
+        $entries = scandir($root.'/app/Http/Controllers');
+        self::assertIsArray($entries);
+        self::assertContains('ReportController.php', $entries);
+        self::assertNotContains('Reportcontroller.php', $entries);
         $report = file_get_contents($root.'/app/Http/Controllers/ReportController.php');
         self::assertMatchesRegularExpression('/class\s+ReportController\b/', $report);
         $schedule = file_get_contents($root.'/routes/console.php');
