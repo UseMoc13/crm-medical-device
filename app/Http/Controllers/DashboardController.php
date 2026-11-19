@@ -9,6 +9,9 @@ class DashboardController extends Controller
 {
     public function index(CrmDashboardViewData $dashboard)
     {
-        return view('dashboard.index', $dashboard->forCurrentUser());
+        return view('dashboard.index', [
+            ...$dashboard->forCurrentUser(),
+            'latestAnnouncements' => app(\App\Services\CrmDashboardAnnouncements::class)->latest(),
+        ]);
     }
 }

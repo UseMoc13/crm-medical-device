@@ -5,23 +5,7 @@
 @section('content')
 
 @php
-    use App\Models\Announcement;
     use Illuminate\Support\Facades\Storage;
-
-    // Prefer $latestAnnouncements passed by DashboardController.
-    // Falls back to a direct query so the slider also works without it.
-    if (! isset($latestAnnouncements)) {
-        Announcement::publishDueScheduled();
-
-        $latestAnnouncements = Announcement::query()
-            ->with('creator')
-            ->published()
-            ->orderByDesc('is_pinned')
-            ->orderByRaw('pin_order ASC NULLS LAST')
-            ->orderByDesc('published_at')
-            ->limit(6)
-            ->get();
-    }
 @endphp
 
 <div class="page-head">
