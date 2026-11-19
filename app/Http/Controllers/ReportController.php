@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CrmNavigationAccess;
 use App\Services\CrmReportingDataScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -27,6 +29,8 @@ class ReportController extends Controller
 
     public function index(Request $request): View
     {
+        $this->assertReportsView();
+
         $request->validate([
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
@@ -202,6 +206,8 @@ class ReportController extends Controller
      */
     public function exportInvoices(Request $request): StreamedResponse
     {
+        $this->assertReportsView();
+
         $request->validate([
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
@@ -263,6 +269,14 @@ class ReportController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    /** Both web and CSV entrypoints must pass the same reporting permission check. */
+    private function assertReportsView(): void
+    {
+        abort_unless(
+            app(CrmNavigationAccess::class)->canView(Auth::guard('web')->user(), 'reports'),
+            403
+        );
+    }
     /* =====================================================
        HELPERS
     ===================================================== */
