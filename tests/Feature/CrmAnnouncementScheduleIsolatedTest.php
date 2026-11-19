@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\PublishDueCrmAnnouncements;
+use App\Models\Announcement;
 use App\Services\CrmDashboardAnnouncements;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Tests\TestCase;
 
 /** All fixtures and publication writes are on a disposable SQLite :memory: DB. */
@@ -66,7 +69,14 @@ final class CrmAnnouncementScheduleIsolatedTest extends TestCase
             $initial = app(CrmDashboardAnnouncements::class)->latest();
             self::assertSame([$ids[0]], $initial->pluck('announcement_id')->all());
             self::assertSame([], $writes);
-            self::assertSame(0, Artisan::call('crm:announcements:publish-due'));
+            // Do not invoke Artisan::call() here: a Console Kernel bootstrap may
+            // change the default DB context used by the isolated fixture.
+            // Validate the actual Eloquent connection before any publisher write.
+            self::assertSame('a764_memory', DB::getDefaultConnection());
+            self::assertSame('a764_memory', (new Announcement())->getConnection()->getName());
+            $command = app(PublishDueCrmAnnouncements::class);
+            $command->setLaravel(app());
+            self::assertSame(0, $command->run(new ArrayInput([]), new BufferedOutput()));
             self::assertSame('published', DB::table('announcements')->where('announcement_id', $ids[1])->value('status'));
             self::assertSame('scheduled', DB::table('announcements')->where('announcement_id', $ids[2])->value('status'));
             $countAfterMutation = count($writes);
