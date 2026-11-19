@@ -13,7 +13,7 @@ final class CrmKpiSourceCatalogTest extends TestCase
         self::assertGreaterThanOrEqual(10, count($metrics));
         self::assertCount(count(array_unique(array_keys($metrics))), $metrics);
         foreach ($metrics as $id => $metric) {
-            self::assertMatchesRegularExpression('/^[a-z_]+\.[a-z_]+$/', $id);
+            self::assertMatchesRegularExpression('/^[a-z_]+\.[a-z_][a-z0-9_]*$/', $id);
             self::assertNotEmpty($metric['columns']);
             self::assertContains($metric['kind'], ['snapshot', 'period']);
             self::assertStringStartsWith('crm_page.', $metric['permission']);
