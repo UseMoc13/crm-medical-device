@@ -1,0 +1,142 @@
+{
+  "stage": "A7.8.4",
+  "environment": "UNVERIFIED",
+  "dataset_reference": "",
+  "backup_reference": "",
+  "scenarios": {
+    "UAT-01": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Auth/RBAC guest boundaries",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-02": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "RBAC direct write denial",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-03": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Customer-to-Lead CRUD",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-04": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Quotation-to-Sales Order",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-05": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Inventory and stock ledger",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-06": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Delivery dispatch and completion",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-07": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Installation and checklist",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-08": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Warranty activation",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-09": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Service ticket lifecycle",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-10": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Maintenance lifecycle",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-11": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Invoice and financial reports",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-12": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Private contract files",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-13": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Announcement direct public assets",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-14": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Multi-role dashboard/report privacy",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    },
+    "UAT-15": {
+      "status": "NOT_RUN",
+      "role": "",
+      "expected_result": "Pagination and large CSV export",
+      "observed_result": "",
+      "evidence_reference": "",
+      "defect_reference": ""
+    }
+  },
+  "policies": {
+    "announcement_public_assets": {
+      "status": "HOLD",
+      "approval_reference": ""
+    },
+    "reports_privacy_pilot": {
+      "status": "HOLD",
+      "approval_reference": ""
+    }
+  },
+  "review": {
+    "status": "PENDING",
+    "review_reference": ""
+  }
+}
