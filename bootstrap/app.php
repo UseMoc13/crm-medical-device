@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->web(append: [
             \App\Http\Middleware\EnsureCrmAuthenticated::class,
+            \App\Http\Middleware\EnforceCrmRouteAuthorization::class,
             \App\Http\Middleware\PreventCrmResponseCaching::class,
         ]);
     })
