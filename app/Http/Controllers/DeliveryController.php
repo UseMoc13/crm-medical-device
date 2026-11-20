@@ -241,6 +241,9 @@ class DeliveryController extends Controller
             }
             if ($validated['status'] === 'in_transit') {
                 $this->dispatchAllocatedUnits($locked);
+                // A7.5.5: fail closed before committing any stock-out or in_transit state.
+                // Throws ValidationException => entire DB::transaction rolls back.
+                app(\App\Services\CrmDeliveryCompletionGuard::class)->assertCanComplete($locked);
             }
             // A7.5.2.2a: verify dispatch provenance before finalizing Delivery.
             if ($validated['status'] === 'delivered') {
