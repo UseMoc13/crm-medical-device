@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
-        $middleware->web(append: [\App\Http\Middleware\EnsureCrmAuthenticated::class]);
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureCrmAuthenticated::class,
+            \App\Http\Middleware\PreventCrmResponseCaching::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
