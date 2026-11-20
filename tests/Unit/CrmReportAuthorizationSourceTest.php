@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-/** Checks both report entrypoints invoke the same permission guard BEFORE validation. */
+/** Verify that Reports page and CSV authorization precedes validation and SQL. */
 final class CrmReportAuthorizationSourceTest extends TestCase
 {
     public function test_report_page_and_csv_are_both_guarded_before_queries(): void
@@ -16,18 +16,48 @@ final class CrmReportAuthorizationSourceTest extends TestCase
         self::assertStringContainsString('abort_unless(', $source);
         self::assertStringContainsString('use App\\Services\\CrmNavigationAccess;', $source);
 
-        foreach (['index' => 'View', 'exportInvoices' => 'StreamedResponse'] as $method => $returnType) {
-            $start = strpos($source, 'public function '.$method.'(Request $request): '.$returnType);
-            self::assertNotFalse($start, 'Missing Reports method '.$method);
-            $body = substr($source, $start, 350);
-            self::assertMatchesRegularExpression('/\\{\\s*\\$this->assertReportsView\\(\\);/', $body);
-            self::assertLessThan(strpos($body, '$request->validate('), strpos($body, '$this->assertReportsView();'));
+        // The CSV method gained privacy checks before validation. Never infer
+        // safety from an arbitrary 350-character slice of a method body.
+        $sections = [
+            [
+                'name' => 'index',
+                'start' => 'public function index(Request $request): View',
+                'end' => 'public function exportInvoices(Request $request): StreamedResponse',
+            ],
+            [
+                'name' => 'exportInvoices',
+                'start' => 'public function exportInvoices(Request $request): StreamedResponse',
+                'end' => 'private function assertReportsView(): void',
+            ],
+        ];
+
+        foreach ($sections as $section) {
+            $start = strpos($source, $section['start']);
+            self::assertNotFalse($start, 'Missing Reports method '.$section['name']);
+            $end = strpos($source, $section['end'], $start + strlen($section['start']));
+            self::assertNotFalse($end, 'Missing Reports method boundary '.$section['name']);
+            $body = substr($source, $start, $end - $start);
+
+            self::assertMatchesRegularExpression(
+                '/\{\s*\$this->assertReportsView\(\);/',
+                $body,
+                'Reports permission guard must be the first statement of '.$section['name']
+            );
+            $guardPos = strpos($body, '$this->assertReportsView();');
+            $validatePos = strpos($body, '$request->validate(');
+            $queryPos = strpos($body, 'DB::table(');
+            self::assertNotFalse($guardPos, 'Missing Reports permission guard '.$section['name']);
+            self::assertNotFalse($validatePos, 'Missing date validation '.$section['name']);
+            self::assertNotFalse($queryPos, 'Missing business query '.$section['name']);
+            self::assertLessThan($validatePos, $guardPos, 'Permission must precede validation: '.$section['name']);
+            self::assertLessThan($queryPos, $guardPos, 'Permission must precede business SQL: '.$section['name']);
         }
     }
 
     public function test_report_formulas_and_read_only_queries_remain_present(): void
     {
         $source = file_get_contents(dirname(__DIR__, 2).'/app/Http/Controllers/ReportController.php');
+        self::assertIsString($source);
         self::assertStringContainsString("private const ISSUED = ['Sent', 'Paid'];", $source);
         self::assertStringContainsString('CrmReportingDataScope::class', $source);
         self::assertStringContainsString("status IN ('Sent','Paid')", $source);
