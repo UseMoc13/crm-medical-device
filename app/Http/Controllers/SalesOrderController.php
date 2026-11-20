@@ -97,6 +97,7 @@ class SalesOrderController extends Controller
         $query = $this->filteredOrders($request);
 
         $orders = $query
+            ->orderByDesc('sales_order_id')
             ->paginate(10)
             ->withQueryString();
 
