@@ -29,7 +29,7 @@ $bootstrap = @file_get_contents($root.'/bootstrap/app.php') ?: '';
 $auth = strpos($bootstrap, '\\App\\Http\\Middleware\\EnsureCrmAuthenticated::class');
 $rbac = strpos($bootstrap, '\\App\\Http\\Middleware\\EnforceCrmRouteAuthorization::class');
 $cache = strpos($bootstrap, '\\App\\Http\\Middleware\\PreventCrmResponseCaching::class');
-$checks['Middleware: auth before RBAC before privacy'] = $auth !== false && $rbac !== false && $cache !== false && $auth < $rbac && $rbac < $cache;
+$checks['Middleware: privacy wraps auth then RBAC'] = $auth !== false && $rbac !== false && $cache !== false && $cache < $auth && $auth < $rbac;
 $policy = @file_get_contents($root.'/app/Services/CrmRouteAuthorizationPolicy.php') ?: '';
 $guard = @file_get_contents($root.'/app/Http/Middleware/EnforceCrmRouteAuthorization.php') ?: '';
 $checks['Module, page, workflow catalogs reused'] = str_contains($policy, 'CrmModuleAccess::permissionForRoute')

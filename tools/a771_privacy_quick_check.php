@@ -33,9 +33,9 @@ $source = is_file($root . '/app/Http/Middleware/PreventCrmResponseCaching.php')
 $required = [
     'Auth middleware retained' => strpos($boot, 'EnsureCrmAuthenticated::class') !== false,
     'No-store middleware registered' => strpos($boot, 'PreventCrmResponseCaching::class') !== false,
-    'Auth runs before cache middleware' => strpos($boot, 'EnsureCrmAuthenticated::class') !== false
+    'Cache middleware wraps auth responses' => strpos($boot, 'EnsureCrmAuthenticated::class') !== false
         && strpos($boot, 'PreventCrmResponseCaching::class') !== false
-        && strpos($boot, 'EnsureCrmAuthenticated::class') < strpos($boot, 'PreventCrmResponseCaching::class'),
+        && strpos($boot, 'PreventCrmResponseCaching::class') < strpos($boot, 'EnsureCrmAuthenticated::class'),
     'Trust proxy settings unchanged from checked source' => strpos($boot, "trustProxies(at: '*')") !== false,
     'No-store set on outgoing response' => strpos($source, "headers->set('Cache-Control', 'private, no-store") !== false,
     'Pragma no-cache set' => strpos($source, "headers->set('Pragma', 'no-cache')") !== false,
