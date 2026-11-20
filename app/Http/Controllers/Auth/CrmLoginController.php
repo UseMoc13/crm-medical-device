@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\CrmLoginThrottlePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,17 +30,28 @@ class CrmLoginController extends Controller
         ]);
 
         $email = Str::lower(trim($credentials['email']));
-        $key = 'crm-login:' . hash('sha256', $email . '|' . $request->ip());
+        $keys = CrmLoginThrottlePolicy::keys($email, (string) ($request->ip() ?? 'unknown'));
+        $pairKey = $keys['pair'];
+        $identityKey = $keys['identity'];
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
+        // Two independent limits: per email+IP and per email across IPs.
+        // A forged/rotating client IP must not reset the identity limit.
+        $pairBlocked = RateLimiter::tooManyAttempts($pairKey, CrmLoginThrottlePolicy::PAIR_LIMIT);
+        $identityBlocked = RateLimiter::tooManyAttempts($identityKey, CrmLoginThrottlePolicy::IDENTITY_LIMIT);
+        if ($pairBlocked || $identityBlocked) {
+            $seconds = max(
+                1,
+                $pairBlocked ? RateLimiter::availableIn($pairKey) : 0,
+                $identityBlocked ? RateLimiter::availableIn($identityKey) : 0
+            );
             return back()->withErrors([
                 'email' => "Too many login attempts. Try again in {$seconds} seconds.",
             ])->onlyInput('email');
         }
 
         if (!Auth::guard('web')->attempt(['email' => $email, 'password' => $credentials['password']])) {
-            RateLimiter::hit($key, 60);
+            RateLimiter::hit($pairKey, CrmLoginThrottlePolicy::PAIR_DECAY_SECONDS);
+            RateLimiter::hit($identityKey, CrmLoginThrottlePolicy::IDENTITY_DECAY_SECONDS);
             return back()->withErrors(['email' => 'Invalid email or password.'])
                 ->onlyInput('email');
         }
@@ -50,13 +62,15 @@ class CrmLoginController extends Controller
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            RateLimiter::hit($key, 60);
+            RateLimiter::hit($pairKey, CrmLoginThrottlePolicy::PAIR_DECAY_SECONDS);
+            RateLimiter::hit($identityKey, CrmLoginThrottlePolicy::IDENTITY_DECAY_SECONDS);
             return redirect()->route('login')->withErrors([
                 'email' => 'This account is not active. Contact your administrator.',
             ]);
         }
 
-        RateLimiter::clear($key);
+        RateLimiter::clear($pairKey);
+        RateLimiter::clear($identityKey);
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'))
