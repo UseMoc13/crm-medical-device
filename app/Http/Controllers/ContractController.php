@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contract;
+use App\Support\CrmPrivateFilePath;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -260,17 +261,22 @@ class ContractController extends Controller
             ->with('error', 'Dokumen kontrak belum tersedia.');
     }
 
+    $storedPath = (string) $contract->document_path;
+    abort_unless(CrmPrivateFilePath::contract($storedPath), 404);
     $disk = Storage::disk('local');
+    $resolved = CrmPrivateFilePath::resolve($disk->path(''), $storedPath, 'contracts');
 
-    if (!$disk->exists($contract->document_path)) {
+    if ($resolved === null) {
         return redirect()
             ->route('contracts.show', $contract->contract_id)
             ->with('error', 'File dokumen kontrak tidak ditemukan.');
     }
 
-    return $disk->download(
-        $contract->document_path,
-        $contract->contract_number . '.pdf'
+    $safeName = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) $contract->contract_number);
+    return response()->download(
+        $resolved,
+        ($safeName ?: 'contract') . '.pdf',
+        ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']
     );
 }
 }

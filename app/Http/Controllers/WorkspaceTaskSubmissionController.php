@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WorkspaceTask;
 use App\Models\WorkspaceTaskAssignment;
 use App\Models\WorkspaceTaskSubmissionFile;
+use App\Support\CrmPrivateFilePath;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -150,7 +151,11 @@ final class WorkspaceTaskSubmissionController extends Controller
             abort_if($locked->status === 'completed',422, 'Submitted evidence is locked.');
             $document = $locked->files()->whereKey($file)->firstOrFail();
             abort_unless((string) $document->uploaded_by_user_id === $this->actorId(), 403);
-            $path = $document->stored_path;
+            $path = (string) $document->stored_path;
+            // Do not delete arbitrary private disk paths from corrupted legacy rows.
+            abort_unless(CrmPrivateFilePath::submission(
+                $path, (string) $lockedTask->getKey(), (string) $locked->getKey()
+            ), 404);
             $document->delete();
             return $path;
         }, 3);
@@ -186,8 +191,15 @@ final class WorkspaceTaskSubmissionController extends Controller
 
     private function directDownload(WorkspaceTaskSubmissionFile $file): BinaryFileResponse
     {
-        $path = Storage::disk('local')->path($file->stored_path);
-        abort_unless(str_starts_with($file->stored_path, 'crm-task-submissions/') && is_file($path), 404);
+        $storedPath = (string) $file->stored_path;
+        $taskId = (string) $file->assignment->task_id;
+        $assignmentId = (string) $file->assignment_id;
+        abort_unless(CrmPrivateFilePath::submission($storedPath, $taskId, $assignmentId), 404);
+        $path = CrmPrivateFilePath::resolve(
+            Storage::disk('local')->path(''), $storedPath,
+            'crm-task-submissions/'.$taskId.'/'.$assignmentId
+        );
+        abort_unless($path !== null, 404);
         return response()->download($path, $this->downloadName($file), [
             'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',
@@ -237,8 +249,15 @@ final class WorkspaceTaskSubmissionController extends Controller
         $added = 0;
         $missing = 0;
         foreach ($files as $file) {
-            $path = Storage::disk('local')->path($file->stored_path);
-            if (!str_starts_with($file->stored_path, 'crm-task-submissions/') || !is_file($path)) { $missing++; continue; }
+            $storedPath = (string) $file->stored_path;
+            $taskId = (string) $file->assignment->task_id;
+            $assignmentId = (string) $file->assignment_id;
+            $allowed = CrmPrivateFilePath::submission($storedPath, $taskId, $assignmentId);
+            $path = $allowed ? CrmPrivateFilePath::resolve(
+                Storage::disk('local')->path(''), $storedPath,
+                'crm-task-submissions/'.$taskId.'/'.$assignmentId
+            ) : null;
+            if ($path === null) { $missing++; continue; }
             $name = $this->downloadName($file);
             $base = pathinfo($name, PATHINFO_FILENAME);
             $ext = pathinfo($name, PATHINFO_EXTENSION);
