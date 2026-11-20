@@ -58,7 +58,7 @@ class SalesOrderController extends Controller
                 $out = fopen('php://output', 'w');
                 fwrite($out, "\xEF\xBB\xBF");
                 fputcsv($out, ['Sales Order', 'Quotation', 'Customer', 'Order Date', 'Delivery Date', 'Status', 'Subtotal (IDR)', 'Tax (IDR)', 'Discount (IDR)', 'Total (IDR)', 'Notes']);
-                foreach ($query->cursor() as $order) {
+                foreach ($query->orderByDesc('sales_order_id')->lazy(200) as $order) {
                     $discount = max(0, round((float) $order->subtotal + (float) $order->tax - (float) $order->total_amount, 2));
                     $fields = [
                         $order->sales_order_number,
