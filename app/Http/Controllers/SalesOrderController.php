@@ -73,13 +73,9 @@ class SalesOrderController extends Controller
                         $order->total_amount,
                         $order->notes ?? '',
                     ];
-                    // Keep spreadsheet viewers from treating arbitrary database text as formulas.
-                    foreach ([0, 1, 2, 5, 10] as $column) {
-                        if (is_string($fields[$column]) && preg_match('/^[\x00-\x20]*[=+@\-]/u', $fields[$column])) {
-                            $fields[$column] = "'" . $fields[$column];
-                        }
-                    }
-                    fputcsv($out, $fields);
+                    // Apply the same safe CSV encoding as the Invoice export.
+                    // Only untrusted text is escaped; numeric values stay numeric.
+                    fputcsv($out, \App\Support\CrmCsvCellSanitizer::row($fields, [0, 1, 2, 5, 10]));
                 }
                 fclose($out);
             }, $filename . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

@@ -280,7 +280,7 @@ class ReportController extends Controller
             ]);
 
             foreach ($rows->cursor() as $row) {
-                fputcsv($out, [
+                $fields = [
                     $row->invoice_number,
                     $row->invoice_date,
                     $row->due_date,
@@ -291,7 +291,8 @@ class ReportController extends Controller
                     $row->discount,
                     $row->tax,
                     $row->total_amount,
-                ]);
+                ];
+                fputcsv($out, \App\Support\CrmCsvCellSanitizer::row($fields, [0, 3, 4, 5]));
             }
 
             fclose($out);
