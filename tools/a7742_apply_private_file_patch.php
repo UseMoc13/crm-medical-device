@@ -187,7 +187,8 @@ try {
     }
     if ($mode === '--dry-run') {
         echo "[PASS] Dry-run. No application files or DB records changed.\n";
-        exit(0);
+        // Return from the script so PHP executes finally and cleans staged .tmp.php files.
+        return;
     }
 
     $base = rtrim(sys_get_temp_dir(), '/\\') . DIRECTORY_SEPARATOR . 'crm_a7742_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4));
