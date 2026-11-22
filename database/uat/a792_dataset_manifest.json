@@ -1,0 +1,310 @@
+{
+  "schema_fingerprint": "33ebc4b1ef1ecff52be3ed9cde67c2e01c69902a7886f21e362270c85ba9b801",
+  "total_tables": 65,
+  "candidate_counts": {
+    "activities": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "announcement_attachments": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "announcement_media": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "announcements": {
+      "count": 4,
+      "handling": "SQL_CANDIDATE"
+    },
+    "audit_logs": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "branches": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "brands": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "cache": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "cache_locks": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "contacts": {
+      "count": 30,
+      "handling": "SQL_CANDIDATE"
+    },
+    "contracts": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "crm_team_members": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "crm_teams": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "customers": {
+      "count": 30,
+      "handling": "SQL_CANDIDATE"
+    },
+    "deliveries": {
+      "count": 6,
+      "handling": "SQL_CANDIDATE"
+    },
+    "delivery_items": {
+      "count": 5,
+      "handling": "SQL_CANDIDATE"
+    },
+    "failed_jobs": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "installation_checklists": {
+      "count": 6,
+      "handling": "SQL_CANDIDATE"
+    },
+    "installations": {
+      "count": 3,
+      "handling": "SQL_CANDIDATE"
+    },
+    "inventories": {
+      "count": 12,
+      "handling": "SQL_CANDIDATE"
+    },
+    "invoice_items": {
+      "count": 4,
+      "handling": "SQL_CANDIDATE"
+    },
+    "invoices": {
+      "count": 4,
+      "handling": "SQL_CANDIDATE"
+    },
+    "job_batches": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "jobs": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "leads": {
+      "count": 30,
+      "handling": "SQL_CANDIDATE"
+    },
+    "maintenance_records": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "maintenance_schedules": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "migrations": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "notifications": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "opportunities": {
+      "count": 410,
+      "handling": "SQL_CANDIDATE"
+    },
+    "opportunity_items": {
+      "count": 410,
+      "handling": "SQL_CANDIDATE"
+    },
+    "permissions": {
+      "count": 0,
+      "handling": "PRESERVE_EXISTING_CATALOG"
+    },
+    "product_categories": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "products": {
+      "count": 6,
+      "handling": "SQL_CANDIDATE"
+    },
+    "products_product_code_sequence": {
+      "count": 0,
+      "handling": "LEAVE_TO_APPLICATION_OR_MIGRATIONS"
+    },
+    "quotation_items": {
+      "count": 410,
+      "handling": "SQL_CANDIDATE"
+    },
+    "quotations": {
+      "count": 410,
+      "handling": "SQL_CANDIDATE"
+    },
+    "role_permissions": {
+      "count": 7,
+      "handling": "SQL_CANDIDATE"
+    },
+    "roles": {
+      "count": 5,
+      "handling": "SQL_CANDIDATE"
+    },
+    "sales_order_items": {
+      "count": 405,
+      "handling": "SQL_CANDIDATE"
+    },
+    "sales_orders": {
+      "count": 405,
+      "handling": "SQL_CANDIDATE"
+    },
+    "serial_numbers": {
+      "count": 5,
+      "handling": "SQL_CANDIDATE"
+    },
+    "service_ticket_parts": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "service_ticket_resolution_logs": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "service_ticket_work_logs": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "service_tickets": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "stock_movements": {
+      "count": 16,
+      "handling": "SQL_CANDIDATE"
+    },
+    "user_reporting_lines": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "user_roles": {
+      "count": 9,
+      "handling": "SQL_CANDIDATE"
+    },
+    "users": {
+      "count": 8,
+      "handling": "SQL_CANDIDATE"
+    },
+    "warehouses": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "warranties": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_audit_events": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "workspace_calendar_day_exclusions": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "workspace_calendar_events": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_collaboration_entries": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_collaboration_members": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_note_mentions": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_notification_preferences": {
+      "count": 8,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_notifications": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "workspace_personal_notes": {
+      "count": 2,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_task_assignments": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    },
+    "workspace_task_reviews": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "workspace_task_submission_files": {
+      "count": 0,
+      "handling": "CREATE_VIA_REAL_WORKFLOW"
+    },
+    "workspace_tasks": {
+      "count": 1,
+      "handling": "SQL_CANDIDATE"
+    }
+  },
+  "grants": {
+    "UAT Catalog Viewer": [
+      [
+        "catalog.access",
+        null
+      ],
+      [
+        "crm_page.products.view",
+        "all"
+      ]
+    ],
+    "UAT Reports Only": [
+      [
+        "reporting.access",
+        null
+      ],
+      [
+        "crm_page.reports.view",
+        "all"
+      ]
+    ],
+    "UAT Finance Reader": [
+      [
+        "billing.access",
+        null
+      ],
+      [
+        "crm_page.invoices.view",
+        "all"
+      ]
+    ],
+    "UAT Sales Owner": [
+      [
+        "sales_crm.access",
+        null
+      ]
+    ],
+    "UAT No Access": []
+  },
+  "offline_validated_explicit_rows": 2668,
+  "total_candidate_rows": 2675,
+  "mode": "REHEARSAL_ROLLBACK_ONLY",
+  "sql_sha256": "c88b11bb562793e38863ac30ea971ff7dad6b5345c351b717e003a979b243528",
+  "rows_sha256": "eadb771ed7d66b03c74528cd7d4ae219e75049ace049c63d81d53ba4118b7898"
+}
