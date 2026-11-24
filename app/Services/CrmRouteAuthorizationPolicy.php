@@ -18,7 +18,7 @@ final class CrmRouteAuthorizationPolicy
 
         // Roles and Users must not become writable by any authenticated account.
         // They are outside the A6 page catalogue, so authorize explicitly.
-        if (preg_match('/^(roles|users)\./D', $routeName) === 1) {
+        if (preg_match('/^(roles|users|branches)\./D', $routeName) === 1) {
             return ['managed' => true, 'super_admin' => true, 'permissions' => []];
         }
 

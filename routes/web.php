@@ -331,3 +331,4 @@ require __DIR__ . '/organization.php';
 
 // A7.4.6 Team directory and membership (Super Admin only)
 require __DIR__ . '/teams.php';
+require __DIR__ . '/branches.php';

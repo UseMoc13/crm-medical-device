@@ -269,6 +269,10 @@
                         <span class="form-hint">
                             Optional branch assignment for this user.
                         </span>
+                        <a href="{{ route('branches.index') }}"
+                           class="form-hint" style="display:inline-block;margin-top:6px;color:#168d81;font-weight:650;">
+                            Manage Branches →
+                        </a>
 
                         @error('branch_id')
 
