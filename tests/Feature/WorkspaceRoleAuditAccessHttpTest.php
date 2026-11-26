@@ -190,14 +190,16 @@ final class WorkspaceRoleAuditAccessHttpTest extends TestCase
         $this->assertTrue(app(WorkspaceRoleAuditGrant::class)->isGranted($this->target));
     }
 
-    public function test_editor_and_details_render_audit_permission_without_exposing_editor_to_staff(): void
+    public function test_role_editor_and_details_require_super_admin_and_hide_audit_controls_from_staff(): void
     {
+        // Route RBAC: roles.* is Super-Admin-only, including read-only details.
+        // Never weaken route authorization to satisfy an obsolete test assertion.
         $this->actingAs($this->admin,'web')->get(route('roles.edit',$this->target))
             ->assertOk()->assertSee('Audit Trail Permission')->assertSee('workspace_audit_access_present');
         $this->get(route('roles.show',$this->target))->assertOk()->assertSee('Audit Trail Access');
         $this->actingAs($this->staff,'web')->get(route('roles.edit',$this->target))
-            ->assertOk()->assertDontSee('workspace_audit_access_present')
-            ->assertSee('Only Super Admin can change this sensitive permission');
+            ->assertForbidden()->assertDontSee('workspace_audit_access_present');
+        $this->get(route('roles.show',$this->target))->assertForbidden();
     }
 
     public function test_additional_audit_coverage_records_only_allowlisted_changed_field_names(): void
