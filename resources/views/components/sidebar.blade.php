@@ -96,11 +96,6 @@
             <span class="nav-text">Notifications</span>
         </a>
 
-        <a href="#" data-label="Favorites">
-            <span class="ico">★</span>
-            <span class="nav-text">Favorites</span>
-        </a>
-
         <a
             href="{{ route('announcements.index') }}"
             class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}"
@@ -114,9 +109,15 @@
              CUSTOMER & LEAD
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('customers.index') ||
+            \App\Support\CrmViewAction::allows('contacts.index') ||
+            \App\Support\CrmViewAction::allows('leads.index')
+        )
         <div class="nav-group">
             Customer & Lead
         </div>
+        @endif
 
         
 {{-- A7105:customers.index --}}
@@ -173,9 +174,16 @@
              SALES CRM
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('opportunities.index') ||
+            \App\Support\CrmViewAction::allows('quotations.index') ||
+            \App\Support\CrmViewAction::allows('sales-orders.index') ||
+            \App\Support\CrmViewAction::allows('contracts.index')
+        )
         <div class="nav-group">
             Sales CRM
         </div>
+        @endif
 
         
 {{-- A7105:opportunities.index --}}
@@ -245,9 +253,19 @@
              PRODUCT & INVENTORY
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('products.index') ||
+            \App\Support\CrmViewAction::allows('product-categories.index') ||
+            \App\Support\CrmViewAction::allows('brands.index') ||
+            \App\Support\CrmViewAction::allows('warehouses.index') ||
+            \App\Support\CrmViewAction::allows('inventories.index') ||
+            \App\Support\CrmViewAction::allows('stock-movements.index') ||
+            \App\Support\CrmViewAction::allows('serial-numbers.index')
+        )
         <div class="nav-group">
             Product & Inventory
         </div>
+        @endif
 
         
 {{-- A7105:products.index --}}
@@ -359,9 +377,15 @@
              INSTALLATION & WARRANTY
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('deliveries.index') ||
+            \App\Support\CrmViewAction::allows('installations.index') ||
+            \App\Support\CrmViewAction::allows('warranties.index')
+        )
         <div class="nav-group">
             Installation & Warranty
         </div>
+        @endif
 
         
 {{-- A7105:deliveries.index --}}
@@ -413,9 +437,15 @@
              SERVICE & MAINTENANCE
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('service-tickets.index') ||
+            \App\Support\CrmViewAction::allows('maintenance.index') ||
+            \App\Support\CrmViewAction::allows('service-history.index')
+        )
         <div class="nav-group">
             Service & Maintenance
         </div>
+        @endif
 
         
 {{-- A7105:service-tickets.index --}}
@@ -464,9 +494,14 @@
              BILLING & REPORTING
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('invoices.index') ||
+            \App\Support\CrmViewAction::allows('reports.index')
+        )
         <div class="nav-group">
             Billing & Reporting
         </div>
+        @endif
 
         
 {{-- A7105:invoices.index --}}
@@ -501,9 +536,19 @@
              ADMINISTRATION
         ================================================== --}}
 
+        @if(
+            \App\Support\CrmViewAction::allows('announcement-management.index') ||
+            \App\Support\CrmViewAction::allows('users.index') ||
+            \App\Support\CrmViewAction::allows('roles.index') ||
+            \App\Support\CrmViewAction::allows('organization.index') ||
+            \App\Support\CrmViewAction::allows('teams.index') ||
+            \App\Support\CrmViewAction::allows('branches.index') ||
+            app(\App\Services\WorkspaceAuditAccess::class)->canView(auth('web')->user())
+        )
         <div class="nav-group">
             Administration
         </div>
+        @endif
 
         
 {{-- A7105:announcement-management.index --}}

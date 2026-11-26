@@ -1,0 +1,13 @@
+{
+    "version": "A7113",
+    "files": {
+        "resources\/views\/components\/sidebar.blade.php": {
+            "existed": true,
+            "after": "1de56e28aacf7d4239ca7e90b710aee63ac409e6df571047f9a6b417cc1e4b0d"
+        },
+        "tools\/a7113_sidebar_check.php": {
+            "existed": false,
+            "after": "5889769f45fdfcaa76cf28682537f83fb0f22bde297c1b7bc6f1478fe38c4ad8"
+        }
+    }
+}
