@@ -19,13 +19,17 @@
 
     <div class="actions">
 
-        {{-- A7103:brands.create --}}@if(\App\Support\CrmViewAction::allows('brands.create'))
+        
+{{-- A7105:brands.create --}}
+@if(\App\Support\CrmViewAction::allows('brands.create'))
 <a
             href="{{ route('brands.create') }}"
             class="btn primary">
             + New Brand
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -118,8 +122,7 @@ BRAND LIST
          FILTER BAR
     ====================================================== --}}
 
-        {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
-<form
+        <form
             method="GET"
             action="{{ route('brands.index') }}"
             class="brand-filter-bar">
@@ -144,7 +147,9 @@ BRAND LIST
 
                 @if(request('search'))
 
-                {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+                
+{{-- A7105:brands.index --}}
+@if(\App\Support\CrmViewAction::allows('brands.index'))
 <a
                     href="{{ route(
                         'brands.index',
@@ -159,7 +164,9 @@ BRAND LIST
                     ×
 
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -181,7 +188,9 @@ BRAND LIST
 
             @if(request('search'))
 
-            {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+            
+{{-- A7105:brands.index --}}
+@if(\App\Support\CrmViewAction::allows('brands.index'))
 <a
                 href="{{ route('brands.index') }}"
                 class="btn brand-reset-button">
@@ -189,12 +198,13 @@ BRAND LIST
                 Reset
 
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -257,7 +267,9 @@ BRAND LIST
 
                         <td>
 
-                            {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+                            
+{{-- A7105:brands.show --}}
+@if(\App\Support\CrmViewAction::allows('brands.show'))
 <a
                                 href="{{ route(
                                     'brands.show',
@@ -270,7 +282,9 @@ BRAND LIST
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             <div class="brand-id">
@@ -443,7 +457,9 @@ BRAND LIST
 
                         <td>
                                 <div class="table-actions">
-                                    {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+                                    
+{{-- A7105:brands.show --}}
+@if(\App\Support\CrmViewAction::allows('brands.show'))
 <a
                                         href="{{ route('brands.show', $brand->brand_id) }}"
                                         class="action-btn view"
@@ -455,9 +471,13 @@ BRAND LIST
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:brands.edit --}}@if(\App\Support\CrmViewAction::allows('brands.edit'))
+
+                                    
+{{-- A7105:brands.edit --}}
+@if(\App\Support\CrmViewAction::allows('brands.edit'))
 <a
                                         href="{{ route('brands.edit', $brand->brand_id) }}"
                                         class="action-btn edit"
@@ -469,9 +489,13 @@ BRAND LIST
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:brands.destroy --}}@if(\App\Support\CrmViewAction::allows('brands.destroy'))
+
+                                    
+{{-- A7105:brands.destroy --}}
+@if(\App\Support\CrmViewAction::allows('brands.destroy'))
 <form
                                         action="{{ route('brands.destroy', $brand->brand_id) }}"
                                         method="POST"
@@ -494,7 +518,9 @@ BRAND LIST
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

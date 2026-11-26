@@ -15,12 +15,20 @@
 @endphp
 <div class="page-head">
     <div><h1>Role Details</h1><p>Review role information, assigned users, and access permissions.</p></div>
-    <div class="actions">{{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+    <div class="actions">
+{{-- A7105:roles.index --}}
+@if(\App\Support\CrmViewAction::allows('roles.index'))
 <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
-@endif{{-- /A7103 --}}
-        @unless($isProtected){{-- A7103:roles.edit --}}@if(\App\Support\CrmViewAction::allows('roles.edit'))
+@endif
+{{-- /A7105 --}}
+
+        @unless($isProtected)
+{{-- A7105:roles.edit --}}
+@if(\App\Support\CrmViewAction::allows('roles.edit'))
 <a href="{{ route('roles.edit', $role) }}" class="btn primary">Edit Role</a>
-@endif{{-- /A7103 --}}@endunless
+@endif
+{{-- /A7105 --}}
+@endunless
     </div>
 </div>
 <div class="role-detail-layout">

@@ -11,11 +11,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+        
+{{-- A7105:maintenance.show --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.show'))
 <a href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}" class="btn">
             ← Back to Details
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 

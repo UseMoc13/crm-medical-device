@@ -10,15 +10,27 @@
     </div>
 
     <div class="actions sm-header-actions">
-        {{-- A7103:inventories.index --}}@if(\App\Support\CrmViewAction::allows('inventories.index'))
+        
+{{-- A7105:inventories.index --}}
+@if(\App\Support\CrmViewAction::allows('inventories.index'))
 <a href="{{ route('inventories.index') }}" class="btn">View Inventory</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:stock-movements.correction.create --}}
+@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
 <a href="{{ route('stock-movements.correction.create') }}" class="btn">Correct Movement</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:stock-movements.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.create'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:stock-movements.create --}}
+@if(\App\Support\CrmViewAction::allows('stock-movements.create'))
 <a href="{{ route('stock-movements.create') }}" class="btn primary">+ New Movement</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -88,8 +100,7 @@
     </div>
 
     <div class="card-body">
-        {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
-<form method="GET" action="{{ route('stock-movements.index') }}" class="sm-filter-bar">
+        <form method="GET" action="{{ route('stock-movements.index') }}" class="sm-filter-bar">
             <div class="sm-search">
                 <span class="sm-search-icon">⌕</span>
                 <input
@@ -152,11 +163,14 @@
             </div>
 
             <button type="submit" class="btn sm-filter-button">Filter</button>
-            {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
+            
+{{-- A7105:stock-movements.index --}}
+@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
 <a href="{{ route('stock-movements.index') }}" class="btn sm-reset-button">Reset</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         </form>
-@endif{{-- /A7103 --}}
 
         @php
             $activeMovementLabel = match($movementType) {
@@ -257,11 +271,15 @@
                             </td>
 
                             <td>
-                                {{-- A7103:stock-movements.show --}}@if(\App\Support\CrmViewAction::allows('stock-movements.show'))
+                                
+{{-- A7105:stock-movements.show --}}
+@if(\App\Support\CrmViewAction::allows('stock-movements.show'))
 <a href="{{ route('stock-movements.show', $movement->stock_movement_id) }}" class="sm-product-code-link">
                                     <strong>{{ $movement->product_code }}</strong>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 <div class="sm-product-name">{{ $movement->product_name }}</div>
                                 @if($movement->reversed_by_id)
                                     <span class="sm-correction-status">Corrected</span>
@@ -313,13 +331,17 @@
 
                             <td>
                                 <div class="table-actions">
-                                    {{-- A7103:stock-movements.show --}}@if(\App\Support\CrmViewAction::allows('stock-movements.show'))
+                                    
+{{-- A7105:stock-movements.show --}}
+@if(\App\Support\CrmViewAction::allows('stock-movements.show'))
 <a
                                         href="{{ route('stock-movements.show', $movement->stock_movement_id) }}"
                                         class="action-btn view"
                                         title="View Stock Movement"
                                         aria-label="View Stock Movement">View</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
                         </tr>

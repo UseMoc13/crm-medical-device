@@ -64,9 +64,13 @@
     </div>
 </section>
 @endif
-<section class="card todo-related-card"><div class="card-head"><div><h3>Related CRM Activity</h3><p>Task context is linked only when you have access to that Activity.</p></div></div><div class="card-body">@if($activity)<div class="todo-related"><div class="todo-identity-icon">A</div><div><span>Linked Activity</span><h4>{{ $activity->subject }}</h4><p>{{ $activity->activity_date?->format('d M Y, H:i') ?? 'No schedule' }}</p></div>{{-- A7103:activities.show --}}@if(\App\Support\CrmViewAction::allows('activities.show'))
+<section class="card todo-related-card"><div class="card-head"><div><h3>Related CRM Activity</h3><p>Task context is linked only when you have access to that Activity.</p></div></div><div class="card-body">@if($activity)<div class="todo-related"><div class="todo-identity-icon">A</div><div><span>Linked Activity</span><h4>{{ $activity->subject }}</h4><p>{{ $activity->activity_date?->format('d M Y, H:i') ?? 'No schedule' }}</p></div>
+{{-- A7105:activities.show --}}
+@if(\App\Support\CrmViewAction::allows('activities.show'))
 <a class="btn" href="{{ route('activities.show',['activity'=>$activity->getKey()]) }}">View Activity</a>
-@endif{{-- /A7103 --}}</div>@else<div class="todo-empty compact"><h4>{{ $todo->activity_id ? 'Linked Activity Restricted' : 'No Related Activity' }}</h4><p>{{ $todo->activity_id ? 'This Activity is not available to your account.' : 'This task is not linked to a CRM Activity.' }}</p></div>@endif</div></section>
+@endif
+{{-- /A7105 --}}
+</div>@else<div class="todo-empty compact"><h4>{{ $todo->activity_id ? 'Linked Activity Restricted' : 'No Related Activity' }}</h4><p>{{ $todo->activity_id ? 'This Activity is not available to your account.' : 'This task is not linked to a CRM Activity.' }}</p></div>@endif</div></section>
 <section class="card todo-related-card"><div class="card-head"><div><h3>Registration Information</h3><p>Task identifiers and audit timestamps.</p></div></div><div class="card-body"><div class="todo-info-grid"><div><span>Task UUID</span><strong class="todo-mono">{{ $todo->getKey() }}</strong></div><div><span>Owner</span><strong>{{ $todo->owner?->name ?? 'Unknown' }}</strong></div><div><span>Created At</span><strong>{{ $todo->created_at?->format('d M Y, H:i') ?? '-' }}</strong></div><div><span>Updated At</span><strong>{{ $todo->updated_at?->format('d M Y, H:i') ?? '-' }}</strong></div></div></div></section>
 @if($todo->visibility === 'work')
 @include('workspace-collaboration._panel', ['entityType'=>'todo', 'entity'=>$todo])

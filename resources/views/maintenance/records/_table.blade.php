@@ -44,7 +44,9 @@
                     <div class="mt-actions">
 
                         @if($maintenance->status === 'In Progress')
-                        {{-- A7103:maintenance.records.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.edit'))
+                        
+{{-- A7105:maintenance.records.edit --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.edit'))
 <a
                             href="{{ route('maintenance.records.edit', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                             class="mt-icon-btn edit"
@@ -56,9 +58,13 @@
                                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                             </svg>
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                        {{-- A7103:maintenance.records.destroy --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.destroy'))
+
+                        
+{{-- A7105:maintenance.records.destroy --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.destroy'))
 <button type="button" class="mt-icon-btn delete"
                                 data-mt-delete-action="{{ route('maintenance.records.destroy', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                                 data-mt-delete-title="Delete Maintenance Record"
@@ -68,7 +74,9 @@
                                 <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/>
                             </svg>
                         </button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                         @else
                             <span class="mt-sub">Read-only</span>
                         @endif

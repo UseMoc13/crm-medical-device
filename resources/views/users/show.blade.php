@@ -19,24 +19,32 @@
 
     <div class="actions">
 
-        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+        
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a
             href="{{ route('users.index') }}"
             class="btn"
         >
             ← Back to Users
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
 
-        {{-- A7103:users.edit --}}@if(\App\Support\CrmViewAction::allows('users.edit'))
+
+        
+{{-- A7105:users.edit --}}
+@if(\App\Support\CrmViewAction::allows('users.edit'))
 <a
             href="{{ route('users.edit', $user) }}"
             class="btn primary"
         >
             ✎ Edit User
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 

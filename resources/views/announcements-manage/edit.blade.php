@@ -48,9 +48,13 @@
         <p>Update, preview, and reconfigure this company announcement.</p>
     </div>
     <div class="actions">
-        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+        
+{{-- A7105:announcement-management.index --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
 <a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         <button type="button" class="btn primary" id="openPreviewTop">Preview Announcement</button>
     </div>
 </div>
@@ -71,7 +75,9 @@
 @endif
 
 <div class="announcement-create-layout">
-    {{-- A7103:announcement-management.update --}}@if(\App\Support\CrmViewAction::allows('announcement-management.update'))
+    
+{{-- A7105:announcement-management.update --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.update'))
 <form method="POST" action="{{ route('announcement-management.update', $announcement) }}" enctype="multipart/form-data" id="announcementEditForm">
         @csrf
         @method('PUT')
@@ -520,16 +526,22 @@
                 </section>
 
                 <div class="form-actions">
-                    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+                    
+{{-- A7105:announcement-management.index --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
 <a href="{{ route('announcement-management.index') }}" class="btn">Cancel</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                     <button type="button" class="btn" id="openPreviewBottom">Preview as Reader</button>
                     <button type="submit" class="btn primary" id="submitAnnouncementButton">Save Changes</button>
                 </div>
             </div>
         </div>
     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     <aside class="announcement-side-panel">
         <div class="side-panel-card">

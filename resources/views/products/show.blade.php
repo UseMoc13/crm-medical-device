@@ -19,17 +19,25 @@ $itemCount = $opportunityItems->count();
     </div>
 
     <div class="actions">
-        {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+        
+{{-- A7105:products.index --}}
+@if(\App\Support\CrmViewAction::allows('products.index'))
 <a href="{{ route('products.index') }}" class="btn">
             &larr; Back to Products
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:products.edit --}}@if(\App\Support\CrmViewAction::allows('products.edit'))
+
+        
+{{-- A7105:products.edit --}}
+@if(\App\Support\CrmViewAction::allows('products.edit'))
 <a href="{{ route('products.edit', $product) }}" class="btn primary">
             Edit Product
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -244,7 +252,9 @@ $itemCount = $opportunityItems->count();
                                     <small>{{ $product->product_code ?: '-' }}</small>
 
                                     @if ($item->opportunity)
-                                    {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                                    
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                                         class="item-opportunity-link"
                                         href="{{ route('opportunities.show', $item->opportunity) }}">
@@ -252,7 +262,9 @@ $itemCount = $opportunityItems->count();
                                                         ?? $item->opportunity->opportunity_name
                                                         ?? 'Opportunity' }}
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                     @else
                                     <span class="muted">Opportunity unavailable</span>
                                     @endif
@@ -424,7 +436,9 @@ $itemCount = $opportunityItems->count();
 
                             <div class="modal-opportunity-name">
                                 @if ($item->opportunity)
-                                {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                                
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                                     class="table-link"
                                     href="{{ route('opportunities.show', $item->opportunity) }}">
@@ -432,7 +446,9 @@ $itemCount = $opportunityItems->count();
                                                 ?? $item->opportunity->opportunity_name
                                                 ?? 'Opportunity' }}
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 @else
                                 <span class="muted">Opportunity unavailable</span>
                                 @endif

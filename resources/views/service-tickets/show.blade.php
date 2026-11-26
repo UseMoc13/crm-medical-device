@@ -102,17 +102,25 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+        
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a href="{{ route('service-tickets.index') }}" class="btn">
             &larr; Back to Service Tickets
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:service-tickets.edit --}}@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
+
+        
+{{-- A7105:service-tickets.edit --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
 <a href="{{ route('service-tickets.edit', $serviceTicket->service_ticket_id) }}" class="btn primary">
             Edit Ticket
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -506,11 +514,15 @@
                 <p>This service ticket has not been assigned to a technician. Edit the ticket to assign a responsible technician.</p>
 
                 <div class="empty-state-actions">
-                    {{-- A7103:service-tickets.edit --}}@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
+                    
+{{-- A7105:service-tickets.edit --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
 <a href="{{ route('service-tickets.edit', $serviceTicket->service_ticket_id) }}" class="btn">
                         Assign Technician
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 </div>
             </div>
 
@@ -596,9 +608,13 @@
         <div class="ticket-part-header-actions">
             <span class="parts-count">{{ $totalParts }} {{ $totalParts === 1 ? 'Item' : 'Items' }}</span>
             @if($serviceTicket->status === 'in_progress')
-                {{-- A7103:service-tickets.parts.store --}}@if(\App\Support\CrmViewAction::allows('service-tickets.parts.store'))
+                
+{{-- A7105:service-tickets.parts.store --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.parts.store'))
 <button type="button" class="btn primary ticket-part-open" data-mode="add">+ Add Service Part</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
         </div>
     </div>
@@ -671,7 +687,9 @@
                                 </td>
                                 @if($serviceTicket->status === 'in_progress')
                                     <td class="ticket-part-action-cell">
-                                        {{-- A7103:service-tickets.parts.update --}}@if(\App\Support\CrmViewAction::allows('service-tickets.parts.update'))
+                                        
+{{-- A7105:service-tickets.parts.update --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.parts.update'))
 <button type="button" class="ticket-part-action ticket-part-edit"
                                             aria-label="Edit part" title="Edit part"
                                             data-url="{{ route('service-tickets.parts.update', [$serviceTicket, $part->service_ticket_part_id]) }}"
@@ -679,13 +697,19 @@
                                             data-quantity="{{ $quantity }}"
                                             data-price="{{ $unitPrice }}"
                                             data-notes="{{ $part->notes }}">Edit</button>
-@endif{{-- /A7103 --}}
-                                        {{-- A7103:service-tickets.parts.destroy --}}@if(\App\Support\CrmViewAction::allows('service-tickets.parts.destroy'))
+@endif
+{{-- /A7105 --}}
+
+                                        
+{{-- A7105:service-tickets.parts.destroy --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.parts.destroy'))
 <button type="button" class="ticket-part-action ticket-part-remove"
                                             aria-label="Remove part" title="Remove part"
                                             data-url="{{ route('service-tickets.parts.destroy', [$serviceTicket, $part->service_ticket_part_id]) }}"
                                             data-name="{{ $partProduct?->product_name ?? 'this part' }}">Remove</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                     </td>
                                 @endif
                             </tr>

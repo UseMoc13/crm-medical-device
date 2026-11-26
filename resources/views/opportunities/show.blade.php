@@ -16,21 +16,29 @@
 
     <div class="actions">
 
-        {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+        
+{{-- A7105:opportunities.index --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.index'))
 <a
             href="{{ route('opportunities.index') }}"
             class="btn">
             ← Back
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:opportunities.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
+
+        
+{{-- A7105:opportunities.edit --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
 <a
             href="{{ route('opportunities.edit', $opportunity) }}"
             class="btn primary">
             Edit Opportunity
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -647,7 +655,9 @@ OPPORTUNITY ITEMS
             </button>
 
 
-            {{-- A7103:opportunities.items.create --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.create'))
+            
+{{-- A7105:opportunities.items.create --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.create'))
 <a
                 href="{{ route(
                     'opportunities.items.create',
@@ -658,7 +668,9 @@ OPPORTUNITY ITEMS
                 + Add Item
 
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
         </div>
 
@@ -800,7 +812,9 @@ OPPORTUNITY ITEMS
 
                                 <div class="table-actions">
 
-                                    {{-- A7103:opportunities.items.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
+                                    
+{{-- A7105:opportunities.items.edit --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
 <a
                                         href="{{ route(
                                             'opportunities.items.edit',
@@ -815,10 +829,14 @@ OPPORTUNITY ITEMS
                                         Edit
 
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
 
-                                    {{-- A7103:opportunities.items.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
+
+                                    
+{{-- A7105:opportunities.items.destroy --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
 <form
                                         method="POST"
                                         action="{{ route(
@@ -843,7 +861,9 @@ OPPORTUNITY ITEMS
                                         </button>
 
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 </div>
 
@@ -1067,7 +1087,9 @@ OPPORTUNITY ITEMS MODAL
             </div>
 
 
-            {{-- A7103:opportunities.items.create --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.create'))
+            
+{{-- A7105:opportunities.items.create --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.create'))
 <a
                 href="{{ route(
                     'opportunities.items.create',
@@ -1078,7 +1100,9 @@ OPPORTUNITY ITEMS MODAL
                 + Add Item
 
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
         </div>
 
@@ -1222,7 +1246,9 @@ OPPORTUNITY ITEMS MODAL
 
                                 <div class="table-actions">
 
-                                    {{-- A7103:opportunities.items.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
+                                    
+{{-- A7105:opportunities.items.edit --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
 <a
                                         href="{{ route(
                                             'opportunities.items.edit',
@@ -1237,10 +1263,14 @@ OPPORTUNITY ITEMS MODAL
                                         Edit
 
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
 
-                                    {{-- A7103:opportunities.items.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
+
+                                    
+{{-- A7105:opportunities.items.destroy --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
 <form
                                         method="POST"
                                         action="{{ route(
@@ -1265,7 +1295,9 @@ OPPORTUNITY ITEMS MODAL
                                         </button>
 
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 </div>
 

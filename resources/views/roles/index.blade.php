@@ -19,19 +19,27 @@
 
     <div class="actions">
         @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
-            {{-- A7103:organization.index --}}@if(\App\Support\CrmViewAction::allows('organization.index'))
+            
+{{-- A7105:organization.index --}}
+@if(\App\Support\CrmViewAction::allows('organization.index'))
 <a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
 
-        {{-- A7103:roles.create --}}@if(\App\Support\CrmViewAction::allows('roles.create'))
+        
+{{-- A7105:roles.create --}}
+@if(\App\Support\CrmViewAction::allows('roles.create'))
 <a
             href="{{ route('roles.create') }}"
             class="btn primary"
         >
             + New Role
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -62,8 +70,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
-<form
+        <form
             method="GET"
             action="{{ route('roles.index') }}"
             class="role-filter-bar"
@@ -90,7 +97,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+                    
+{{-- A7105:roles.index --}}
+@if(\App\Support\CrmViewAction::allows('roles.index'))
 <a
                         href="{{ route(
                             'roles.index',
@@ -104,7 +113,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -189,19 +200,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+                
+{{-- A7105:roles.index --}}
+@if(\App\Support\CrmViewAction::allows('roles.index'))
 <a
                     href="{{ route('roles.index') }}"
                     class="btn role-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -280,7 +294,9 @@
 
                         <td>
 
-                            {{-- A7103:roles.show --}}@if(\App\Support\CrmViewAction::allows('roles.show'))
+                            
+{{-- A7105:roles.show --}}
+@if(\App\Support\CrmViewAction::allows('roles.show'))
 <a
                                 href="{{ route(
                                     'roles.show',
@@ -294,7 +310,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         </td>
 
@@ -399,7 +417,9 @@
 
                                 {{-- View --}}
 
-                                {{-- A7103:roles.show --}}@if(\App\Support\CrmViewAction::allows('roles.show'))
+                                
+{{-- A7105:roles.show --}}
+@if(\App\Support\CrmViewAction::allows('roles.show'))
 <a
                                     href="{{ route(
                                         'roles.show',
@@ -411,12 +431,16 @@
                                 >
                                     👁
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 {{-- Edit --}}
 
-                                {{-- A7103:roles.edit --}}@if(\App\Support\CrmViewAction::allows('roles.edit'))
+                                
+{{-- A7105:roles.edit --}}
+@if(\App\Support\CrmViewAction::allows('roles.edit'))
 <a
                                     href="{{ route(
                                         'roles.edit',
@@ -428,12 +452,16 @@
                                 >
                                     ✎
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 {{-- Delete --}}
 
-                                {{-- A7103:roles.destroy --}}@if(\App\Support\CrmViewAction::allows('roles.destroy'))
+                                
+{{-- A7105:roles.destroy --}}
+@if(\App\Support\CrmViewAction::allows('roles.destroy'))
 <form
                                     action="{{ route(
                                         'roles.destroy',
@@ -459,7 +487,9 @@
                                     </button>
 
                                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                             </div>
 

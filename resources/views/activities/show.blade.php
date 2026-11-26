@@ -20,13 +20,21 @@
         <p>Review scheduled activity details, ownership, and related CRM records.</p>
     </div>
     <div class="actions">
-        {{-- A7103:activities.index --}}@if(\App\Support\CrmViewAction::allows('activities.index'))
+        
+{{-- A7105:activities.index --}}
+@if(\App\Support\CrmViewAction::allows('activities.index'))
 <a class="btn" href="{{ route('activities.index') }}">&larr; Back to Activities</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @if($isOwner)
-            {{-- A7103:activities.edit --}}@if(\App\Support\CrmViewAction::allows('activities.edit'))
+            
+{{-- A7105:activities.edit --}}
+@if(\App\Support\CrmViewAction::allows('activities.edit'))
 <a class="btn primary" href="{{ route('activities.edit', ['activity' => $activity->getKey()]) }}">Edit Activity</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
     </div>
 </div>

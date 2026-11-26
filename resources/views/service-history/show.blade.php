@@ -20,17 +20,25 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:service-history.index --}}@if(\App\Support\CrmViewAction::allows('service-history.index'))
+        
+{{-- A7105:service-history.index --}}
+@if(\App\Support\CrmViewAction::allows('service-history.index'))
 <a href="{{ route('service-history.index') }}" class="btn">
             &larr; Back to Service History
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:service-tickets.create --}}@if(\App\Support\CrmViewAction::allows('service-tickets.create'))
+
+        
+{{-- A7105:service-tickets.create --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.create'))
 <a href="{{ route('service-tickets.create') }}" class="btn primary">
             + New Service Ticket
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -180,11 +188,15 @@
                     </small>
                 </div>
 
-                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+                
+{{-- A7105:maintenance.show --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.show'))
 <a href="{{ route('maintenance.show', $schedule->maintenance_schedule_id) }}" class="btn">
                     View
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             </div>
         @empty
             <div class="sh-empty">

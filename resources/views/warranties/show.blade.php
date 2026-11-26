@@ -38,12 +38,20 @@
         <p>View warranty coverage, registered device, and customer information.</p>
     </div>
     <div class="actions">
-        {{-- A7103:warranties.edit --}}@if(\App\Support\CrmViewAction::allows('warranties.edit'))
+        
+{{-- A7105:warranties.edit --}}
+@if(\App\Support\CrmViewAction::allows('warranties.edit'))
 <a href="{{ route('warranties.edit', $warranty->warranty_id) }}" class="btn primary">✎ Edit Warranty</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:warranties.index --}}@if(\App\Support\CrmViewAction::allows('warranties.index'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:warranties.index --}}
+@if(\App\Support\CrmViewAction::allows('warranties.index'))
 <a href="{{ route('warranties.index') }}" class="btn">← Back</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -158,16 +166,24 @@
 </div>
 
 <div class="warranty-show-bottom-actions">
-    {{-- A7103:warranties.index --}}@if(\App\Support\CrmViewAction::allows('warranties.index'))
+    
+{{-- A7105:warranties.index --}}
+@if(\App\Support\CrmViewAction::allows('warranties.index'))
 <a href="{{ route('warranties.index') }}" class="btn">Back to Warranties</a>
-@endif{{-- /A7103 --}}
-    {{-- A7103:warranties.destroy --}}@if(\App\Support\CrmViewAction::allows('warranties.destroy'))
+@endif
+{{-- /A7105 --}}
+
+    
+{{-- A7105:warranties.destroy --}}
+@if(\App\Support\CrmViewAction::allows('warranties.destroy'))
 <form action="{{ route('warranties.destroy', $warranty->warranty_id) }}" method="POST" class="warranty-delete-form" data-number="{{ $warranty->warranty_number }}">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn warranty-danger-btn">Delete Warranty</button>
     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 </div>
 
 @include('warranties._confirm')

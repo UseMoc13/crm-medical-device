@@ -8,14 +8,18 @@
         <p>Update installation information.</p>
     </div>
 
-    {{-- A7103:installations.show --}}@if(\App\Support\CrmViewAction::allows('installations.show'))
+    
+{{-- A7105:installations.show --}}
+@if(\App\Support\CrmViewAction::allows('installations.show'))
 <a
         href="{{ route('installations.show', $installation->installation_id) }}"
         class="btn"
     >
         &larr; Back to Detail
     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 </div>
 
 @if ($errors->any())
@@ -37,7 +41,9 @@
     </div>
 
     <div class="card-body">
-        {{-- A7103:installations.update --}}@if(\App\Support\CrmViewAction::allows('installations.update'))
+        
+{{-- A7105:installations.update --}}
+@if(\App\Support\CrmViewAction::allows('installations.update'))
 <form
             action="{{ route('installations.update', $installation->installation_id) }}"
             method="POST"
@@ -178,21 +184,27 @@
             </div>
 
             <div class="installation-form-actions">
-                {{-- A7103:installations.show --}}@if(\App\Support\CrmViewAction::allows('installations.show'))
+                
+{{-- A7105:installations.show --}}
+@if(\App\Support\CrmViewAction::allows('installations.show'))
 <a
                     href="{{ route('installations.show', $installation->installation_id) }}"
                     class="btn"
                 >
                     Cancel
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 <button type="submit" class="btn primary">
                     Update Installation
                 </button>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 

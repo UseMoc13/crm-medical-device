@@ -48,11 +48,15 @@
         <button type="button" class="btn" onclick="window.print()">Print</button>
 
         @if($canExportInvoiceCsv)
-            {{-- A7103:reports.export.invoices --}}@if(\App\Support\CrmViewAction::allows('reports.export.invoices'))
+            
+{{-- A7105:reports.export.invoices --}}
+@if(\App\Support\CrmViewAction::allows('reports.export.invoices'))
 <a href="{{ route('reports.export.invoices', $currentRange) }}" class="btn primary">
                 Export Invoices (CSV)
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @else
             <span class="btn" title="Invoice View permission and full Invoice scope required" aria-disabled="true">Export Invoices (CSV) — Restricted</span>
         @endif
@@ -75,8 +79,7 @@
 <div class="card no-print" style="margin-bottom:6px">
     <div class="card-body">
 
-        {{-- A7103:reports.index --}}@if(\App\Support\CrmViewAction::allows('reports.index'))
-<form method="GET" action="{{ route('reports.index') }}" class="rp-filter">
+        <form method="GET" action="{{ route('reports.index') }}" class="rp-filter">
 
             <div class="rp-field">
                 <label for="date_from">From</label>
@@ -90,20 +93,23 @@
 
             <button type="submit" class="btn primary rp-btn">Apply Period</button>
         </form>
-@endif{{-- /A7103 --}}
 
         <div class="rp-presets">
             <span>Quick select:</span>
 
             @foreach($presets as $name => $range)
-                {{-- A7103:reports.index --}}@if(\App\Support\CrmViewAction::allows('reports.index'))
+                
+{{-- A7105:reports.index --}}
+@if(\App\Support\CrmViewAction::allows('reports.index'))
 <a
                     href="{{ route('reports.index', $range) }}"
                     class="rp-preset {{ $range === $currentRange ? 'active' : '' }}"
                 >
                     {{ $name }}
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endforeach
         </div>
 

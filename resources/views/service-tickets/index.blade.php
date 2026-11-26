@@ -16,11 +16,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:service-tickets.create --}}@if(\App\Support\CrmViewAction::allows('service-tickets.create'))
+        
+{{-- A7105:service-tickets.create --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.create'))
 <a href="{{ route('service-tickets.create') }}" class="btn primary">
             + New Service Ticket
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 
 </div>
@@ -72,8 +76,7 @@
              FILTER BAR
         ================================================== --}}
 
-        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
-<form
+        <form
             method="GET"
             action="{{ route('service-tickets.index') }}"
             class="ticket-filter-bar"
@@ -94,7 +97,9 @@
                 >
 
                 @if(request('search'))
-                    {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+                    
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a
                         href="{{ route('service-tickets.index', request()->except('search', 'page')) }}"
                         class="ticket-search-clear"
@@ -103,7 +108,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
 
             </div>
@@ -264,19 +271,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+                
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a
                     href="{{ route('service-tickets.index') }}"
                     class="btn ticket-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =================================================
@@ -380,14 +390,18 @@
 
                             <td>
 
-                                {{-- A7103:service-tickets.show --}}@if(\App\Support\CrmViewAction::allows('service-tickets.show'))
+                                
+{{-- A7105:service-tickets.show --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.show'))
 <a
                                     href="{{ route('service-tickets.show', $ticket) }}"
                                     class="ticket-number-link"
                                 >
                                     <strong>{{ $ticket->ticket_number }}</strong>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 <div class="ticket-title">
                                     {{ $ticket->title }}
@@ -490,7 +504,9 @@
 
                             <td>
                                 <div class="table-actions">
-                                    {{-- A7103:service-tickets.show --}}@if(\App\Support\CrmViewAction::allows('service-tickets.show'))
+                                    
+{{-- A7105:service-tickets.show --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.show'))
 <a
                                         href="{{ route('service-tickets.show', $ticket->service_ticket_id) }}"
                                         class="action-btn view"
@@ -502,9 +518,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:service-tickets.edit --}}@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
+
+                                    
+{{-- A7105:service-tickets.edit --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
 <a
                                         href="{{ route('service-tickets.edit', $ticket->service_ticket_id) }}"
                                         class="action-btn edit"
@@ -516,9 +536,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:service-tickets.destroy --}}@if(\App\Support\CrmViewAction::allows('service-tickets.destroy'))
+
+                                    
+{{-- A7105:service-tickets.destroy --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.destroy'))
 <form
                                         action="{{ route('service-tickets.destroy', $ticket->service_ticket_id) }}"
                                         method="POST"
@@ -541,7 +565,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

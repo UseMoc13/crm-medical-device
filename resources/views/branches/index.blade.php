@@ -7,12 +7,20 @@
         <p>Manage office branches and their assignments within the CRM system.</p>
     </div>
     <div class="actions">
-        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+        
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a href="{{ route('users.index') }}" class="btn">Manage Users</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:branches.create --}}@if(\App\Support\CrmViewAction::allows('branches.create'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:branches.create --}}
+@if(\App\Support\CrmViewAction::allows('branches.create'))
 <a href="{{ route('branches.create') }}" class="btn primary">+ New Branch</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -28,8 +36,7 @@
         </div>
     </div>
     <div class="card-body">
-        {{-- A7103:branches.index --}}@if(\App\Support\CrmViewAction::allows('branches.index'))
-<form method="GET" action="{{ route('branches.index') }}" class="branch-filter">
+        <form method="GET" action="{{ route('branches.index') }}" class="branch-filter">
             <div class="branch-search">
                 <label class="branch-sr-only" for="branch_search">Search branches</label>
                 <span class="branch-search-icon" aria-hidden="true">⌕</span>
@@ -37,10 +44,14 @@
                     value="{{ request('search') }}" autocomplete="off"
                     placeholder="Search branches...">
                 @if(request('search'))
-                    {{-- A7103:branches.index --}}@if(\App\Support\CrmViewAction::allows('branches.index'))
+                    
+{{-- A7105:branches.index --}}
+@if(\App\Support\CrmViewAction::allows('branches.index'))
 <a href="{{ route('branches.index', request()->except('search', 'page')) }}"
                         class="branch-search-clear" aria-label="Clear search" title="Clear search">×</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
             </div>
             <div class="branch-filter-select">
@@ -69,12 +80,15 @@
             </div>
             <button type="submit" class="btn branch-filter-button">Filter</button>
             @if(request()->hasAny(['search', 'status', 'sort', 'direction']))
-                {{-- A7103:branches.index --}}@if(\App\Support\CrmViewAction::allows('branches.index'))
+                
+{{-- A7105:branches.index --}}
+@if(\App\Support\CrmViewAction::allows('branches.index'))
 <a href="{{ route('branches.index') }}" class="btn branch-reset-button">Reset</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
         </form>
-@endif{{-- /A7103 --}}
 
         @if(request()->filled('search') || request()->filled('status'))
             <div class="branch-filter-summary">
@@ -110,11 +124,15 @@
                         <tr>
                             <td>
                                 <div class="branch-table-identity">
-                                    {{-- A7103:branches.show --}}@if(\App\Support\CrmViewAction::allows('branches.show'))
+                                    
+{{-- A7105:branches.show --}}
+@if(\App\Support\CrmViewAction::allows('branches.show'))
 <a class="branch-name-link" href="{{ route('branches.show', $branch) }}">
                                         <strong>{{ $branch->branch_name }}</strong>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                     <span class="branch-subtitle">{{ $branch->branch_code }}</span>
                                 </div>
                             </td>
@@ -125,27 +143,43 @@
                             <td><span class="branch-status {{ $active ? 'active' : 'inactive' }}">{{ $active ? 'Active' : 'Inactive' }}</span></td>
                             <td>
                                 <div class="table-actions branch-actions">
-                                    {{-- A7103:branches.show --}}@if(\App\Support\CrmViewAction::allows('branches.show'))
+                                    
+{{-- A7105:branches.show --}}
+@if(\App\Support\CrmViewAction::allows('branches.show'))
 <a class="action-btn view" href="{{ route('branches.show', $branch) }}" title="View Branch" aria-label="View {{ $branch->branch_name }}">👁</a>
-@endif{{-- /A7103 --}}
-                                    {{-- A7103:branches.edit --}}@if(\App\Support\CrmViewAction::allows('branches.edit'))
+@endif
+{{-- /A7105 --}}
+
+                                    
+{{-- A7105:branches.edit --}}
+@if(\App\Support\CrmViewAction::allows('branches.edit'))
 <a class="action-btn edit" href="{{ route('branches.edit', $branch) }}" title="Edit Branch" aria-label="Edit {{ $branch->branch_name }}">✎</a>
-@endif{{-- /A7103 --}}
-                                    {{-- A7103:branches.destroy --}}@if(\App\Support\CrmViewAction::allows('branches.destroy'))
+@endif
+{{-- /A7105 --}}
+
+                                    
+{{-- A7105:branches.destroy --}}
+@if(\App\Support\CrmViewAction::allows('branches.destroy'))
 <form method="POST" action="{{ route('branches.destroy', $branch) }}"
                                         class="branch-delete-form" data-branch-name="{{ $branch->branch_name }}" data-has-links="{{ $linked ? '1' : '0' }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-btn delete" title="Delete Branch" aria-label="Delete {{ $branch->branch_name }}">🗑</button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7"><div class="branch-empty">No branches found. @if(request()->hasAny(['search','status']))Try adjusting the filters.@else{{-- A7103:branches.create --}}@if(\App\Support\CrmViewAction::allows('branches.create'))
+                        <tr><td colspan="7"><div class="branch-empty">No branches found. @if(request()->hasAny(['search','status']))Try adjusting the filters.@else
+{{-- A7105:branches.create --}}
+@if(\App\Support\CrmViewAction::allows('branches.create'))
 <a href="{{ route('branches.create') }}">Create your first branch.</a>
-@endif{{-- /A7103 --}}@endif</div></td></tr>
+@endif
+{{-- /A7105 --}}
+@endif</div></td></tr>
                     @endforelse
                 </tbody>
             </table>

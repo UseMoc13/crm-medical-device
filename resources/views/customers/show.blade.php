@@ -8,11 +8,15 @@
 
     <div>
         <div class="breadcrumb">
-            {{-- A7103:customers.index --}}@if(\App\Support\CrmViewAction::allows('customers.index'))
+            
+{{-- A7105:customers.index --}}
+@if(\App\Support\CrmViewAction::allows('customers.index'))
 <a href="{{ route('customers.index') }}">
                 Customers
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             <span>/</span>
 
@@ -28,23 +32,31 @@
 
     <div class="actions">
 
-        {{-- A7103:customers.edit --}}@if(\App\Support\CrmViewAction::allows('customers.edit'))
+        
+{{-- A7105:customers.edit --}}
+@if(\App\Support\CrmViewAction::allows('customers.edit'))
 <a
             href="{{ route('customers.edit', $customer) }}"
             class="btn primary"
         >
             ✎ Edit Customer
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:customers.index --}}@if(\App\Support\CrmViewAction::allows('customers.index'))
+
+        
+{{-- A7105:customers.index --}}
+@if(\App\Support\CrmViewAction::allows('customers.index'))
 <a
             href="{{ route('customers.index') }}"
             class="btn"
         >
             ← Back
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 

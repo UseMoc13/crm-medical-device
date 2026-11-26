@@ -16,21 +16,29 @@
 
     <div class="actions">
 
-        {{-- A7103:contacts.edit --}}@if(\App\Support\CrmViewAction::allows('contacts.edit'))
+        
+{{-- A7105:contacts.edit --}}
+@if(\App\Support\CrmViewAction::allows('contacts.edit'))
 <a
             href="{{ route('contacts.edit', $contact) }}"
             class="btn primary">
             Edit Contact
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
+
+        
+{{-- A7105:contacts.index --}}
+@if(\App\Support\CrmViewAction::allows('contacts.index'))
 <a
             href="{{ route('contacts.index') }}"
             class="btn">
             Back to Contacts
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -99,7 +107,9 @@
 
                     @if($contact->customer)
 
-                    {{-- A7103:customers.show --}}@if(\App\Support\CrmViewAction::allows('customers.show'))
+                    
+{{-- A7105:customers.show --}}
+@if(\App\Support\CrmViewAction::allows('customers.show'))
 <a
                         href="{{ route(
                                 'customers.show',
@@ -108,7 +118,9 @@
                         class="customer-detail-link">
                         {{ $contact->customer->customer_name }}
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                     <div class="detail-subvalue">
                         {{ $contact->customer->customer_code }}

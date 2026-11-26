@@ -14,12 +14,20 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+        
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a href="{{ route('service-tickets.index') }}" class="btn">Service Tickets</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:maintenance.index --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.index'))
 <a href="{{ route('maintenance.index') }}" class="btn">Maintenance</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -88,8 +96,7 @@
     <div class="card-body">
 
         {{-- FILTER BAR --}}
-        {{-- A7103:service-history.index --}}@if(\App\Support\CrmViewAction::allows('service-history.index'))
-<form method="GET" action="{{ route('service-history.index') }}" class="sh-filter-bar">
+        <form method="GET" action="{{ route('service-history.index') }}" class="sh-filter-bar">
 
             <div class="sh-search">
                 <span class="sh-search-icon">⌕</span>
@@ -103,14 +110,18 @@
                 >
 
                 @if(request('search'))
-                    {{-- A7103:service-history.index --}}@if(\App\Support\CrmViewAction::allows('service-history.index'))
+                    
+{{-- A7105:service-history.index --}}
+@if(\App\Support\CrmViewAction::allows('service-history.index'))
 <a
                         href="{{ route('service-history.index', request()->except('search', 'page')) }}"
                         class="sh-search-clear"
                         title="Clear search"
                         aria-label="Clear search"
                     >×</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
             </div>
 
@@ -161,13 +172,16 @@
             <button type="submit" class="btn sh-btn">Filter</button>
 
             @if(request()->hasAny(['search', 'type', 'customer_id', 'date_from', 'date_to', 'direction']))
-                {{-- A7103:service-history.index --}}@if(\App\Support\CrmViewAction::allows('service-history.index'))
+                
+{{-- A7105:service-history.index --}}
+@if(\App\Support\CrmViewAction::allows('service-history.index'))
 <a href="{{ route('service-history.index') }}" class="btn sh-btn">Reset</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
         @if(request()->hasAny(['search', 'type', 'customer_id', 'date_from', 'date_to']))
             <div class="sh-filter-summary">
@@ -264,14 +278,18 @@
                             </td>
 
                             <td>
-                                {{-- A7103:service-history.show --}}@if(\App\Support\CrmViewAction::allows('service-history.show'))
+                                
+{{-- A7105:service-history.show --}}
+@if(\App\Support\CrmViewAction::allows('service-history.show'))
 <a
                                     href="{{ route('service-history.show', $event->serial_number_id) }}"
                                     class="sh-link"
                                 >
                                     {{ $event->serial_number ?? '-' }}
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 <div class="sh-sub">{{ $event->product_name ?? 'Unknown Product' }}</div>
                             </td>
 
@@ -300,7 +318,9 @@
                                         </svg>
                                     </a>
 
-                                    {{-- A7103:service-history.show --}}@if(\App\Support\CrmViewAction::allows('service-history.show'))
+                                    
+{{-- A7105:service-history.show --}}
+@if(\App\Support\CrmViewAction::allows('service-history.show'))
 <a
                                         href="{{ route('service-history.show', $event->serial_number_id) }}"
                                         class="sh-icon-btn history"
@@ -312,7 +332,9 @@
                                             <path d="M12 7v5l3 2"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 </div>
                             </td>

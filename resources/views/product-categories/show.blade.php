@@ -20,17 +20,25 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:product-categories.index --}}@if(\App\Support\CrmViewAction::allows('product-categories.index'))
+        
+{{-- A7105:product-categories.index --}}
+@if(\App\Support\CrmViewAction::allows('product-categories.index'))
 <a href="{{ route('product-categories.index') }}" class="btn">
             &larr; Back to Categories
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:product-categories.edit --}}@if(\App\Support\CrmViewAction::allows('product-categories.edit'))
+
+        
+{{-- A7105:product-categories.edit --}}
+@if(\App\Support\CrmViewAction::allows('product-categories.edit'))
 <a href="{{ route('product-categories.edit', $productCategory) }}" class="btn primary">
             Edit Category
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -143,12 +151,16 @@
                 </div>
             </div>
 
-            {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+            
+{{-- A7105:products.create --}}
+@if(\App\Support\CrmViewAction::allows('products.create'))
 <a href="{{ route('products.create') }}" class="btn primary category-create-button">
                 <span aria-hidden="true">+</span>
                 Create New Product
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         </div>
     </section>
 </div>
@@ -199,11 +211,15 @@
                                         <span class="product-icon" aria-hidden="true">P</span>
 
                                         <div class="category-product-info">
-                                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                                            
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a href="{{ route('products.show', $product) }}" class="product-name-link">
                                                 {{ $product->product_name ?: 'Unnamed Product' }}
                                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                             <span class="product-code">{{ $product->product_code ?: 'No product code' }}</span>
                                         </div>
                                     </div>
@@ -239,12 +255,16 @@
                                 </td>
 
                                 <td>
-                                    {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                                    
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a href="{{ route('products.show', $product) }}" class="action-view-button">
                                         <span>View</span>
                                         <span aria-hidden="true">&rarr;</span>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </td>
                             </tr>
                         @endforeach
@@ -267,11 +287,15 @@
                 <h4>No Products in This Category</h4>
                 <p>There are currently no products assigned to this category.</p>
 
-                {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+                
+{{-- A7105:products.create --}}
+@if(\App\Support\CrmViewAction::allows('products.create'))
 <a href="{{ route('products.create') }}" class="btn primary empty-state-button">
                     + Create Product
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             </div>
         @endif
     </div>
@@ -419,12 +443,16 @@
                             </td>
 
                             <td>
-                                {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                                
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a href="{{ route('products.show', $product) }}" class="action-view-button">
                                     <span>View</span>
                                     <span aria-hidden="true">&rarr;</span>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                             </td>
                         </tr>
                     @endforeach

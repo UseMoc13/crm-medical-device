@@ -12,11 +12,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+        
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a href="{{ route('service-tickets.index') }}" class="btn">
             ← Back to Service Tickets
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -61,7 +65,9 @@
 
     <div class="card-body ticket-create-body">
 
-        {{-- A7103:service-tickets.update --}}@if(\App\Support\CrmViewAction::allows('service-tickets.update'))
+        
+{{-- A7105:service-tickets.update --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.update'))
 <form
             method="POST"
             action="{{ route('service-tickets.update', $serviceTicket) }}"
@@ -351,14 +357,18 @@
                     {{-- FORM ACTIONS --}}
 
                     <div class="form-actions">
-                        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+                        
+{{-- A7105:service-tickets.index --}}
+@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
 <a
                             href="{{ route('service-tickets.index') }}"
                             class="btn"
                         >
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -468,7 +478,9 @@
 
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 </div>

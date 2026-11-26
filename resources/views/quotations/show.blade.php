@@ -220,21 +220,29 @@ $quotationItems->lastItem();
 
     <div class="actions">
 
-        {{-- A7103:quotations.edit --}}@if(\App\Support\CrmViewAction::allows('quotations.edit'))
+        
+{{-- A7105:quotations.edit --}}
+@if(\App\Support\CrmViewAction::allows('quotations.edit'))
 <a
             href="{{ route('quotations.edit', $quotation) }}"
             class="btn primary">
             ✎ Edit Quotation
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+
+        
+{{-- A7105:quotations.index --}}
+@if(\App\Support\CrmViewAction::allows('quotations.index'))
 <a
             href="{{ route('quotations.index') }}"
             class="btn">
             ← Back
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -264,28 +272,40 @@ $quotationItems->lastItem();
     </div>
     <div class="card-body quotation-status-actions-body">
         @if($quotationCurrentStatus === 'draft')
-            {{-- A7103:quotations.change-status --}}@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
+            
+{{-- A7105:quotations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
 <form action="{{ route('quotations.change-status', $quotation) }}" method="POST" data-decision-form>
                 @csrf
                 <input type="hidden" name="action" value="mark_sent">
                 <button type="submit" class="btn primary">Mark as Sent</button>
             </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @elseif($quotationCurrentStatus === 'sent')
-            {{-- A7103:quotations.change-status --}}@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
+            
+{{-- A7105:quotations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
 <form action="{{ route('quotations.change-status', $quotation) }}" method="POST" data-decision-form>
                 @csrf
                 <input type="hidden" name="action" value="approve">
                 <button type="submit" class="btn primary">Record Customer Approval</button>
             </form>
-@endif{{-- /A7103 --}}
-            {{-- A7103:quotations.change-status --}}@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
+@endif
+{{-- /A7105 --}}
+
+            
+{{-- A7105:quotations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('quotations.change-status'))
 <form action="{{ route('quotations.change-status', $quotation) }}" method="POST" data-decision-form>
                 @csrf
                 <input type="hidden" name="action" value="reject">
                 <button type="submit" class="btn">Record Customer Rejection</button>
             </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
     </div>
 </div>
@@ -491,7 +511,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="opportunity-content">
 
-                {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                     href="{{ route('opportunities.show', $opportunity) }}"
                     class="opportunity-link">
@@ -513,7 +535,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </span>
 
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                 <div class="opportunity-name">

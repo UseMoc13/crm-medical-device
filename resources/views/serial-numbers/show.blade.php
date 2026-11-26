@@ -48,17 +48,25 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+        
+{{-- A7105:serial-numbers.index --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
 <a href="{{ route('serial-numbers.index') }}" class="btn">
             &larr; Back to Serial Numbers
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:serial-numbers.edit --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.edit'))
+
+        
+{{-- A7105:serial-numbers.edit --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.edit'))
 <a href="{{ route('serial-numbers.edit', $serialNumber->serial_number_id) }}" class="btn primary">
             Edit Serial Number
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -316,11 +324,15 @@
                 <p>This serial number is not currently associated with a customer. Edit the serial number to update its customer assignment when applicable.</p>
 
                 <div class="empty-state-actions">
-                    {{-- A7103:serial-numbers.edit --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.edit'))
+                    
+{{-- A7105:serial-numbers.edit --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.edit'))
 <a href="{{ route('serial-numbers.edit', $serialNumber->serial_number_id) }}" class="btn">
                         Edit Assignment
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 </div>
             </div>
 

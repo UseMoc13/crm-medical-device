@@ -23,39 +23,67 @@
         <div class="mt-workflow-actions">
             @if($mtStatus === 'Scheduled')
                 @if($mtHasTechnician)
-                    {{-- A7103:maintenance.change-status --}}@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
+                    
+{{-- A7105:maintenance.change-status --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
 <button type="button" class="btn primary" data-mt-next="In Progress" data-mt-message="Start this maintenance assignment?">Start Maintenance</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @else
-                    {{-- A7103:maintenance.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.edit'))
+                    
+{{-- A7105:maintenance.edit --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.edit'))
 <a href="{{ route('maintenance.edit', $maintenance) }}" class="btn primary">Assign Technician First</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
                 @if($mtRecordCount === 0)
-                    {{-- A7103:maintenance.change-status --}}@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
+                    
+{{-- A7105:maintenance.change-status --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
 <button type="button" class="btn danger" data-mt-next="Cancelled" data-mt-message="Cancel this schedule? This action cannot be undone.">Cancel Schedule</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
             @elseif($mtStatus === 'In Progress')
-                {{-- A7103:maintenance.records.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
+                
+{{-- A7105:maintenance.records.create --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
 <a class="btn primary" href="{{ route('maintenance.records.create', $maintenance) }}">+ Add Maintenance Record</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @if($mtRecordCount > 0)
-                    {{-- A7103:maintenance.change-status --}}@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
+                    
+{{-- A7105:maintenance.change-status --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
 <button type="button" class="btn primary" data-mt-next="Completed" data-mt-message="Complete this maintenance schedule? Ensure all required work has been documented.">Complete Maintenance</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @else
-                    {{-- A7103:maintenance.change-status --}}@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
+                    
+{{-- A7105:maintenance.change-status --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
 <button type="button" class="btn danger" data-mt-next="Cancelled" data-mt-message="Cancel this schedule? This action cannot be undone.">Cancel Schedule</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @endif
             @else
                 <span class="mt-workflow-hint">This schedule is finalized. Existing records remain available for review.</span>
             @endif
             @if($maintenance->serial_number_id)
-                {{-- A7103:service-history.show --}}@if(\App\Support\CrmViewAction::allows('service-history.show'))
+                
+{{-- A7105:service-history.show --}}
+@if(\App\Support\CrmViewAction::allows('service-history.show'))
 <a class="btn" href="{{ route('service-history.show', $maintenance->serial_number_id) }}">View Device Service History</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
         </div>
         @if($mtStatus === 'Scheduled' && !$mtHasTechnician)
@@ -72,7 +100,9 @@
     <div class="mt-workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="mtStatusTitle">
         <h3 id="mtStatusTitle">Confirm Status Change</h3>
         <p id="mtStatusMessage"></p>
-        {{-- A7103:maintenance.change-status --}}@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
+        
+{{-- A7105:maintenance.change-status --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.change-status'))
 <form action="{{ route('maintenance.change-status', $maintenance) }}" method="POST">
             @csrf
             @method('PATCH')
@@ -82,7 +112,9 @@
                 <button type="submit" class="btn primary" id="mtStatusConfirm">Confirm Change</button>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 <script>

@@ -92,11 +92,17 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+        
+{{-- A7105:announcement-management.index --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
 <a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:announcement-management.toggle-pin --}}@if(\App\Support\CrmViewAction::allows('announcement-management.toggle-pin'))
+
+        
+{{-- A7105:announcement-management.toggle-pin --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.toggle-pin'))
 <form
             action="{{ route('announcement-management.toggle-pin', $announcement) }}"
             method="POST"
@@ -109,11 +115,17 @@
                 {{ $announcement->is_pinned ? '★ Unpin' : '☆ Pin' }}
             </button>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-        {{-- A7103:announcement-management.edit --}}@if(\App\Support\CrmViewAction::allows('announcement-management.edit'))
+
+        
+{{-- A7105:announcement-management.edit --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.edit'))
 <a href="{{ route('announcement-management.edit', $announcement) }}" class="btn primary">✎ Edit Announcement</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -375,7 +387,9 @@
             <h3>Danger Zone</h3>
             <p>Deleting this announcement also removes its thumbnail, media, and attachments permanently.</p>
 
-            {{-- A7103:announcement-management.destroy --}}@if(\App\Support\CrmViewAction::allows('announcement-management.destroy'))
+            
+{{-- A7105:announcement-management.destroy --}}
+@if(\App\Support\CrmViewAction::allows('announcement-management.destroy'))
 <form
                 action="{{ route('announcement-management.destroy', $announcement) }}"
                 method="POST"
@@ -385,7 +399,9 @@
                 @method('DELETE')
                 <button type="submit" class="btn ann-delete-button">🗑 Delete Announcement</button>
             </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         </div>
     </aside>
 </div>

@@ -144,7 +144,9 @@
 
                     <div class="item-row-actions">
 
-                        {{-- A7103:opportunities.items.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
+                        
+{{-- A7105:opportunities.items.edit --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
 <a
                             href="{{ route(
                                 'opportunities.items.edit',
@@ -158,10 +160,14 @@
                             Edit
 
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
 
-                        {{-- A7103:opportunities.items.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
+
+                        
+{{-- A7105:opportunities.items.destroy --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
 <form
                             method="POST"
                             action="{{ route(
@@ -185,7 +191,9 @@
                             </button>
 
                         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                     </div>
 

@@ -16,13 +16,17 @@
 
     <div class="actions">
 
-        {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
+        
+{{-- A7105:contacts.index --}}
+@if(\App\Support\CrmViewAction::allows('contacts.index'))
 <a
             href="{{ route('contacts.index') }}"
             class="btn">
             Back to Contacts
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -73,7 +77,9 @@
 
     <div class="card-body">
 
-        {{-- A7103:contacts.store --}}@if(\App\Support\CrmViewAction::allows('contacts.store'))
+        
+{{-- A7105:contacts.store --}}
+@if(\App\Support\CrmViewAction::allows('contacts.store'))
 <form
             method="POST"
             action="{{ route('contacts.store') }}">
@@ -342,13 +348,17 @@
 
             <div class="form-actions">
 
-                {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
+                
+{{-- A7105:contacts.index --}}
+@if(\App\Support\CrmViewAction::allows('contacts.index'))
 <a
                     href="{{ route('contacts.index') }}"
                     class="btn">
                     Cancel
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                 <button
@@ -360,7 +370,9 @@
             </div>
 
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 

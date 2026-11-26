@@ -11,11 +11,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+        
+{{-- A7105:serial-numbers.index --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
 <a href="{{ route('serial-numbers.index') }}" class="btn">
             ← Back to Serial Numbers
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -51,7 +55,9 @@
     </div>
 
     <div class="card-body serial-edit-body">
-        {{-- A7103:serial-numbers.update --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.update'))
+        
+{{-- A7105:serial-numbers.update --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.update'))
 <form
             method="POST"
             action="{{ route('serial-numbers.update', $serialNumber->serial_number_id) }}"
@@ -219,11 +225,15 @@
                     </div>
 
                     <div class="form-actions">
-                        {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+                        
+{{-- A7105:serial-numbers.index --}}
+@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
 <a href="{{ route('serial-numbers.index') }}" class="btn">
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -289,7 +299,9 @@
                 </aside>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 

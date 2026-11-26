@@ -25,16 +25,24 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+        
+{{-- A7105:maintenance.index --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.index'))
 <a href="{{ route('maintenance.index') }}" class="btn">
             &larr; Back to Maintenance
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
         @if(in_array($maintenance->status, ['Scheduled', 'In Progress'], true))
-            {{-- A7103:maintenance.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.edit'))
+            
+{{-- A7105:maintenance.edit --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.edit'))
 <a href="{{ route('maintenance.edit', $maintenance->maintenance_schedule_id) }}" class="btn primary">Edit Schedule</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
     </div>
 </div>
@@ -184,13 +192,21 @@
                 <p>Keep the original maintenance record and create a separate Corrective schedule for further work.</p>
             </div>
             @if($followupSchedule)
-                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+                
+{{-- A7105:maintenance.show --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.show'))
 <a class="btn" href="{{ route('maintenance.show', $followupSchedule->getKey()) }}">View Follow-up Schedule</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @else
-                {{-- A7103:maintenance.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.create'))
+                
+{{-- A7105:maintenance.create --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.create'))
 <a class="btn primary" href="{{ route('maintenance.create', ['followup_from' => $maintenance->getKey()]) }}">+ Create Follow-up</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
         </div>
     </div>
@@ -211,15 +227,23 @@
                 <p>The last result was {{ $lastRecord?->result }}. Choose an interval and confirm the next appointment date.</p>
             </div>
             @if($nextPreventiveSchedule)
-                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+                
+{{-- A7105:maintenance.show --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.show'))
 <a class="btn" href="{{ route('maintenance.show', $nextPreventiveSchedule->getKey()) }}">View Next Preventive Schedule</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @else
                 <div class="mt-recurrence-links" aria-label="Choose next preventive interval">
                     @foreach([3, 6, 12] as $months)
-                        {{-- A7103:maintenance.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.create'))
+                        
+{{-- A7105:maintenance.create --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.create'))
 <a class="btn" href="{{ route('maintenance.create', ['recurring_from' => $maintenance->getKey(), 'recurring_months' => $months]) }}">+ {{ $months }} Months</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                     @endforeach
                 </div>
             @endif
@@ -305,14 +329,18 @@
             </button>
 
             @if($canAddRecord)
-                {{-- A7103:maintenance.records.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
+                
+{{-- A7105:maintenance.records.create --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
 <a
                     href="{{ route('maintenance.records.create', $maintenance->maintenance_schedule_id) }}"
                     class="mt-btn-add"
                 >
                     + Add Maintenance Record
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
 
         </div>
@@ -435,14 +463,18 @@
             </div>
 
             @if($canAddRecord)
-                {{-- A7103:maintenance.records.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
+                
+{{-- A7105:maintenance.records.create --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
 <a
                     href="{{ route('maintenance.records.create', $maintenance->maintenance_schedule_id) }}"
                     class="mt-btn-add"
                 >
                     + Add Maintenance Record
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
 
         </div>

@@ -19,14 +19,18 @@
 
     <div class="actions">
 
-        {{-- A7103:leads.create --}}@if(\App\Support\CrmViewAction::allows('leads.create'))
+        
+{{-- A7105:leads.create --}}
+@if(\App\Support\CrmViewAction::allows('leads.create'))
 <a
             href="{{ route('leads.create') }}"
             class="btn primary"
         >
             + New Lead
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -68,8 +72,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
-<form
+        <form
             method="GET"
             action="{{ route('leads.index') }}"
             class="lead-filter-bar"
@@ -96,7 +99,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+                    
+{{-- A7105:leads.index --}}
+@if(\App\Support\CrmViewAction::allows('leads.index'))
 <a
                         href="{{ route(
                             'leads.index',
@@ -110,7 +115,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -341,19 +348,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+                
+{{-- A7105:leads.index --}}
+@if(\App\Support\CrmViewAction::allows('leads.index'))
 <a
                     href="{{ route('leads.index') }}"
                     class="btn lead-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -503,7 +513,9 @@
 
                         <td>
 
-                            {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+                            
+{{-- A7105:leads.show --}}
+@if(\App\Support\CrmViewAction::allows('leads.show'))
 <a
                                 href="{{ route(
                                     'leads.show',
@@ -517,7 +529,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             <div class="muted">
@@ -680,7 +694,9 @@
 
                         <td>
                                 <div class="table-actions">
-                                    {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+                                    
+{{-- A7105:leads.show --}}
+@if(\App\Support\CrmViewAction::allows('leads.show'))
 <a
                                         href="{{ route('leads.show', $lead->lead_id) }}"
                                         class="action-btn view"
@@ -692,9 +708,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:leads.edit --}}@if(\App\Support\CrmViewAction::allows('leads.edit'))
+
+                                    
+{{-- A7105:leads.edit --}}
+@if(\App\Support\CrmViewAction::allows('leads.edit'))
 <a
                                         href="{{ route('leads.edit', $lead->lead_id) }}"
                                         class="action-btn edit"
@@ -706,9 +726,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:leads.destroy --}}@if(\App\Support\CrmViewAction::allows('leads.destroy'))
+
+                                    
+{{-- A7105:leads.destroy --}}
+@if(\App\Support\CrmViewAction::allows('leads.destroy'))
 <form
                                         action="{{ route('leads.destroy', $lead->lead_id) }}"
                                         method="POST"
@@ -731,7 +755,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
                     </tr>

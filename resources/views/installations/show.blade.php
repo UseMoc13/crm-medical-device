@@ -26,16 +26,24 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:installations.index --}}@if(\App\Support\CrmViewAction::allows('installations.index'))
+        
+{{-- A7105:installations.index --}}
+@if(\App\Support\CrmViewAction::allows('installations.index'))
 <a href="{{ route('installations.index') }}" class="btn">
             &larr; Back
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
         @if(!in_array($installation->status, ['Completed', 'Cancelled']))
-            {{-- A7103:installations.edit --}}@if(\App\Support\CrmViewAction::allows('installations.edit'))
+            
+{{-- A7105:installations.edit --}}
+@if(\App\Support\CrmViewAction::allows('installations.edit'))
 <a href="{{ route('installations.edit', $installation->installation_id) }}" class="btn primary">Edit Installation</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
     </div>
 </div>
@@ -49,16 +57,28 @@
         <div class="installation-progress-track" role="progressbar" aria-valuenow="{{ $checklistPercent }}" aria-valuemin="0" aria-valuemax="100"><div class="installation-progress-fill" style="width: {{ $checklistPercent }}%"></div></div>
         <div class="installation-status-actions">
             @if($installation->status === 'Scheduled')
-                {{-- A7103:installations.change-status --}}@if(\App\Support\CrmViewAction::allows('installations.change-status'))
+                
+{{-- A7105:installations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('installations.change-status'))
 <button type="button" class="btn primary" data-installation-next="In Progress">Start Installation</button>
-@endif{{-- /A7103 --}}
-                {{-- A7103:installations.change-status --}}@if(\App\Support\CrmViewAction::allows('installations.change-status'))
+@endif
+{{-- /A7105 --}}
+
+                
+{{-- A7105:installations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('installations.change-status'))
 <button type="button" class="btn" data-installation-next="Cancelled">Cancel Installation</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @elseif($installation->status === 'In Progress')
-                {{-- A7103:installations.change-status --}}@if(\App\Support\CrmViewAction::allows('installations.change-status'))
+                
+{{-- A7105:installations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('installations.change-status'))
 <button type="button" class="btn primary" data-installation-next="Completed" @disabled($checklistTotal === 0 || $checklistDone !== $checklistTotal)>Complete Installation</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                 @if($checklistTotal === 0 || $checklistDone !== $checklistTotal)<span class="form-hint">Finish all checklist items before completion.</span>@endif
             @else
                 <span class="form-hint">This installation is finalized. Status changes are disabled.</span>
@@ -90,9 +110,13 @@
                 <span class="info-label">Delivery Number</span>
                 <span class="info-value">
                     @if($installation->delivery)
-                        {{-- A7103:deliveries.show --}}@if(\App\Support\CrmViewAction::allows('deliveries.show'))
+                        
+{{-- A7105:deliveries.show --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.show'))
 <a href="{{ route('deliveries.show', $installation->delivery_id) }}">{{ $installation->delivery->delivery_number }}</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                     @else
                         —
                     @endif
@@ -181,7 +205,9 @@
 
                                 <td class="installation-checklist-note">
                                     @if($installation->status === 'In Progress')
-                                        {{-- A7103:installations.checklists.update --}}@if(\App\Support\CrmViewAction::allows('installations.checklists.update'))
+                                        
+{{-- A7105:installations.checklists.update --}}
+@if(\App\Support\CrmViewAction::allows('installations.checklists.update'))
 <form id="checklistForm{{ $checklist->checklist_id }}" action="{{ route('installations.checklists.update', [$installation, $checklist]) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
@@ -190,13 +216,19 @@
                                             <textarea id="checklistNotes{{ $checklist->checklist_id }}" name="notes" maxlength="2000" rows="2" placeholder="Enter checklist findings or technician notes...">{{ old('notes', $checklist->notes) }}</textarea>
                                             <div class="note-actions">
                                               <button type="submit" class="btn">Save Notes</button>
-                                              {{-- A7103:installations.checklists.update --}}@if(\App\Support\CrmViewAction::allows('installations.checklists.update'))
+                                              
+{{-- A7105:installations.checklists.update --}}
+@if(\App\Support\CrmViewAction::allows('installations.checklists.update'))
 <button type="button" class="btn primary checklist-toggle" data-completed="{{ $checklist->is_completed ? '0' : '1' }}">{{ $checklist->is_completed ? 'Undo Completion' : 'Mark Done' }}</button>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                             </div>
                                             <div class="note-hint">Saving notes does not change completion status.</div>
                                         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                     @else
                                         <span class="saved-note">{{ $checklist->notes ?: '—' }}</span>
                                     @endif
@@ -269,7 +301,9 @@
     <div class="installation-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="installationModalTitle">
         <div class="installation-confirm-symbol">?</div><h3 id="installationModalTitle">Confirm Status Change</h3>
         <p id="installationModalMessage"></p>
-        {{-- A7103:installations.change-status --}}@if(\App\Support\CrmViewAction::allows('installations.change-status'))
+        
+{{-- A7105:installations.change-status --}}
+@if(\App\Support\CrmViewAction::allows('installations.change-status'))
 <form method="POST" action="{{ route('installations.change-status', $installation) }}">
             @csrf
             @method('PATCH')
@@ -279,7 +313,9 @@
                 <button type="submit" class="btn primary">Confirm Change</button>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 @include('installations._warranty_activation')

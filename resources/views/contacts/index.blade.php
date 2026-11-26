@@ -16,14 +16,18 @@
 
     <div class="actions">
 
-        {{-- A7103:contacts.create --}}@if(\App\Support\CrmViewAction::allows('contacts.create'))
+        
+{{-- A7105:contacts.create --}}
+@if(\App\Support\CrmViewAction::allows('contacts.create'))
 <a
             href="{{ route('contacts.create') }}"
             class="btn primary"
         >
             + New Contact
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -63,8 +67,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
-<form
+        <form
             method="GET"
             action="{{ route('contacts.index') }}"
             class="contact-filter-bar"
@@ -88,7 +91,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
+                    
+{{-- A7105:contacts.index --}}
+@if(\App\Support\CrmViewAction::allows('contacts.index'))
 <a
                         href="{{ route(
                             'contacts.index',
@@ -99,7 +104,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -284,19 +291,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:contacts.index --}}@if(\App\Support\CrmViewAction::allows('contacts.index'))
+                
+{{-- A7105:contacts.index --}}
+@if(\App\Support\CrmViewAction::allows('contacts.index'))
 <a
                     href="{{ route('contacts.index') }}"
                     class="btn contact-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -421,7 +431,9 @@
 
                         <td>
 
-                            {{-- A7103:contacts.show --}}@if(\App\Support\CrmViewAction::allows('contacts.show'))
+                            
+{{-- A7105:contacts.show --}}
+@if(\App\Support\CrmViewAction::allows('contacts.show'))
 <a
                                 href="{{ route(
                                     'contacts.show',
@@ -435,7 +447,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             @if($contact->email)
@@ -455,7 +469,9 @@
 
                             @if($contact->customer)
 
-                                {{-- A7103:customers.show --}}@if(\App\Support\CrmViewAction::allows('customers.show'))
+                                
+{{-- A7105:customers.show --}}
+@if(\App\Support\CrmViewAction::allows('customers.show'))
 <a
                                     href="{{ route(
                                         'customers.show',
@@ -469,7 +485,9 @@
                                     </strong>
 
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 <div class="muted">
@@ -564,7 +582,9 @@
 
                         <td>
                                 <div class="table-actions">
-                                    {{-- A7103:contacts.show --}}@if(\App\Support\CrmViewAction::allows('contacts.show'))
+                                    
+{{-- A7105:contacts.show --}}
+@if(\App\Support\CrmViewAction::allows('contacts.show'))
 <a
                                         href="{{ route('contacts.show', $contact->contact_id) }}"
                                         class="action-btn view"
@@ -576,9 +596,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:contacts.edit --}}@if(\App\Support\CrmViewAction::allows('contacts.edit'))
+
+                                    
+{{-- A7105:contacts.edit --}}
+@if(\App\Support\CrmViewAction::allows('contacts.edit'))
 <a
                                         href="{{ route('contacts.edit', $contact->contact_id) }}"
                                         class="action-btn edit"
@@ -590,9 +614,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:contacts.destroy --}}@if(\App\Support\CrmViewAction::allows('contacts.destroy'))
+
+                                    
+{{-- A7105:contacts.destroy --}}
+@if(\App\Support\CrmViewAction::allows('contacts.destroy'))
 <form
                                         action="{{ route('contacts.destroy', $contact->contact_id) }}"
                                         method="POST"
@@ -615,7 +643,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

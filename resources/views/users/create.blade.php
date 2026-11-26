@@ -19,14 +19,18 @@
 
     <div class="actions">
 
-        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+        
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a
             href="{{ route('users.index') }}"
             class="btn"
         >
             ← Back to Users
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -73,7 +77,9 @@
 
     <div class="card-body">
 
-        {{-- A7103:users.store --}}@if(\App\Support\CrmViewAction::allows('users.store'))
+        
+{{-- A7105:users.store --}}
+@if(\App\Support\CrmViewAction::allows('users.store'))
 <form
             method="POST"
             action="{{ route('users.store') }}"
@@ -264,12 +270,16 @@
                         <span class="form-hint">
                             Optional branch assignment for this user.
                         </span>
-                        {{-- A7103:branches.index --}}@if(\App\Support\CrmViewAction::allows('branches.index'))
+                        
+{{-- A7105:branches.index --}}
+@if(\App\Support\CrmViewAction::allows('branches.index'))
 <a href="{{ route('branches.index') }}"
                            class="form-hint" style="display:inline-block;margin-top:6px;color:#168d81;font-weight:650;">
                             Manage Branches →
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         @error('branch_id')
 
@@ -402,14 +412,18 @@
 
                     <div class="form-actions">
 
-                        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+                        
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a
                             href="{{ route('users.index') }}"
                             class="btn"
                         >
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -534,7 +548,9 @@
             </div>
 
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 

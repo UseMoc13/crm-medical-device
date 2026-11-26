@@ -12,11 +12,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:deliveries.create --}}@if(\App\Support\CrmViewAction::allows('deliveries.create'))
+        
+{{-- A7105:deliveries.create --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.create'))
 <a href="{{ route('deliveries.create') }}" class="btn primary">
             + Add Delivery
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -30,8 +34,7 @@
     </div>
 
     <div class="card-body">
-        {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
-<form method="GET" action="{{ route('deliveries.index') }}" class="delivery-filter-bar">
+        <form method="GET" action="{{ route('deliveries.index') }}" class="delivery-filter-bar">
             <div class="delivery-filter-search">
                 <input name="search" type="search" value="{{ request('search') }}" placeholder="Search delivery, sales order, address..." aria-label="Search deliveries">
             </div>
@@ -53,12 +56,15 @@
             </select>
             <button class="btn" type="submit">Filter</button>
             @if (request()->filled('search') || request()->filled('status') || request()->filled('sort') || request()->filled('direction'))
-                {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+                
+{{-- A7105:deliveries.index --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.index'))
 <a href="{{ route('deliveries.index') }}" class="btn">Reset</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
         </form>
-@endif{{-- /A7103 --}}
 
         <div class="table-wrap delivery-table-wrap">
             <table class="delivery-table">
@@ -122,11 +128,15 @@
 
                             {{-- SALES ORDER --}}
                             <td>
-                                {{-- A7103:sales-orders.show --}}@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
+                                
+{{-- A7105:sales-orders.show --}}
+@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
 <a class="delivery-origin-link" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">
                                     {{ $delivery->salesOrder->sales_order_number ?? '—' }}
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                             </td>
 
                             {{-- DELIVERY DATE --}}
@@ -153,7 +163,9 @@
                             {{-- ACTIONS --}}
                             <td>
                                 <div class="table-actions">
-                                    {{-- A7103:deliveries.show --}}@if(\App\Support\CrmViewAction::allows('deliveries.show'))
+                                    
+{{-- A7105:deliveries.show --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.show'))
 <a
                                         href="{{ route('deliveries.show', $delivery->delivery_id) }}"
                                         class="action-btn view"
@@ -165,9 +177,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:deliveries.edit --}}@if(\App\Support\CrmViewAction::allows('deliveries.edit'))
+
+                                    
+{{-- A7105:deliveries.edit --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.edit'))
 <a
                                         href="{{ route('deliveries.edit', $delivery->delivery_id) }}"
                                         class="action-btn edit"
@@ -179,9 +195,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:deliveries.destroy --}}@if(\App\Support\CrmViewAction::allows('deliveries.destroy'))
+
+                                    
+{{-- A7105:deliveries.destroy --}}
+@if(\App\Support\CrmViewAction::allows('deliveries.destroy'))
 <form
                                         action="{{ route('deliveries.destroy', $delivery->delivery_id) }}"
                                         method="POST"
@@ -206,7 +226,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
                         </tr>

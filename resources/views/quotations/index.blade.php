@@ -19,14 +19,18 @@
 
     <div class="actions">
 
-        {{-- A7103:quotations.create --}}@if(\App\Support\CrmViewAction::allows('quotations.create'))
+        
+{{-- A7105:quotations.create --}}
+@if(\App\Support\CrmViewAction::allows('quotations.create'))
 <a
             href="{{ route('quotations.create') }}"
             class="btn primary"
         >
             + New Quotation
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -79,8 +83,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
-<form
+        <form
             method="GET"
             action="{{ route('quotations.index') }}"
             class="quotation-filter-bar"
@@ -107,7 +110,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+                    
+{{-- A7105:quotations.index --}}
+@if(\App\Support\CrmViewAction::allows('quotations.index'))
 <a
                         href="{{ route(
                             'quotations.index',
@@ -121,7 +126,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -301,19 +308,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+                
+{{-- A7105:quotations.index --}}
+@if(\App\Support\CrmViewAction::allows('quotations.index'))
 <a
                     href="{{ route('quotations.index') }}"
                     class="btn quotation-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -431,7 +441,9 @@
 
                         <td>
 
-                            {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+                            
+{{-- A7105:quotations.show --}}
+@if(\App\Support\CrmViewAction::allows('quotations.show'))
 <a
                                 href="{{ route(
                                     'quotations.show',
@@ -445,7 +457,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             <div class="muted">
@@ -467,7 +481,9 @@
 
                             @if($quotation->opportunity)
 
-                                {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                                
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                                     href="{{ route(
                                         'opportunities.show',
@@ -481,7 +497,9 @@
                                     </strong>
 
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 <div class="muted">
@@ -609,7 +627,9 @@
                             <div class="table-actions">
 
                                 {{-- VIEW --}}
-                                {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+                                
+{{-- A7105:quotations.show --}}
+@if(\App\Support\CrmViewAction::allows('quotations.show'))
 <a
                                     href="{{ route('quotations.show', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn view"
@@ -621,10 +641,14 @@
                                         <circle cx="12" cy="12" r="3"/>
                                     </svg>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 {{-- EDIT --}}
-                                {{-- A7103:quotations.edit --}}@if(\App\Support\CrmViewAction::allows('quotations.edit'))
+                                
+{{-- A7105:quotations.edit --}}
+@if(\App\Support\CrmViewAction::allows('quotations.edit'))
 <a
                                     href="{{ route('quotations.edit', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn edit"
@@ -636,10 +660,14 @@
                                         <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                     </svg>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 {{-- DELETE --}}
-                                {{-- A7103:quotations.destroy --}}@if(\App\Support\CrmViewAction::allows('quotations.destroy'))
+                                
+{{-- A7105:quotations.destroy --}}
+@if(\App\Support\CrmViewAction::allows('quotations.destroy'))
 <form
                                     action="{{ route('quotations.destroy', ['quotation' => $quotation->getRouteKey()]) }}"
                                     method="POST"
@@ -662,7 +690,9 @@
                                         </svg>
                                     </button>
                                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                             </div>
                         </td>
@@ -682,7 +712,9 @@
                                     {{ $existingSalesOrder->sales_order_number }}
                                 </span>
                             @elseif (strtolower(trim($quotation->status ?? '')) === 'approved')
-                                {{-- A7103:sales_orders.from_quotation --}}@if(\App\Support\CrmViewAction::allows('sales_orders.from_quotation'))
+                                
+{{-- A7105:sales_orders.from_quotation --}}
+@if(\App\Support\CrmViewAction::allows('sales_orders.from_quotation'))
 <form
                                     method="POST"
                                     action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
@@ -694,7 +726,9 @@
                                         Buat Sales Order
                                     </button>
                                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                             @elseif (strtolower(trim($quotation->status ?? '')) === 'rejected')
                                 <span class="quotation-status-badge quotation-status-rejected">Rejected - No Sales Order</span>
                             @elseif (in_array(strtolower(trim($quotation->status ?? '')), ['cancelled', 'expired'], true))

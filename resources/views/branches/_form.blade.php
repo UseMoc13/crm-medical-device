@@ -12,7 +12,9 @@
         <span class="branch-required-note"><span>*</span> Required fields</span>
     </div>
     <div class="card-body branch-form-card-body">
-        {{-- A7103:branches.update --}}@if(\App\Support\CrmViewAction::allows('branches.update'))
+        
+{{-- A7105:branches.update --}}
+@if(\App\Support\CrmViewAction::allows('branches.update'))
 <form action="{{ $editing ? route('branches.update', $branch) : route('branches.store') }}"
             method="POST" id="branchEditorForm">
             @csrf
@@ -82,9 +84,13 @@
                         </div>
                     </section>
                     <div class="branch-form-footer">
-                        {{-- A7103:branches.show --}}@if(\App\Support\CrmViewAction::allows('branches.show'))
+                        
+{{-- A7105:branches.show --}}
+@if(\App\Support\CrmViewAction::allows('branches.show'))
 <a href="{{ $editing ? route('branches.show', $branch) : route('branches.index') }}" class="btn">Cancel</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                         <button type="submit" class="btn primary">{{ $editing ? 'Save Changes' : 'Create Branch' }}</button>
                     </div>
                 </div>
@@ -113,7 +119,9 @@
                 </aside>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 <script>

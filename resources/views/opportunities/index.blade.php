@@ -39,13 +39,17 @@
 
     <div class="actions">
 
-        {{-- A7103:opportunities.create --}}@if(\App\Support\CrmViewAction::allows('opportunities.create'))
+        
+{{-- A7105:opportunities.create --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.create'))
 <a
             href="{{ route('opportunities.create') }}"
             class="btn primary">
             + New Opportunity
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -87,8 +91,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
-<form
+        <form
             method="GET"
             action="{{ route('opportunities.index') }}"
             class="opportunity-filter-bar">
@@ -113,7 +116,9 @@
 
                 @if(request('search'))
 
-                {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+                
+{{-- A7105:opportunities.index --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.index'))
 <a
                     href="{{ route(
                             'opportunities.index',
@@ -126,7 +131,9 @@
                     title="Clear search">
                     ×
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -351,18 +358,21 @@
             'direction'
             ]))
 
-            {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+            
+{{-- A7105:opportunities.index --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.index'))
 <a
                 href="{{ route('opportunities.index') }}"
                 class="btn opportunity-reset-button">
                 Reset
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -524,7 +534,9 @@
                         </td>
                         <td>
 
-                            {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                            
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                                 href="{{ route(
                                     'opportunities.show',
@@ -537,7 +549,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             <div class="muted">
@@ -724,7 +738,9 @@
 
                         <td>
                                 <div class="table-actions">
-                                    {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                                    
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                                         href="{{ route('opportunities.show', $opportunity->opportunity_id) }}"
                                         class="action-btn view"
@@ -736,9 +752,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:opportunities.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
+
+                                    
+{{-- A7105:opportunities.edit --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
 <a
                                         href="{{ route('opportunities.edit', $opportunity->opportunity_id) }}"
                                         class="action-btn edit"
@@ -750,9 +770,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:opportunities.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.destroy'))
+
+                                    
+{{-- A7105:opportunities.destroy --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.destroy'))
 <form
                                         action="{{ route('opportunities.destroy', $opportunity->opportunity_id) }}"
                                         method="POST"
@@ -775,7 +799,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

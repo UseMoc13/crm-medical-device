@@ -19,13 +19,17 @@
 
     <div class="actions">
 
-        {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+        
+{{-- A7105:products.create --}}
+@if(\App\Support\CrmViewAction::allows('products.create'))
 <a
             href="{{ route('products.create') }}"
             class="btn primary">
             + New Product
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -109,8 +113,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
-<form
+        <form
             method="GET"
             action="{{ route('products.index') }}"
             class="product-filter-bar">
@@ -135,7 +138,9 @@
 
                 @if(request('search'))
 
-                {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+                
+{{-- A7105:products.index --}}
+@if(\App\Support\CrmViewAction::allows('products.index'))
 <a
                     href="{{ route(
                             'products.index',
@@ -148,7 +153,9 @@
                     title="Clear search">
                     ×
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -288,18 +295,21 @@
             'status'
             ]))
 
-            {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+            
+{{-- A7105:products.index --}}
+@if(\App\Support\CrmViewAction::allows('products.index'))
 <a
                 href="{{ route('products.index') }}"
                 class="btn product-reset-button">
                 Reset
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -462,7 +472,9 @@
 
                         <td>
 
-                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                            
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a
                                 href="{{ route(
                                     'products.show',
@@ -475,7 +487,9 @@
                                 </strong>
 
                             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                             <div class="muted">
@@ -645,7 +659,9 @@
 
                         <td>
                                 <div class="table-actions">
-                                    {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                                    
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a
                                         href="{{ route('products.show', $product->product_id) }}"
                                         class="action-btn view"
@@ -657,9 +673,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:products.edit --}}@if(\App\Support\CrmViewAction::allows('products.edit'))
+
+                                    
+{{-- A7105:products.edit --}}
+@if(\App\Support\CrmViewAction::allows('products.edit'))
 <a
                                         href="{{ route('products.edit', $product->product_id) }}"
                                         class="action-btn edit"
@@ -671,9 +691,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:products.destroy --}}@if(\App\Support\CrmViewAction::allows('products.destroy'))
+
+                                    
+{{-- A7105:products.destroy --}}
+@if(\App\Support\CrmViewAction::allows('products.destroy'))
 <form
                                         action="{{ route('products.destroy', $product->product_id) }}"
                                         method="POST"
@@ -696,7 +720,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

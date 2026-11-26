@@ -5,12 +5,20 @@
 <div class="page-head">
     <div><h1>Branch Details</h1><p>Review branch information, assigned users, and linked teams.</p></div>
     <div class="actions">
-        {{-- A7103:branches.index --}}@if(\App\Support\CrmViewAction::allows('branches.index'))
+        
+{{-- A7105:branches.index --}}
+@if(\App\Support\CrmViewAction::allows('branches.index'))
 <a href="{{ route('branches.index') }}" class="btn">← Back to Branches</a>
-@endif{{-- /A7103 --}}
-        {{-- A7103:branches.edit --}}@if(\App\Support\CrmViewAction::allows('branches.edit'))
+@endif
+{{-- /A7105 --}}
+
+        
+{{-- A7105:branches.edit --}}
+@if(\App\Support\CrmViewAction::allows('branches.edit'))
 <a href="{{ route('branches.edit', $branch) }}" class="btn primary">Edit Branch</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -48,9 +56,13 @@
 <section class="card branch-related-card">
     <div class="card-head branch-related-head">
         <div><h3>Assigned Users</h3><p>Accounts currently associated with this branch.</p></div>
-        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+        
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a href="{{ route('users.index') }}" class="btn">View All Users</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
     <div class="card-body">
         <div class="table-wrap branch-table-wrap">
@@ -59,15 +71,23 @@
                 <tbody>
                     @forelse($users as $user)
                         <tr>
-                            <td>{{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+                            <td>
+{{-- A7105:users.show --}}
+@if(\App\Support\CrmViewAction::allows('users.show'))
 <a href="{{ route('users.show', $user) }}" class="branch-name-link"><strong>{{ $user->name }}</strong></a>
-@endif{{-- /A7103 --}}</td>
+@endif
+{{-- /A7105 --}}
+</td>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->role?->role_name ?: '—' }}</td>
                             <td><span class="branch-status {{ strtolower((string) $user->status) === 'active' ? 'active' : 'inactive' }}">{{ ucfirst((string) $user->status) }}</span></td>
-                            <td>{{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+                            <td>
+{{-- A7105:users.show --}}
+@if(\App\Support\CrmViewAction::allows('users.show'))
 <a class="branch-row-link" href="{{ route('users.show', $user) }}">View User</a>
-@endif{{-- /A7103 --}}</td>
+@endif
+{{-- /A7105 --}}
+</td>
                         </tr>
                     @empty
                         <tr><td colspan="5"><div class="branch-empty">No users are assigned to this branch.</div></td></tr>
@@ -82,9 +102,13 @@
 <section class="card branch-related-card">
     <div class="card-head branch-related-head">
         <div><h3>Linked Teams</h3><p>Current teams associated with this branch (up to 10 shown).</p></div>
-        {{-- A7103:teams.index --}}@if(\App\Support\CrmViewAction::allows('teams.index'))
+        
+{{-- A7105:teams.index --}}
+@if(\App\Support\CrmViewAction::allows('teams.index'))
 <a href="{{ route('teams.index') }}" class="btn">Team Directory</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
     <div class="card-body">
         <div class="branch-team-list">
@@ -92,9 +116,13 @@
                 <div class="branch-team-row">
                     <span class="branch-team-icon" aria-hidden="true">T</span>
                     <div class="branch-team-info">
-                        {{-- A7103:teams.show --}}@if(\App\Support\CrmViewAction::allows('teams.show'))
+                        
+{{-- A7105:teams.show --}}
+@if(\App\Support\CrmViewAction::allows('teams.show'))
 <a href="{{ route('teams.show', $team->team_id) }}" class="branch-name-link"><strong>{{ $team->team_name }}</strong></a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                         <small>{{ $team->team_code }}</small>
                     </div>
                     <span class="branch-status {{ strtolower((string) $team->status) === 'active' ? 'active' : 'inactive' }}">{{ ucfirst((string) $team->status) }}</span>

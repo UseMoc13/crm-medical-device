@@ -26,18 +26,26 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+        
+{{-- A7105:invoices.index --}}
+@if(\App\Support\CrmViewAction::allows('invoices.index'))
 <a href="{{ route('invoices.index') }}" class="btn">&larr; Back to Invoices</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
         <button type="button" class="btn" onclick="window.print()">Print</button>
 
         @if($canEdit)
-            {{-- A7103:invoices.edit --}}@if(\App\Support\CrmViewAction::allows('invoices.edit'))
+            
+{{-- A7105:invoices.edit --}}
+@if(\App\Support\CrmViewAction::allows('invoices.edit'))
 <a href="{{ route('invoices.edit', $invoice->invoice_id) }}" class="btn primary">
                 Edit Invoice
             </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
     </div>
 </div>
@@ -71,7 +79,9 @@
         <div class="inv-status-actions">
 
             @foreach($transitions as $target)
-                {{-- A7103:invoices.status --}}@if(\App\Support\CrmViewAction::allows('invoices.status'))
+                
+{{-- A7105:invoices.status --}}
+@if(\App\Support\CrmViewAction::allows('invoices.status'))
 <form
                     method="POST"
                     action="{{ route('invoices.status', $invoice->invoice_id) }}"
@@ -98,11 +108,15 @@
                         @endswitch
                     </button>
                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endforeach
 
             @if($canDelete)
-                {{-- A7103:invoices.destroy --}}@if(\App\Support\CrmViewAction::allows('invoices.destroy'))
+                
+{{-- A7105:invoices.destroy --}}
+@if(\App\Support\CrmViewAction::allows('invoices.destroy'))
 <form
                     method="POST"
                     action="{{ route('invoices.destroy', $invoice->invoice_id) }}"
@@ -112,7 +126,9 @@
                     @method('DELETE')
                     <button type="submit" class="inv-btn-sm danger">Delete</button>
                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
             @endif
 
             @if(!count($transitions) && !$canDelete)

@@ -12,11 +12,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+        
+{{-- A7105:products.index --}}
+@if(\App\Support\CrmViewAction::allows('products.index'))
 <a href="{{ route('products.index') }}" class="btn">
             ← Back to Products
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -47,7 +51,9 @@
     </div>
 
     <div class="card-body product-create-body">
-        {{-- A7103:products.store --}}@if(\App\Support\CrmViewAction::allows('products.store'))
+        
+{{-- A7105:products.store --}}
+@if(\App\Support\CrmViewAction::allows('products.store'))
 <form
             action="{{ route('products.store') }}"
             method="POST"
@@ -420,11 +426,15 @@
 
                     {{-- FORM ACTIONS --}}
                     <div class="form-actions">
-                        {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+                        
+{{-- A7105:products.index --}}
+@if(\App\Support\CrmViewAction::allows('products.index'))
 <a href="{{ route('products.index') }}" class="btn">
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -512,7 +522,9 @@
 
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 

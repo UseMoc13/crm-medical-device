@@ -19,19 +19,27 @@
 
     <div class="actions">
         @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
-            {{-- A7103:organization.index --}}@if(\App\Support\CrmViewAction::allows('organization.index'))
+            
+{{-- A7105:organization.index --}}
+@if(\App\Support\CrmViewAction::allows('organization.index'))
 <a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
         @endif
 
-        {{-- A7103:users.create --}}@if(\App\Support\CrmViewAction::allows('users.create'))
+        
+{{-- A7105:users.create --}}
+@if(\App\Support\CrmViewAction::allows('users.create'))
 <a
             href="{{ route('users.create') }}"
             class="btn primary"
         >
             + New User
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -84,8 +92,7 @@
              FILTER BAR
         ====================================================== --}}
 
-        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
-<form
+        <form
             method="GET"
             action="{{ route('users.index') }}"
             class="user-filter-bar"
@@ -112,7 +119,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+                    
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a
                         href="{{ route(
                             'users.index',
@@ -126,7 +135,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -287,19 +298,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+                
+{{-- A7105:users.index --}}
+@if(\App\Support\CrmViewAction::allows('users.index'))
 <a
                     href="{{ route('users.index') }}"
                     class="btn user-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -446,7 +460,9 @@
 
                                 <div class="user-table-info">
 
-                                    {{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+                                    
+{{-- A7105:users.show --}}
+@if(\App\Support\CrmViewAction::allows('users.show'))
 <a
                                         href="{{ route(
                                             'users.show',
@@ -460,7 +476,9 @@
                                         </strong>
 
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                     <span>
@@ -595,7 +613,9 @@
 
                                 {{-- View --}}
 
-                                {{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+                                
+{{-- A7105:users.show --}}
+@if(\App\Support\CrmViewAction::allows('users.show'))
 <a
                                     href="{{ route(
                                         'users.show',
@@ -607,12 +627,16 @@
                                 >
                                     👁
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 {{-- Edit --}}
 
-                                {{-- A7103:users.edit --}}@if(\App\Support\CrmViewAction::allows('users.edit'))
+                                
+{{-- A7105:users.edit --}}
+@if(\App\Support\CrmViewAction::allows('users.edit'))
 <a
                                     href="{{ route(
                                         'users.edit',
@@ -624,12 +648,16 @@
                                 >
                                     ✎
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 
                                 {{-- Delete --}}
 
-                                {{-- A7103:users.destroy --}}@if(\App\Support\CrmViewAction::allows('users.destroy'))
+                                
+{{-- A7105:users.destroy --}}
+@if(\App\Support\CrmViewAction::allows('users.destroy'))
 <form
                                     action="{{ route(
                                         'users.destroy',
@@ -655,7 +683,9 @@
                                     </button>
 
                                 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                             </div>
 

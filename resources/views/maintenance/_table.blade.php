@@ -43,7 +43,9 @@
                 <td class="mt-col-actions">
                     <div class="mt-actions">
 
-                        {{-- A7103:maintenance.records.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.edit'))
+                        
+{{-- A7105:maintenance.records.edit --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.edit'))
 <a
                             href="{{ route('maintenance.records.edit', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                             class="mt-icon-btn edit"
@@ -55,9 +57,13 @@
                                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                             </svg>
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                        {{-- A7103:maintenance.records.destroy --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.destroy'))
+
+                        
+{{-- A7105:maintenance.records.destroy --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.destroy'))
 <form
                             method="POST"
                             action="{{ route('maintenance.records.destroy', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
@@ -80,7 +86,9 @@
                                 </svg>
                             </button>
                         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                     </div>
                 </td>

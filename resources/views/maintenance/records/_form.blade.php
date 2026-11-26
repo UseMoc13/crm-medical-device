@@ -14,7 +14,9 @@
     );
 @endphp
 
-{{-- A7103:maintenance.records.update --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.update'))
+
+{{-- A7105:maintenance.records.update --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.records.update'))
 <form
     method="POST"
     action="{{ $isEdit
@@ -171,14 +173,18 @@
             @endif
 
             <div class="mt-form-actions">
-                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+                
+{{-- A7105:maintenance.show --}}
+@if(\App\Support\CrmViewAction::allows('maintenance.show'))
 <a
                     href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}"
                     class="btn"
                 >
                     Cancel
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 <button type="submit" class="btn primary">
                     {{ $isEdit ? 'Save Changes' : 'Save Record' }}
@@ -236,4 +242,6 @@
 
     </div>
 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+

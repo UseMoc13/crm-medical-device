@@ -30,11 +30,15 @@ $initialBrandId = (string) old('brand_id',$product->brand_id ?? '');
     </div>
 
     <div class="actions">
-        {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+        
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a href="{{ route('products.show', $product) }}" class="btn">
             ← Back to Product
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -61,7 +65,9 @@ $initialBrandId = (string) old('brand_id',$product->brand_id ?? '');
 
     <div class="card-body product-edit-body">
 
-        {{-- A7103:products.update --}}@if(\App\Support\CrmViewAction::allows('products.update'))
+        
+{{-- A7105:products.update --}}
+@if(\App\Support\CrmViewAction::allows('products.update'))
 <form
             method="POST"
             action="{{ route('products.update', $product) }}"
@@ -396,13 +402,17 @@ $initialBrandId = (string) old('brand_id',$product->brand_id ?? '');
                     </div>
 
                     <div class="form-actions">
-                        {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+                        
+{{-- A7105:products.show --}}
+@if(\App\Support\CrmViewAction::allows('products.show'))
 <a
                             href="{{ route('products.show', $product) }}"
                             class="btn">
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -507,7 +517,9 @@ $initialBrandId = (string) old('brand_id',$product->brand_id ?? '');
 
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 </div>

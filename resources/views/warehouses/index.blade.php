@@ -15,11 +15,15 @@
     </div>
 
     <div class="actions">
-        {{-- A7103:warehouses.create --}}@if(\App\Support\CrmViewAction::allows('warehouses.create'))
+        
+{{-- A7105:warehouses.create --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.create'))
 <a href="{{ route('warehouses.create') }}" class="btn primary">
             + New Warehouse
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 
 </div>
@@ -68,8 +72,7 @@
              FILTER BAR
         ============================================== --}}
 
-        {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
-<form
+        <form
             method="GET"
             action="{{ route('warehouses.index') }}"
             class="warehouse-filter-bar"
@@ -93,7 +96,9 @@
 
                 @if(request('search'))
 
-                    {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+                    
+{{-- A7105:warehouses.index --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.index'))
 <a
                         href="{{ route(
                             'warehouses.index',
@@ -105,7 +110,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -224,19 +231,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+                
+{{-- A7105:warehouses.index --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.index'))
 <a
                     href="{{ route('warehouses.index') }}"
                     class="btn warehouse-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =============================================
@@ -309,7 +319,9 @@
 
                             <td>
 
-                                {{-- A7103:warehouses.show --}}@if(\App\Support\CrmViewAction::allows('warehouses.show'))
+                                
+{{-- A7105:warehouses.show --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.show'))
 <a
                                     href="{{ route(
                                         'warehouses.show',
@@ -321,7 +333,9 @@
                                         {{ $warehouse->warehouse_code }}
                                     </strong>
                                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                                 <div class="muted">
                                     {{ $warehouse->warehouse_name }}
@@ -408,7 +422,9 @@
 
                             <td>
                                 <div class="table-actions">
-                                    {{-- A7103:warehouses.show --}}@if(\App\Support\CrmViewAction::allows('warehouses.show'))
+                                    
+{{-- A7105:warehouses.show --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.show'))
 <a
                                         href="{{ route('warehouses.show', $warehouse->warehouse_id) }}"
                                         class="action-btn view"
@@ -420,9 +436,13 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:warehouses.edit --}}@if(\App\Support\CrmViewAction::allows('warehouses.edit'))
+
+                                    
+{{-- A7105:warehouses.edit --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.edit'))
 <a
                                         href="{{ route('warehouses.edit', $warehouse->warehouse_id) }}"
                                         class="action-btn edit"
@@ -434,9 +454,13 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
 
-                                    {{-- A7103:warehouses.destroy --}}@if(\App\Support\CrmViewAction::allows('warehouses.destroy'))
+
+                                    
+{{-- A7105:warehouses.destroy --}}
+@if(\App\Support\CrmViewAction::allows('warehouses.destroy'))
 <form
                                         action="{{ route('warehouses.destroy', $warehouse->warehouse_id) }}"
                                         method="POST"
@@ -459,7 +483,9 @@
                                             </svg>
                                         </button>
                                     </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
                                 </div>
                             </td>
 

@@ -13,7 +13,9 @@
     $selectedSalesOrder = old('sales_order_id', request('sales_order_id'));
 @endphp
 
-{{-- A7103:invoices.update --}}@if(\App\Support\CrmViewAction::allows('invoices.update'))
+
+{{-- A7105:invoices.update --}}
+@if(\App\Support\CrmViewAction::allows('invoices.update'))
 <form
     method="POST"
     action="{{ $isEdit ? route('invoices.update', $invoice->invoice_id) : route('invoices.store') }}"
@@ -225,14 +227,18 @@
             </div>
 
             <div class="inv-form-actions">
-                {{-- A7103:invoices.show --}}@if(\App\Support\CrmViewAction::allows('invoices.show'))
+                
+{{-- A7105:invoices.show --}}
+@if(\App\Support\CrmViewAction::allows('invoices.show'))
 <a
                     href="{{ $isEdit ? route('invoices.show', $invoice->invoice_id) : route('invoices.index') }}"
                     class="btn"
                 >
                     Cancel
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 <button type="submit" class="btn primary">
                     {{ $isEdit ? 'Save Changes' : 'Create Invoice' }}
@@ -277,7 +283,9 @@
 
     </div>
 </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

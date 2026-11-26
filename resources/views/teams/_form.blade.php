@@ -49,9 +49,13 @@
                 @error('member_user_ids')<small class="crm-team-error">{{ $message }}</small>@enderror
                 @error('member_user_ids.*')<small class="crm-team-error">{{ $message }}</small>@enderror
             </section>
-            <div class="crm-team-form-actions">{{-- A7103:teams.show --}}@if(\App\Support\CrmViewAction::allows('teams.show'))
+            <div class="crm-team-form-actions">
+{{-- A7105:teams.show --}}
+@if(\App\Support\CrmViewAction::allows('teams.show'))
 <a href="{{ $current ? route('teams.show',$current) : route('teams.index') }}" class="btn">Cancel</a>
-@endif{{-- /A7103 --}}<button class="btn primary" type="submit">{{ $current ? 'Save Changes' : 'Create Team' }}</button></div>
+@endif
+{{-- /A7105 --}}
+<button class="btn primary" type="submit">{{ $current ? 'Save Changes' : 'Create Team' }}</button></div>
         </div>
     </div>
     <aside class="card crm-team-preview">

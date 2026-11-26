@@ -18,14 +18,18 @@
 
     <div class="actions">
 
-        {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+        
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
             href="{{ route('opportunities.show', $opportunity) }}"
             class="btn"
         >
             ← Back
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 
@@ -80,7 +84,9 @@
 
     <div class="card-body opportunity-edit-body">
 
-        {{-- A7103:opportunities.update --}}@if(\App\Support\CrmViewAction::allows('opportunities.update'))
+        
+{{-- A7105:opportunities.update --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.update'))
 <form
             method="POST"
             action="{{ route('opportunities.update', $opportunity) }}"
@@ -728,7 +734,9 @@
 
                     <div class="form-actions">
 
-                        {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+                        
+{{-- A7105:opportunities.show --}}
+@if(\App\Support\CrmViewAction::allows('opportunities.show'))
 <a
                             href="{{ route(
                                 'opportunities.show',
@@ -738,7 +746,9 @@
                         >
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -929,7 +939,9 @@
             </div>
 
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
     </div>
 

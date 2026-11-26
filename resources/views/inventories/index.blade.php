@@ -167,8 +167,7 @@
              FILTER BAR
         ============================================== --}}
 
-        {{-- A7103:inventories.index --}}@if(\App\Support\CrmViewAction::allows('inventories.index'))
-<form
+        <form
             method="GET"
             action="{{ route('inventories.index') }}"
             class="inventory-filter-bar"
@@ -193,7 +192,9 @@
 
                 @if(!empty($search))
 
-                    {{-- A7103:inventories.index --}}@if(\App\Support\CrmViewAction::allows('inventories.index'))
+                    
+{{-- A7105:inventories.index --}}
+@if(\App\Support\CrmViewAction::allows('inventories.index'))
 <a
                         href="{{ route(
                             'inventories.index',
@@ -205,7 +206,9 @@
                     >
                         ×
                     </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                 @endif
 
@@ -392,19 +395,22 @@
                 'direction'
             ]))
 
-                {{-- A7103:inventories.index --}}@if(\App\Support\CrmViewAction::allows('inventories.index'))
+                
+{{-- A7105:inventories.index --}}
+@if(\App\Support\CrmViewAction::allows('inventories.index'))
 <a
                     href="{{ route('inventories.index') }}"
                     class="btn inventory-reset-button"
                 >
                     Reset
                 </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
             @endif
 
         </form>
-@endif{{-- /A7103 --}}
 
 
         {{-- =============================================

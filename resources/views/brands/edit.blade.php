@@ -11,12 +11,16 @@
     </div>
 
     <div class="brand-page-actions">
-        {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+        
+{{-- A7105:brands.show --}}
+@if(\App\Support\CrmViewAction::allows('brands.show'))
 <a href="{{ route('brands.show', $brand) }}" class="btn">
             <span aria-hidden="true">&larr;</span>
             Back to Brand
         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
@@ -53,7 +57,9 @@
     </div>
 
     <div class="card-body brand-edit-body">
-        {{-- A7103:brands.update --}}@if(\App\Support\CrmViewAction::allows('brands.update'))
+        
+{{-- A7105:brands.update --}}
+@if(\App\Support\CrmViewAction::allows('brands.update'))
 <form
             method="POST"
             action="{{ route('brands.update', $brand) }}"
@@ -133,14 +139,18 @@
 
                     {{-- FORM ACTIONS --}}
                     <div class="form-actions">
-                        {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+                        
+{{-- A7105:brands.show --}}
+@if(\App\Support\CrmViewAction::allows('brands.show'))
 <a
                             href="{{ route('brands.show', $brand) }}"
                             class="btn"
                         >
                             Cancel
                         </a>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
 
                         <button
                             type="submit"
@@ -244,7 +254,9 @@
                 </aside>
             </div>
         </form>
-@endif{{-- /A7103 --}}
+@endif
+{{-- /A7105 --}}
+
     </div>
 </div>
 
