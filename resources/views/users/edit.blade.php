@@ -30,6 +30,8 @@
 
 </div>
 
+{{-- A798:user_impact_panel --}}
+@include('users._assignment_impact')
 
 @if($errors->any())
 

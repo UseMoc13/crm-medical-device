@@ -8,7 +8,8 @@
         <span class="ticket-worklog-count">{{ $workLogs->count() }} entries</span>
     </div>
     <div class="card-body">
-        @if(in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && $serviceTicket->user_id)
+        {{-- A798:worklog_form_visibility --}}
+        @if(($canWriteWorkLog ?? false) && in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && $serviceTicket->user_id)
             <form method="POST" action="{{ route('service-tickets.work-logs.store', $serviceTicket) }}" class="ticket-worklog-form" id="ticketWorkLogForm">
                 @csrf
                 <div class="ticket-worklog-inputs">
@@ -34,6 +35,9 @@
             <p class="ticket-worklog-hint">This ticket is {{ ucwords(str_replace('_', ' ', $serviceTicket->status)) }}. Its work log is read-only.</p>
         @elseif(!$serviceTicket->user_id)
             <p class="ticket-worklog-hint">Assign a technician and start work before recording progress.</p>
+        {{-- A798:worklog_unauthorized_hint --}}
+        @elseif(in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && !($canWriteWorkLog ?? false))
+            <p class="ticket-worklog-hint">Only the assigned active technician or Super Admin can add a work log. Historical notes remain visible.</p>
         @else
             <p class="ticket-worklog-hint">Start Work using the workflow above to record technician activity.</p>
         @endif
@@ -46,6 +50,8 @@
                         <time>{{ \Illuminate\Support\Carbon::parse($entry->created_at)->format('d M Y, H:i') }}</time>
                     </div>
                     <p>{{ $entry->notes }}</p>
+                    {{-- A798:worklog_author_label --}}
+                    <small>Recorded by: <strong>{{ $entry->author_name ?: 'Legacy entry — author unavailable' }}</strong></small>
                     <small>Ticket status when recorded: {{ ucwords(str_replace('_', ' ', $entry->status_snapshot)) }}</small>
                 </div>
             @empty

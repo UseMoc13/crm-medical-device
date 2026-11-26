@@ -335,12 +335,17 @@ class UserController extends Controller
             ]);
 
 
+        /* A798:user_assignment_impact */
+        $assignmentImpact = app(\App\Services\CrmAssignmentIntegrityReport::class)
+            ->forUser((string) $user->getKey());
+
         return view(
             'users.edit',
             compact(
                 'user',
                 'roles',
-                'branches'
+                'branches',
+                'assignmentImpact'
             )
         );
     }

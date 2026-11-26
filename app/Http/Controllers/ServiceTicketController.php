@@ -194,7 +194,14 @@ class ServiceTicketController extends Controller
         return view('service-tickets.show', [
             'ticketWarrantyCoverage' => app(ServiceWarrantyCoverage::class)->forSerial((string) $serviceTicket->serial_number_id),
             'serviceTicket' => $serviceTicket,
-            'workLogs' => DB::table('service_ticket_work_logs')->where('service_ticket_id', $serviceTicket->getKey())->orderByDesc('created_at')->orderByDesc('work_log_id')->get(),
+            /* A798:ticket_author_query */
+            'workLogs' => DB::table('service_ticket_work_logs as wl')
+                ->leftJoin('users as authors', 'authors.user_id', '=', 'wl.created_by_user_id')
+                ->where('wl.service_ticket_id', $serviceTicket->getKey())
+                ->orderByDesc('wl.created_at')->orderByDesc('wl.work_log_id')
+                ->get(['wl.*', 'authors.name as author_name']),
+            'canWriteWorkLog' => app(\App\Services\CrmWorkLogAuthorPolicy::class)
+                ->canWrite(auth('web')->user(), $serviceTicket),
             'resolutionHistory' => DB::table('service_ticket_resolution_logs')->where('service_ticket_id', $serviceTicket->getKey())->orderByDesc('created_at')->orderByDesc('resolution_log_id')->get(),
             'partProducts' => \App\Models\Product::query()->orderBy('product_name')->get(['product_id', 'product_name', 'product_code', 'price']),
         ]);

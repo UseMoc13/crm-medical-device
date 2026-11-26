@@ -1,0 +1,77 @@
+{
+  "version": "A798_ASSIGNMENT_INTEGRITY_WORKLOG",
+  "patches": [
+    {
+      "path": "app/Http/Controllers/ServiceTicketWorkLogController.php",
+      "name": "worklog_actor_capture",
+      "kind": "literal",
+      "old": "        DB::transaction(function () use ($serviceTicket, $data): void {",
+      "new": "        /* A798:worklog_actor_capture */\n        $actor = auth('web')->user();\n        abort_unless($actor instanceof \\App\\Models\\User, 403, 'Sign in before writing work logs.');\n\n        DB::transaction(function () use ($serviceTicket, $data, $actor): void {",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketWorkLogController.php",
+      "name": "worklog_actor_guard",
+      "kind": "literal",
+      "old": "            DB::table('service_ticket_work_logs')->insert([",
+      "new": "            /* A798:worklog_actor_guard */\n            abort_unless(app(\\App\\Services\\CrmWorkLogAuthorPolicy::class)->canWrite($actor, $ticket),\n                403, 'Only the assigned active technician or Super Admin may record a work log.');\n\n            DB::table('service_ticket_work_logs')->insert([",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketWorkLogController.php",
+      "name": "worklog_author_insert",
+      "kind": "literal",
+      "old": "                'status_snapshot' => $ticket->status,\n                'notes' => trim($data['notes']),",
+      "new": "                'status_snapshot' => $ticket->status,\n                /* A798:worklog_author_insert */\n                'created_by_user_id' => (string) $actor->getKey(),\n                'notes' => trim($data['notes']),",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_author_query",
+      "kind": "literal",
+      "old": "            'workLogs' => DB::table('service_ticket_work_logs')->where('service_ticket_id', $serviceTicket->getKey())->orderByDesc('created_at')->orderByDesc('work_log_id')->get(),",
+      "new": "            /* A798:ticket_author_query */\n            'workLogs' => DB::table('service_ticket_work_logs as wl')\n                ->leftJoin('users as authors', 'authors.user_id', '=', 'wl.created_by_user_id')\n                ->where('wl.service_ticket_id', $serviceTicket->getKey())\n                ->orderByDesc('wl.created_at')->orderByDesc('wl.work_log_id')\n                ->get(['wl.*', 'authors.name as author_name']),\n            'canWriteWorkLog' => app(\\App\\Services\\CrmWorkLogAuthorPolicy::class)\n                ->canWrite(auth('web')->user(), $serviceTicket),",
+      "count": 1
+    },
+    {
+      "path": "resources/views/service-tickets/_work_logs.blade.php",
+      "name": "worklog_form_visibility",
+      "kind": "literal",
+      "old": "        @if(in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && $serviceTicket->user_id)",
+      "new": "        {{-- A798:worklog_form_visibility --}}\n        @if(($canWriteWorkLog ?? false) && in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && $serviceTicket->user_id)",
+      "count": 1
+    },
+    {
+      "path": "resources/views/service-tickets/_work_logs.blade.php",
+      "name": "worklog_unauthorized_hint",
+      "kind": "literal",
+      "old": "        @elseif(!$serviceTicket->user_id)\n            <p class=\"ticket-worklog-hint\">Assign a technician and start work before recording progress.</p>",
+      "new": "        @elseif(!$serviceTicket->user_id)\n            <p class=\"ticket-worklog-hint\">Assign a technician and start work before recording progress.</p>\n        {{-- A798:worklog_unauthorized_hint --}}\n        @elseif(in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && !($canWriteWorkLog ?? false))\n            <p class=\"ticket-worklog-hint\">Only the assigned active technician or Super Admin can add a work log. Historical notes remain visible.</p>",
+      "count": 1
+    },
+    {
+      "path": "resources/views/service-tickets/_work_logs.blade.php",
+      "name": "worklog_author_label",
+      "kind": "literal",
+      "old": "                    <p>{{ $entry->notes }}</p>\n                    <small>Ticket status when recorded: {{ ucwords(str_replace('_', ' ', $entry->status_snapshot)) }}</small>",
+      "new": "                    <p>{{ $entry->notes }}</p>\n                    {{-- A798:worklog_author_label --}}\n                    <small>Recorded by: <strong>{{ $entry->author_name ?: 'Legacy entry — author unavailable' }}</strong></small>\n                    <small>Ticket status when recorded: {{ ucwords(str_replace('_', ' ', $entry->status_snapshot)) }}</small>",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/UserController.php",
+      "name": "user_assignment_impact",
+      "kind": "literal",
+      "old": "        return view(\n            'users.edit',\n            compact(\n                'user',\n                'roles',\n                'branches'\n            )\n        );",
+      "new": "        /* A798:user_assignment_impact */\n        $assignmentImpact = app(\\App\\Services\\CrmAssignmentIntegrityReport::class)\n            ->forUser((string) $user->getKey());\n\n        return view(\n            'users.edit',\n            compact(\n                'user',\n                'roles',\n                'branches',\n                'assignmentImpact'\n            )\n        );",
+      "count": 1
+    },
+    {
+      "path": "resources/views/users/edit.blade.php",
+      "name": "user_impact_panel",
+      "kind": "literal",
+      "old": "</div>\n\n\n@if($errors->any())",
+      "new": "</div>\n\n{{-- A798:user_impact_panel --}}\n@include('users._assignment_impact')\n\n@if($errors->any())",
+      "count": 1
+    }
+  ]
+}

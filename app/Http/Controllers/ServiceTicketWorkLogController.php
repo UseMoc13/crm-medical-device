@@ -23,7 +23,11 @@ class ServiceTicketWorkLogController extends Controller
             'notes' => ['required', 'string', 'min:3', 'max:5000'],
         ]);
 
-        DB::transaction(function () use ($serviceTicket, $data): void {
+        /* A798:worklog_actor_capture */
+        $actor = auth('web')->user();
+        abort_unless($actor instanceof \App\Models\User, 403, 'Sign in before writing work logs.');
+
+        DB::transaction(function () use ($serviceTicket, $data, $actor): void {
             $ticket = ServiceTicket::query()->whereKey($serviceTicket->getKey())
                 ->lockForUpdate()->firstOrFail();
 
@@ -38,11 +42,17 @@ class ServiceTicketWorkLogController extends Controller
                 ]);
             }
 
+            /* A798:worklog_actor_guard */
+            abort_unless(app(\App\Services\CrmWorkLogAuthorPolicy::class)->canWrite($actor, $ticket),
+                403, 'Only the assigned active technician or Super Admin may record a work log.');
+
             DB::table('service_ticket_work_logs')->insert([
                 'work_log_id' => (string) Str::uuid(),
                 'service_ticket_id' => $ticket->getKey(),
                 'entry_type' => $data['entry_type'],
                 'status_snapshot' => $ticket->status,
+                /* A798:worklog_author_insert */
+                'created_by_user_id' => (string) $actor->getKey(),
                 'notes' => trim($data['notes']),
                 'created_at' => now(),
             ]);
