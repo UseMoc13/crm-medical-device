@@ -1,0 +1,16 @@
+scenario,area,priority,manual_status,policy_hold
+UAT-01,Authentication and guest access,P0,NOT_RUN,NO
+UAT-02,RBAC direct writes,P0,NOT_RUN,NO
+UAT-03,Customer Lead Contact Opportunity,P1,NOT_RUN,NO
+UAT-04,Opportunity Quotation Sales Order,P0,NOT_RUN,NO
+UAT-05,Inventory and stock reconciliation,P0,NOT_RUN,NO
+UAT-06,Delivery lifecycle,P0,NOT_RUN,NO
+UAT-07,Installation lifecycle,P0,NOT_RUN,NO
+UAT-08,Warranty activation,P0,NOT_RUN,NO
+UAT-09,Service ticket and worklog,P1,NOT_RUN,NO
+UAT-10,Maintenance lifecycle,P1,NOT_RUN,NO
+UAT-11,Invoice CSV and billing,P0,NOT_RUN,NO
+UAT-12,Private downloads,P0,NOT_RUN,NO
+UAT-13,Announcement public attachments,P0,NOT_RUN,YES
+UAT-14,Multi role reporting privacy,P0,NOT_RUN,YES
+UAT-15,Sales pagination and CSV batching,P1,NOT_RUN,NO
