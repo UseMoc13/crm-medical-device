@@ -43,7 +43,8 @@
                 <td class="mt-col-actions">
                     <div class="mt-actions">
 
-                        <a
+                        {{-- A7103:maintenance.records.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.edit'))
+<a
                             href="{{ route('maintenance.records.edit', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                             class="mt-icon-btn edit"
                             title="Edit Maintenance Record"
@@ -54,8 +55,10 @@
                                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                             </svg>
                         </a>
+@endif{{-- /A7103 --}}
 
-                        <form
+                        {{-- A7103:maintenance.records.destroy --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.destroy'))
+<form
                             method="POST"
                             action="{{ route('maintenance.records.destroy', [$maintenance->maintenance_schedule_id, $row->maintenance_record_id]) }}"
                             onsubmit="return confirm('Delete this maintenance record?');"
@@ -77,6 +80,7 @@
                                 </svg>
                             </button>
                         </form>
+@endif{{-- /A7103 --}}
 
                     </div>
                 </td>

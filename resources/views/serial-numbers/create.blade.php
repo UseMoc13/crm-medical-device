@@ -12,9 +12,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('serial-numbers.index') }}" class="btn">
+        {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+<a href="{{ route('serial-numbers.index') }}" class="btn">
             ← Back to Serial Numbers
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -53,7 +55,8 @@
 
     <div class="card-body serial-create-body">
 
-        <form
+        {{-- A7103:serial-numbers.store --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.store'))
+<form
             method="POST"
             action="{{ route('serial-numbers.store') }}"
             id="serialCreateForm"
@@ -239,12 +242,14 @@
                     {{-- FORM ACTIONS --}}
 
                     <div class="form-actions">
-                        <a
+                        {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+<a
                             href="{{ route('serial-numbers.index') }}"
                             class="btn"
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -327,6 +332,7 @@
 
             </div>
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 </div>

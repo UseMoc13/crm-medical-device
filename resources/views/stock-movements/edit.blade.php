@@ -11,9 +11,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('stock-movements.index') }}" class="btn">
+        {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
+<a href="{{ route('stock-movements.index') }}" class="btn">
             ← Back to Stock Movements
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -41,7 +43,8 @@
     </div>
 
     <div class="card-body sm-create-body">
-        <form
+        {{-- A7103:stock-movements.update --}}@if(\App\Support\CrmViewAction::allows('stock-movements.update'))
+<form
             method="POST"
             action="{{ route('stock-movements.update', $movement->stock_movement_id) }}"
             id="stockMovementForm">
@@ -250,9 +253,11 @@
 
                     {{-- ACTIONS --}}
                     <div class="sm-form-actions">
-                        <a href="{{ route('stock-movements.index') }}" class="btn">
+                        {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
+<a href="{{ route('stock-movements.index') }}" class="btn">
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -349,6 +354,7 @@
 
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

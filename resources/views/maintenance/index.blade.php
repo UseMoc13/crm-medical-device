@@ -14,58 +14,76 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('maintenance.create') }}" class="btn primary">
+        {{-- A7103:maintenance.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.create'))
+<a href="{{ route('maintenance.create') }}" class="btn primary">
             + New Maintenance Schedule
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
 
 {{-- DUE-DATE MONITORING: 7-day window, informational only. --}}
 <div class="mt-due-overview" role="group" aria-label="Maintenance due date monitoring">
-    <a href="{{ route('maintenance.index', ['status' => 'due_today']) }}" class="mt-due-card {{ request('status') === 'due_today' ? 'is-active' : '' }}">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'due_today']) }}" class="mt-due-card {{ request('status') === 'due_today' ? 'is-active' : '' }}">
         <span class="mt-due-title">Due Today</span>
         <strong>{{ number_format($summary['due_today']) }}</strong>
         <small>Open schedules planned for today</small>
     </a>
-    <a href="{{ route('maintenance.index', ['status' => 'due_soon']) }}" class="mt-due-card soon {{ request('status') === 'due_soon' ? 'is-active' : '' }}">
+@endif{{-- /A7103 --}}
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'due_soon']) }}" class="mt-due-card soon {{ request('status') === 'due_soon' ? 'is-active' : '' }}">
         <span class="mt-due-title">Due Soon · 7 Days</span>
         <strong>{{ number_format($summary['due_soon']) }}</strong>
         <small>Tomorrow through the next 7 days</small>
     </a>
-    <a href="{{ route('maintenance.index', ['status' => 'overdue']) }}" class="mt-due-card overdue {{ request('status') === 'overdue' ? 'is-active' : '' }}">
+@endif{{-- /A7103 --}}
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'overdue']) }}" class="mt-due-card overdue {{ request('status') === 'overdue' ? 'is-active' : '' }}">
         <span class="mt-due-title">Overdue</span>
         <strong>{{ number_format($summary['overdue']) }}</strong>
         <small>Open schedules past their due date</small>
     </a>
+@endif{{-- /A7103 --}}
 </div>
 
 {{-- SUMMARY --}}
 <div class="mt-summary">
-    <a href="{{ route('maintenance.index') }}" class="mt-summary-card">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index') }}" class="mt-summary-card">
         <span>Total Schedules</span>
         <strong>{{ $summary['total'] }}</strong>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('maintenance.index', ['status' => 'Scheduled']) }}" class="mt-summary-card">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'Scheduled']) }}" class="mt-summary-card">
         <span>Scheduled</span>
         <strong>{{ $summary['scheduled'] }}</strong>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('maintenance.index', ['status' => 'In Progress']) }}" class="mt-summary-card">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'In Progress']) }}" class="mt-summary-card">
         <span>In Progress</span>
         <strong>{{ $summary['in_progress'] }}</strong>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('maintenance.index', ['status' => 'Completed']) }}" class="mt-summary-card">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'Completed']) }}" class="mt-summary-card">
         <span>Completed</span>
         <strong>{{ $summary['completed'] }}</strong>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('maintenance.index', ['status' => 'overdue']) }}" class="mt-summary-card danger">
+    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index', ['status' => 'overdue']) }}" class="mt-summary-card danger">
         <span>Overdue</span>
         <strong>{{ $summary['overdue'] }}</strong>
     </a>
+@endif{{-- /A7103 --}}
 </div>
 
 
@@ -81,7 +99,8 @@
     <div class="card-body">
 
         {{-- FILTER BAR --}}
-        <form method="GET" action="{{ route('maintenance.index') }}" class="mt-filter-bar">
+        {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<form method="GET" action="{{ route('maintenance.index') }}" class="mt-filter-bar">
 
             <div class="mt-search">
                 <span class="mt-search-icon">⌕</span>
@@ -95,12 +114,14 @@
                 >
 
                 @if(request('search'))
-                    <a
+                    {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a
                         href="{{ route('maintenance.index', request()->except('search', 'page')) }}"
                         class="mt-search-clear"
                         title="Clear search"
                         aria-label="Clear search"
                     >×</a>
+@endif{{-- /A7103 --}}
                 @endif
             </div>
 
@@ -151,10 +172,13 @@
             <button type="submit" class="btn mt-filter-btn">Filter</button>
 
             @if(request()->hasAny(['search', 'status', 'type', 'sort', 'direction']))
-                <a href="{{ route('maintenance.index') }}" class="btn mt-filter-btn">Reset</a>
+                {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index') }}" class="btn mt-filter-btn">Reset</a>
+@endif{{-- /A7103 --}}
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
         @if(request('search') || request('status') || request('type'))
             <div class="mt-filter-summary">
@@ -213,12 +237,14 @@
                             </td>
 
                             <td>
-                                <a
+                                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+<a
                                     href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}"
                                     class="mt-link"
                                 >
                                     {{ $serial?->serial_number ?? '-' }}
                                 </a>
+@endif{{-- /A7103 --}}
 
                                 <div class="mt-sub">
                                     {{ $serial?->product?->product_name ?? 'Unknown Product' }}
@@ -265,7 +291,8 @@
                                 <div class="mt-actions">
 
                                     @if($maintenance->status !== 'Cancelled')
-                                        <a
+                                        {{-- A7103:maintenance.records.create --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.create'))
+<a
                                             href="{{ route('maintenance.records.create', $maintenance->maintenance_schedule_id) }}"
                                             class="mt-icon-btn add"
                                             title="Add Maintenance Record"
@@ -275,9 +302,11 @@
                                                 <path d="M12 5v14M5 12h14"/>
                                             </svg>
                                         </a>
+@endif{{-- /A7103 --}}
                                     @endif
 
-                                    <a
+                                    {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+<a
                                         href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}"
                                         class="mt-icon-btn view"
                                         title="View"
@@ -288,8 +317,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:maintenance.edit --}}@if(\App\Support\CrmViewAction::allows('maintenance.edit'))
+<a
                                         href="{{ route('maintenance.edit', $maintenance->maintenance_schedule_id) }}"
                                         class="mt-icon-btn edit js-mt-protected-action"
                                         title="Edit"
@@ -302,8 +333,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:maintenance.destroy --}}@if(\App\Support\CrmViewAction::allows('maintenance.destroy'))
+<form
                                         action="{{ route('maintenance.destroy', $maintenance->maintenance_schedule_id) }}"
                                         method="POST"
                                         class="js-mt-delete-form"
@@ -329,6 +362,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
 
                                 </div>
                             </td>

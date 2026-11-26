@@ -92,9 +92,12 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
+        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
+@endif{{-- /A7103 --}}
 
-        <form
+        {{-- A7103:announcement-management.toggle-pin --}}@if(\App\Support\CrmViewAction::allows('announcement-management.toggle-pin'))
+<form
             action="{{ route('announcement-management.toggle-pin', $announcement) }}"
             method="POST"
             class="ann-inline-form"
@@ -106,8 +109,11 @@
                 {{ $announcement->is_pinned ? '★ Unpin' : '☆ Pin' }}
             </button>
         </form>
+@endif{{-- /A7103 --}}
 
-        <a href="{{ route('announcement-management.edit', $announcement) }}" class="btn primary">✎ Edit Announcement</a>
+        {{-- A7103:announcement-management.edit --}}@if(\App\Support\CrmViewAction::allows('announcement-management.edit'))
+<a href="{{ route('announcement-management.edit', $announcement) }}" class="btn primary">✎ Edit Announcement</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -369,7 +375,8 @@
             <h3>Danger Zone</h3>
             <p>Deleting this announcement also removes its thumbnail, media, and attachments permanently.</p>
 
-            <form
+            {{-- A7103:announcement-management.destroy --}}@if(\App\Support\CrmViewAction::allows('announcement-management.destroy'))
+<form
                 action="{{ route('announcement-management.destroy', $announcement) }}"
                 method="POST"
                 data-ann-confirm="delete"
@@ -378,6 +385,7 @@
                 @method('DELETE')
                 <button type="submit" class="btn ann-delete-button">🗑 Delete Announcement</button>
             </form>
+@endif{{-- /A7103 --}}
         </div>
     </aside>
 </div>

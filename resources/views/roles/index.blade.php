@@ -19,15 +19,19 @@
 
     <div class="actions">
         @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
-            <a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
+            {{-- A7103:organization.index --}}@if(\App\Support\CrmViewAction::allows('organization.index'))
+<a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
+@endif{{-- /A7103 --}}
         @endif
 
-        <a
+        {{-- A7103:roles.create --}}@if(\App\Support\CrmViewAction::allows('roles.create'))
+<a
             href="{{ route('roles.create') }}"
             class="btn primary"
         >
             + New Role
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -58,7 +62,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+<form
             method="GET"
             action="{{ route('roles.index') }}"
             class="role-filter-bar"
@@ -85,7 +90,8 @@
 
                 @if(request('search'))
 
-                    <a
+                    {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+<a
                         href="{{ route(
                             'roles.index',
                             request()->except(
@@ -98,6 +104,7 @@
                     >
                         ×
                     </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -182,16 +189,19 @@
                 'direction'
             ]))
 
-                <a
+                {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+<a
                     href="{{ route('roles.index') }}"
                     class="btn role-reset-button"
                 >
                     Reset
                 </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -270,7 +280,8 @@
 
                         <td>
 
-                            <a
+                            {{-- A7103:roles.show --}}@if(\App\Support\CrmViewAction::allows('roles.show'))
+<a
                                 href="{{ route(
                                     'roles.show',
                                     $role
@@ -283,6 +294,7 @@
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
                         </td>
 
@@ -387,7 +399,8 @@
 
                                 {{-- View --}}
 
-                                <a
+                                {{-- A7103:roles.show --}}@if(\App\Support\CrmViewAction::allows('roles.show'))
+<a
                                     href="{{ route(
                                         'roles.show',
                                         $role
@@ -398,11 +411,13 @@
                                 >
                                     👁
                                 </a>
+@endif{{-- /A7103 --}}
 
 
                                 {{-- Edit --}}
 
-                                <a
+                                {{-- A7103:roles.edit --}}@if(\App\Support\CrmViewAction::allows('roles.edit'))
+<a
                                     href="{{ route(
                                         'roles.edit',
                                         $role
@@ -413,11 +428,13 @@
                                 >
                                     ✎
                                 </a>
+@endif{{-- /A7103 --}}
 
 
                                 {{-- Delete --}}
 
-                                <form
+                                {{-- A7103:roles.destroy --}}@if(\App\Support\CrmViewAction::allows('roles.destroy'))
+<form
                                     action="{{ route(
                                         'roles.destroy',
                                         $role
@@ -442,6 +459,7 @@
                                     </button>
 
                                 </form>
+@endif{{-- /A7103 --}}
 
                             </div>
 

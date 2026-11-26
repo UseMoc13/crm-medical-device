@@ -4,7 +4,8 @@
     <div class="ticket-part-dialog" role="dialog" aria-modal="true" aria-labelledby="ticketPartFormTitle">
         <h3 id="ticketPartFormTitle">Add Service Part</h3>
         <p>Select the replacement item and quantity. Reference price is filled from Product Master. This record does not deduct inventory or generate an invoice.</p>
-        <form method="POST" id="ticketPartForm" action="{{ route('service-tickets.parts.store', $serviceTicket) }}">
+        {{-- A7103:service-tickets.parts.store --}}@if(\App\Support\CrmViewAction::allows('service-tickets.parts.store'))
+<form method="POST" id="ticketPartForm" action="{{ route('service-tickets.parts.store', $serviceTicket) }}">
             @csrf
             <input type="hidden" id="ticketPartMethod" name="_method" value="POST" disabled>
             <div class="ticket-part-form-grid">
@@ -37,6 +38,7 @@
                 <button type="submit" class="btn primary">Save Service Part</button>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 <div class="ticket-part-modal" id="ticketPartDeleteModal" hidden>

@@ -19,11 +19,13 @@
 
 <div class="actions">
 
-    <a
+    {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+<a
         href="{{ route('opportunities.show', $opportunity) }}"
         class="btn">
         ← Back
     </a>
+@endif{{-- /A7103 --}}
 
 </div>
 
@@ -131,6 +133,7 @@ OPPORTUNITY INFORMATION
 
 </div>
 
+{{-- A7103:opportunities.items.update --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.update'))
 <form
     method="POST"
     action="{{ route(
@@ -548,7 +551,8 @@ OPPORTUNITY INFORMATION
 
         <div class="form-footer">
 
-            <a
+            {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+<a
                 href="{{ route(
                     'opportunities.show',
                     $opportunity
@@ -556,6 +560,7 @@ OPPORTUNITY INFORMATION
                 class="btn">
                 Cancel
             </a>
+@endif{{-- /A7103 --}}
 
 
             <button
@@ -776,6 +781,7 @@ OPPORTUNITY INFORMATION
 </div>
 
 </form>
+@endif{{-- /A7103 --}}
 
 <style>
 

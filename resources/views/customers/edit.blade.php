@@ -10,15 +10,19 @@
 
         <div class="breadcrumb">
 
-            <a href="{{ route('customers.index') }}">
+            {{-- A7103:customers.index --}}@if(\App\Support\CrmViewAction::allows('customers.index'))
+<a href="{{ route('customers.index') }}">
                 Customers
             </a>
+@endif{{-- /A7103 --}}
 
             <span>/</span>
 
-            <a href="{{ route('customers.show', $customer) }}">
+            {{-- A7103:customers.show --}}@if(\App\Support\CrmViewAction::allows('customers.show'))
+<a href="{{ route('customers.show', $customer) }}">
                 {{ $customer->customer_code }}
             </a>
+@endif{{-- /A7103 --}}
 
             <span>/</span>
 
@@ -77,7 +81,8 @@
 
     <div class="card-body">
 
-        <form
+        {{-- A7103:customers.update --}}@if(\App\Support\CrmViewAction::allows('customers.update'))
+<form
             method="POST"
             action="{{ route('customers.update', $customer) }}">
 
@@ -397,11 +402,13 @@
 
             <div class="form-actions">
 
-                <a
+                {{-- A7103:customers.show --}}@if(\App\Support\CrmViewAction::allows('customers.show'))
+<a
                     href="{{ route('customers.show', $customer) }}"
                     class="btn">
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
                 <button
                     type="submit"
@@ -412,6 +419,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

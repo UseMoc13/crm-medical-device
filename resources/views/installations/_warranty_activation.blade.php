@@ -28,7 +28,9 @@
                             <td>{{ $item->serialNumber?->product?->product_name ?? '—' }}</td>
                             <td>
                                 @if($registered)
-                                    <a class="installation-link" href="{{ route('warranties.show', $registered->warranty_id) }}">{{ $registered->warranty_number }}</a>
+                                    {{-- A7103:warranties.show --}}@if(\App\Support\CrmViewAction::allows('warranties.show'))
+<a class="installation-link" href="{{ route('warranties.show', $registered->warranty_id) }}">{{ $registered->warranty_number }}</a>
+@endif{{-- /A7103 --}}
                                 @else
                                     <span class="installation-badge warning">Not Registered</span>
                                 @endif
@@ -54,13 +56,15 @@
         <div class="installation-confirm-symbol">✓</div>
         <h3 id="warrantyModalTitle">Activate Device Warranties?</h3>
         <p>This registers new manufacturer warranties for installed units. Existing records will not be overwritten.</p>
-        <form method="POST" action="{{ route('installations.warranties.activate', $installation) }}">
+        {{-- A7103:installations.warranties.activate --}}@if(\App\Support\CrmViewAction::allows('installations.warranties.activate'))
+<form method="POST" action="{{ route('installations.warranties.activate', $installation) }}">
             @csrf
             <div class="installation-confirm-actions">
                 <button type="button" class="btn" id="cancelWarrantyActivation">Cancel</button>
                 <button type="submit" class="btn primary" id="confirmWarrantyActivation">Activate Warranties</button>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 <script>

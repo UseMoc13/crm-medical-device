@@ -10,7 +10,9 @@
         <p>Correct the warehouse, movement type, and quantity while preserving the original transaction.</p>
     </div>
     <div class="actions">
-        <a href="{{ route('stock-movements.index') }}" class="btn">Back to Movements</a>
+        {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
+<a href="{{ route('stock-movements.index') }}" class="btn">Back to Movements</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -39,7 +41,8 @@
 
     <div class="card-body">
         @if(!$selectedMovement)
-            <form method="GET" action="{{ route('stock-movements.correction.create') }}" class="sm-filter-form">
+            {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<form method="GET" action="{{ route('stock-movements.correction.create') }}" class="sm-filter-form">
                 <div class="sm-filter-grid">
                     <div class="sm-field">
                         <label for="search">Search</label>
@@ -84,10 +87,13 @@
                 </div>
 
                 <div class="sm-filter-actions">
-                    <a href="{{ route('stock-movements.correction.create') }}" class="btn">Reset</a>
+                    {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a href="{{ route('stock-movements.correction.create') }}" class="btn">Reset</a>
+@endif{{-- /A7103 --}}
                     <button type="submit" class="btn primary">Search Transactions</button>
                 </div>
             </form>
+@endif{{-- /A7103 --}}
 
             <div class="sm-results-heading">
                 <div>
@@ -133,11 +139,13 @@
                                     </td>
                                     <td>{{ number_format((int) $item->quantity) }} {{ $item->unit }}</td>
                                     <td>
-                                        <a
+                                        {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a
                                             href="{{ route('stock-movements.correction.create', ['stock_movement_id' => $item->stock_movement_id]) }}"
                                             class="btn primary">
                                             Select
                                         </a>
+@endif{{-- /A7103 --}}
                                     </td>
                                 </tr>
                             @endforeach
@@ -191,7 +199,8 @@
                 in the selected warehouse. The original transaction will not be deleted or overwritten.
             </div>
 
-            <form
+            {{-- A7103:stock-movements.correction.store --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.store'))
+<form
                 method="POST"
                 action="{{ route('stock-movements.correction.store', $selectedMovement->stock_movement_id) }}"
                 class="sm-correction-form">
@@ -259,10 +268,13 @@
                 </div>
 
                 <div class="sm-form-actions">
-                    <a href="{{ route('stock-movements.correction.create') }}" class="btn">Choose Another Transaction</a>
+                    {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a href="{{ route('stock-movements.correction.create') }}" class="btn">Choose Another Transaction</a>
+@endif{{-- /A7103 --}}
                     <button type="submit" class="btn primary">Submit Correction</button>
                 </div>
             </form>
+@endif{{-- /A7103 --}}
         @endif
     </div>
 </div>

@@ -11,9 +11,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('maintenance.index') }}" class="btn">
+        {{-- A7103:maintenance.index --}}@if(\App\Support\CrmViewAction::allows('maintenance.index'))
+<a href="{{ route('maintenance.index') }}" class="btn">
             ← Back to Maintenance
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -47,7 +49,9 @@
     <div class="mt-followup-notice" role="status">
         <strong>Follow-up Maintenance</strong>
         <p>Creating a new Corrective maintenance schedule for device <b>{{ $followupSource->serialNumber?->serial_number }}</b>,
-        originating from <a href="{{ route('maintenance.show', $followupSource->getKey()) }}">{{ $followupSource->maintenance_type }} maintenance</a>.
+        originating from {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+<a href="{{ route('maintenance.show', $followupSource->getKey()) }}">{{ $followupSource->maintenance_type }} maintenance</a>
+@endif{{-- /A7103 --}}.
         The original maintenance records will remain unchanged. Select a new date and confirm the assigned technician.</p>
     </div>
 @endif

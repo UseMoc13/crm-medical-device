@@ -9,9 +9,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('warranties.create') }}" class="btn primary">
+        {{-- A7103:warranties.create --}}@if(\App\Support\CrmViewAction::allows('warranties.create'))
+<a href="{{ route('warranties.create') }}" class="btn primary">
             + Create Warranty
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -23,7 +25,8 @@
     </div>
 
     <div class="card-body">
-        <form method="GET"
+        {{-- A7103:warranties.index --}}@if(\App\Support\CrmViewAction::allows('warranties.index'))
+<form method="GET"
               action="{{ route('warranties.index') }}"
               class="warranty-filter-bar">
 
@@ -70,10 +73,13 @@
                 Filter
             </button>
 
-            <a href="{{ route('warranties.index') }}" class="btn">
+            {{-- A7103:warranties.index --}}@if(\App\Support\CrmViewAction::allows('warranties.index'))
+<a href="{{ route('warranties.index') }}" class="btn">
                 Reset
             </a>
+@endif{{-- /A7103 --}}
         </form>
+@endif{{-- /A7103 --}}
 
         <div class="table-wrap warranty-table-wrap">
             <table class="warranty-table">
@@ -150,7 +156,8 @@
 
                             <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:warranties.show --}}@if(\App\Support\CrmViewAction::allows('warranties.show'))
+<a
                                         href="{{ route('warranties.show', $warranty->warranty_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -161,8 +168,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:warranties.edit --}}@if(\App\Support\CrmViewAction::allows('warranties.edit'))
+<a
                                         href="{{ route('warranties.edit', $warranty->warranty_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -173,8 +182,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:warranties.destroy --}}@if(\App\Support\CrmViewAction::allows('warranties.destroy'))
+<form
                                         action="{{ route('warranties.destroy', $warranty->warranty_id) }}"
                                         method="POST"
                                         class="warranty-delete-form" data-number="{{ $warranty->warranty_number }}"
@@ -196,6 +207,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
                         </tr>

@@ -12,9 +12,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('service-tickets.index') }}" class="btn">
+        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+<a href="{{ route('service-tickets.index') }}" class="btn">
             ← Back to Service Tickets
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -59,7 +61,8 @@
 
     <div class="card-body ticket-create-body">
 
-        <form
+        {{-- A7103:service-tickets.update --}}@if(\App\Support\CrmViewAction::allows('service-tickets.update'))
+<form
             method="POST"
             action="{{ route('service-tickets.update', $serviceTicket) }}"
             id="ticketEditForm"
@@ -348,12 +351,14 @@
                     {{-- FORM ACTIONS --}}
 
                     <div class="form-actions">
-                        <a
+                        {{-- A7103:service-tickets.index --}}@if(\App\Support\CrmViewAction::allows('service-tickets.index'))
+<a
                             href="{{ route('service-tickets.index') }}"
                             class="btn"
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -463,6 +468,7 @@
 
             </div>
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 </div>

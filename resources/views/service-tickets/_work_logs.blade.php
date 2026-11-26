@@ -10,7 +10,8 @@
     <div class="card-body">
         {{-- A798:worklog_form_visibility --}}
         @if(($canWriteWorkLog ?? false) && in_array($serviceTicket->status, ['in_progress', 'on_hold'], true) && $serviceTicket->user_id)
-            <form method="POST" action="{{ route('service-tickets.work-logs.store', $serviceTicket) }}" class="ticket-worklog-form" id="ticketWorkLogForm">
+            {{-- A7103:service-tickets.work-logs.store --}}@if(\App\Support\CrmViewAction::allows('service-tickets.work-logs.store'))
+<form method="POST" action="{{ route('service-tickets.work-logs.store', $serviceTicket) }}" class="ticket-worklog-form" id="ticketWorkLogForm">
                 @csrf
                 <div class="ticket-worklog-inputs">
                     <div>
@@ -31,6 +32,7 @@
                     <button type="submit" class="btn primary">Save Work Log</button>
                 </div>
             </form>
+@endif{{-- /A7103 --}}
         @elseif($serviceTicket->status === 'closed' || $serviceTicket->status === 'resolved')
             <p class="ticket-worklog-hint">This ticket is {{ ucwords(str_replace('_', ' ', $serviceTicket->status)) }}. Its work log is read-only.</p>
         @elseif(!$serviceTicket->user_id)

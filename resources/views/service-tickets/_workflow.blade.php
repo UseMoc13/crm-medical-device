@@ -33,16 +33,20 @@
     <div class="card-body">
         <div class="ticket-workflow-actions">
             @forelse($workflowActions as $nextStatus => $actionLabel)
-                <button type="button" class="btn {{ in_array($nextStatus, ['in_progress','resolved','closed'], true) ? 'primary' : '' }}"
+                {{-- A7103:service-tickets.change-status --}}@if(\App\Support\CrmViewAction::allows('service-tickets.change-status'))
+<button type="button" class="btn {{ in_array($nextStatus, ['in_progress','resolved','closed'], true) ? 'primary' : '' }}"
                         data-ticket-workflow-action="{{ $nextStatus }}"
                         data-ticket-workflow-label="{{ $actionLabel }}">
                     {{ $actionLabel }}
                 </button>
+@endif{{-- /A7103 --}}
             @empty
                 <span class="ticket-workflow-hint">This ticket is closed. No further workflow transitions are available.</span>
             @endforelse
             @if($workflowStatus !== 'closed')
-                <a href="{{ route('service-tickets.edit', $serviceTicket) }}" class="btn">Edit Assignment & Details</a>
+                {{-- A7103:service-tickets.edit --}}@if(\App\Support\CrmViewAction::allows('service-tickets.edit'))
+<a href="{{ route('service-tickets.edit', $serviceTicket) }}" class="btn">Edit Assignment & Details</a>
+@endif{{-- /A7103 --}}
             @endif
         </div>
         <p class="ticket-workflow-hint">
@@ -57,7 +61,8 @@
         <div class="ticket-workflow-symbol">?</div>
         <h3 id="ticketWorkflowTitle">Confirm Status Change</h3>
         <p id="ticketWorkflowDescription">Are you sure you want to change the ticket status?</p>
-        <form action="{{ route('service-tickets.change-status', $serviceTicket) }}" method="POST" id="ticketWorkflowForm">
+        {{-- A7103:service-tickets.change-status --}}@if(\App\Support\CrmViewAction::allows('service-tickets.change-status'))
+<form action="{{ route('service-tickets.change-status', $serviceTicket) }}" method="POST" id="ticketWorkflowForm">
             @csrf
             <input type="hidden" name="_method" value="PATCH" id="ticketWorkflowMethod">
             <input type="hidden" name="status" id="ticketWorkflowNextStatus" value="">
@@ -72,6 +77,7 @@
                 <button type="submit" class="btn primary" id="ticketWorkflowConfirm">Confirm</button>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

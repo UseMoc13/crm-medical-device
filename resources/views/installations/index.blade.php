@@ -9,9 +9,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('installations.create') }}" class="btn primary">
+        {{-- A7103:installations.create --}}@if(\App\Support\CrmViewAction::allows('installations.create'))
+<a href="{{ route('installations.create') }}" class="btn primary">
             + Create Installation
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -23,7 +25,8 @@
     </div>
 
     <div class="card-body">
-        <form method="GET"
+        {{-- A7103:installations.index --}}@if(\App\Support\CrmViewAction::allows('installations.index'))
+<form method="GET"
               action="{{ route('installations.index') }}"
               class="installation-filter-bar">
 
@@ -59,10 +62,13 @@
                 Search
             </button>
 
-            <a href="{{ route('installations.index') }}" class="btn">
+            {{-- A7103:installations.index --}}@if(\App\Support\CrmViewAction::allows('installations.index'))
+<a href="{{ route('installations.index') }}" class="btn">
                 Reset
             </a>
+@endif{{-- /A7103 --}}
         </form>
+@endif{{-- /A7103 --}}
 
         <div class="table-wrap installation-table-wrap">
             <table class="installation-table">
@@ -100,7 +106,9 @@
                             </td>
 
                             <td>
-                                <a class="installation-link" href="{{ route('deliveries.show', $installation->delivery_id) }}">{{ $installation->delivery?->delivery_number ?? '—' }}</a>
+                                {{-- A7103:deliveries.show --}}@if(\App\Support\CrmViewAction::allows('deliveries.show'))
+<a class="installation-link" href="{{ route('deliveries.show', $installation->delivery_id) }}">{{ $installation->delivery?->delivery_number ?? '—' }}</a>
+@endif{{-- /A7103 --}}
                             </td>
 
                             <td>
@@ -127,7 +135,8 @@
 
                             <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:installations.show --}}@if(\App\Support\CrmViewAction::allows('installations.show'))
+<a
                                         href="{{ route('installations.show', $installation->installation_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -138,8 +147,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:installations.edit --}}@if(\App\Support\CrmViewAction::allows('installations.edit'))
+<a
                                         href="{{ route('installations.edit', $installation->installation_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -150,8 +161,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:installations.destroy --}}@if(\App\Support\CrmViewAction::allows('installations.destroy'))
+<form
                                         action="{{ route('installations.destroy', $installation->installation_id) }}"
                                         method="POST"
                                         class="installation-delete-form"
@@ -175,6 +188,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
                         </tr>

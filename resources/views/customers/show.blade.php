@@ -8,9 +8,11 @@
 
     <div>
         <div class="breadcrumb">
-            <a href="{{ route('customers.index') }}">
+            {{-- A7103:customers.index --}}@if(\App\Support\CrmViewAction::allows('customers.index'))
+<a href="{{ route('customers.index') }}">
                 Customers
             </a>
+@endif{{-- /A7103 --}}
 
             <span>/</span>
 
@@ -26,19 +28,23 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:customers.edit --}}@if(\App\Support\CrmViewAction::allows('customers.edit'))
+<a
             href="{{ route('customers.edit', $customer) }}"
             class="btn primary"
         >
             ✎ Edit Customer
         </a>
+@endif{{-- /A7103 --}}
 
-        <a
+        {{-- A7103:customers.index --}}@if(\App\Support\CrmViewAction::allows('customers.index'))
+<a
             href="{{ route('customers.index') }}"
             class="btn"
         >
             ← Back
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 

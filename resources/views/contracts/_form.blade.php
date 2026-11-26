@@ -7,7 +7,8 @@
 <div class="card contract-form-card">
   <div class="card-head"><div><h3>Contract Information</h3><p>{{ $editing ? 'Update contract information and review your changes.' : 'Enter contract details and review the live preview.' }}</p></div><span class="contract-required"><b>*</b> Required fields</span></div>
   <div class="card-body">
-  <form method="POST" enctype="multipart/form-data" action="{{ $editing ? route('contracts.update', $contract->contract_id) : route('contracts.store') }}" id="contractEditor">
+  {{-- A7103:contracts.update --}}@if(\App\Support\CrmViewAction::allows('contracts.update'))
+<form method="POST" enctype="multipart/form-data" action="{{ $editing ? route('contracts.update', $contract->contract_id) : route('contracts.store') }}" id="contractEditor">
     @csrf @if($editing) @method('PUT') @endif
     <div class="contract-editor-layout">
       <div class="contract-editor-main">
@@ -31,10 +32,14 @@
         </section>
         <section class="contract-form-section"><div class="contract-section-title"><h4>Contract Document</h4><p>Attach a private PDF document (maximum 5 MB).</p></div>
           <div class="form-group"><label for="document">Contract Document (PDF)</label><input type="file" accept="application/pdf,.pdf" class="form-control" name="document" id="document">@error('document')<small class="contract-error">{{ $message }}</small>@enderror
-            @if($editing && $contract->document_path)<small class="contract-hint">Current document: <a href="{{ route('contracts.download', $contract->contract_id) }}">Download PDF</a>. Leave empty to keep it.</small>@else<small class="contract-hint">Optional. PDF only, up to 5 MB.</small>@endif
+            @if($editing && $contract->document_path)<small class="contract-hint">Current document: {{-- A7103:contracts.download --}}@if(\App\Support\CrmViewAction::allows('contracts.download'))
+<a href="{{ route('contracts.download', $contract->contract_id) }}">Download PDF</a>
+@endif{{-- /A7103 --}}. Leave empty to keep it.</small>@else<small class="contract-hint">Optional. PDF only, up to 5 MB.</small>@endif
           </div>
         </section>
-        <div class="contract-form-actions"><a class="btn" href="{{ $editing ? route('contracts.show',$contract->contract_id) : route('contracts.index') }}">Cancel</a><button type="submit" class="btn primary">{{ $editing ? 'Save Changes' : 'Create Contract' }}</button></div>
+        <div class="contract-form-actions">{{-- A7103:contracts.show --}}@if(\App\Support\CrmViewAction::allows('contracts.show'))
+<a class="btn" href="{{ $editing ? route('contracts.show',$contract->contract_id) : route('contracts.index') }}">Cancel</a>
+@endif{{-- /A7103 --}}<button type="submit" class="btn primary">{{ $editing ? 'Save Changes' : 'Create Contract' }}</button></div>
       </div>
       <aside class="contract-preview-panel" aria-label="Contract live preview">
         <div class="contract-preview-label">CONTRACT PREVIEW</div>
@@ -50,7 +55,8 @@
         <div class="contract-preview-note"><strong>Contract Information</strong><p>This preview updates as you edit the form. The final values are saved when you submit.</p></div>
       </aside>
     </div>
-  </form></div>
+  </form>
+@endif{{-- /A7103 --}}</div>
 </div>
 @include('contracts._style')
 <script>

@@ -15,11 +15,15 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('reports.index') }}" class="btn">View Reports</a>
+        {{-- A7103:reports.index --}}@if(\App\Support\CrmViewAction::allows('reports.index'))
+<a href="{{ route('reports.index') }}" class="btn">View Reports</a>
+@endif{{-- /A7103 --}}
 
-        <a href="{{ route('invoices.create') }}" class="btn primary">
+        {{-- A7103:invoices.create --}}@if(\App\Support\CrmViewAction::allows('invoices.create'))
+<a href="{{ route('invoices.create') }}" class="btn primary">
             + New Invoice
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -35,29 +39,37 @@
 {{-- SUMMARY --}}
 <div class="inv-summary">
 
-    <a href="{{ route('invoices.index') }}" class="inv-summary-card">
+    {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index') }}" class="inv-summary-card">
         <span>Total Invoiced</span>
         <strong>{{ $rp($summary->issued) }}</strong>
         <small>{{ $summary->total }} invoices in total (Sent + Paid amounts)</small>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('invoices.index', ['status' => 'Paid']) }}" class="inv-summary-card success">
+    {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index', ['status' => 'Paid']) }}" class="inv-summary-card success">
         <span>Paid</span>
         <strong>{{ $rp($summary->paid) }}</strong>
         <small>Payments received</small>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('invoices.index', ['status' => 'Sent']) }}" class="inv-summary-card">
+    {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index', ['status' => 'Sent']) }}" class="inv-summary-card">
         <span>Outstanding</span>
         <strong>{{ $rp($summary->outstanding) }}</strong>
         <small>Sent, awaiting payment</small>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('invoices.index', ['status' => 'overdue']) }}" class="inv-summary-card danger">
+    {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index', ['status' => 'overdue']) }}" class="inv-summary-card danger">
         <span>Overdue</span>
         <strong>{{ $rp($summary->overdue_amount) }}</strong>
         <small>{{ $summary->overdue_count }} invoice(s) past due date</small>
     </a>
+@endif{{-- /A7103 --}}
 
 </div>
 
@@ -74,7 +86,8 @@
     <div class="card-body">
 
         {{-- FILTER BAR --}}
-        <form method="GET" action="{{ route('invoices.index') }}" class="inv-filter-bar">
+        {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<form method="GET" action="{{ route('invoices.index') }}" class="inv-filter-bar">
 
             <div class="inv-search">
                 <span class="inv-search-icon">⌕</span>
@@ -88,12 +101,14 @@
                 >
 
                 @if(request('search'))
-                    <a
+                    {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a
                         href="{{ route('invoices.index', request()->except('search', 'page')) }}"
                         class="inv-search-clear"
                         title="Clear search"
                         aria-label="Clear search"
                     >×</a>
+@endif{{-- /A7103 --}}
                 @endif
             </div>
 
@@ -145,10 +160,13 @@
             <button type="submit" class="btn inv-btn">Filter</button>
 
             @if(request()->hasAny(['search', 'status', 'date_from', 'date_to', 'sort', 'direction']))
-                <a href="{{ route('invoices.index') }}" class="btn inv-btn">Reset</a>
+                {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index') }}" class="btn inv-btn">Reset</a>
+@endif{{-- /A7103 --}}
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
         @if(request('search') || request('status') || request('date_from') || request('date_to'))
             <div class="inv-filter-summary">
@@ -205,9 +223,11 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="inv-link">
+                                {{-- A7103:invoices.show --}}@if(\App\Support\CrmViewAction::allows('invoices.show'))
+<a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="inv-link">
                                     {{ $invoice->invoice_number }}
                                 </a>
+@endif{{-- /A7103 --}}
                                 <div class="inv-sub">{{ $invoice->sales_order_number ?? '-' }}</div>
                             </td>
 
@@ -238,7 +258,8 @@
                             <td>
                                 <div class="inv-actions">
 
-                                    <a
+                                    {{-- A7103:invoices.show --}}@if(\App\Support\CrmViewAction::allows('invoices.show'))
+<a
                                         href="{{ route('invoices.show', $invoice->invoice_id) }}"
                                         class="inv-icon-btn view"
                                         title="View"
@@ -249,9 +270,11 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
                                     @if(in_array($invoice->status, $editable, true))
-                                        <a
+                                        {{-- A7103:invoices.edit --}}@if(\App\Support\CrmViewAction::allows('invoices.edit'))
+<a
                                             href="{{ route('invoices.edit', $invoice->invoice_id) }}"
                                             class="inv-icon-btn edit"
                                             title="Edit"
@@ -262,10 +285,12 @@
                                                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                             </svg>
                                         </a>
+@endif{{-- /A7103 --}}
                                     @endif
 
                                     @if(in_array($invoice->status, $deletable, true))
-                                        <form
+                                        {{-- A7103:invoices.destroy --}}@if(\App\Support\CrmViewAction::allows('invoices.destroy'))
+<form
                                             action="{{ route('invoices.destroy', $invoice->invoice_id) }}"
                                             method="POST"
                                             onsubmit="return confirm('Delete this invoice and all of its items?')"
@@ -287,6 +312,7 @@
                                                 </svg>
                                             </button>
                                         </form>
+@endif{{-- /A7103 --}}
                                     @endif
 
                                 </div>

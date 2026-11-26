@@ -11,9 +11,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('announcement-management.create') }}" class="btn primary">
+        {{-- A7103:announcement-management.create --}}@if(\App\Support\CrmViewAction::allows('announcement-management.create'))
+<a href="{{ route('announcement-management.create') }}" class="btn primary">
             + New Announcement
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -35,7 +37,8 @@
 @endif
 
 <div class="announcement-stats">
-    <a href="{{ route('announcement-management.index', request()->except('status', 'page')) }}"
+    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index', request()->except('status', 'page')) }}"
        class="announcement-stat-card {{ !request('status') ? 'active' : '' }}">
         <div class="announcement-stat-icon total-icon">▤</div>
         <div>
@@ -43,8 +46,10 @@
             <strong>{{ $statistics['total'] }}</strong>
         </div>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'draft'])) }}"
+    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'draft'])) }}"
        class="announcement-stat-card {{ request('status') === 'draft' ? 'active' : '' }}">
         <div class="announcement-stat-icon draft-icon">✎</div>
         <div>
@@ -52,8 +57,10 @@
             <strong>{{ $statistics['draft'] }}</strong>
         </div>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'scheduled'])) }}"
+    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'scheduled'])) }}"
        class="announcement-stat-card {{ request('status') === 'scheduled' ? 'active' : '' }}">
         <div class="announcement-stat-icon scheduled-icon">◷</div>
         <div>
@@ -61,8 +68,10 @@
             <strong>{{ $statistics['scheduled'] }}</strong>
         </div>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'published'])) }}"
+    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'published'])) }}"
        class="announcement-stat-card {{ request('status') === 'published' ? 'active' : '' }}">
         <div class="announcement-stat-icon published-icon">✓</div>
         <div>
@@ -70,8 +79,10 @@
             <strong>{{ $statistics['published'] }}</strong>
         </div>
     </a>
+@endif{{-- /A7103 --}}
 
-    <a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'archived'])) }}"
+    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index', array_merge(request()->except('page'), ['status' => 'archived'])) }}"
        class="announcement-stat-card {{ request('status') === 'archived' ? 'active' : '' }}">
         <div class="announcement-stat-icon archived-icon">▣</div>
         <div>
@@ -79,6 +90,7 @@
             <strong>{{ $statistics['archived'] }}</strong>
         </div>
     </a>
+@endif{{-- /A7103 --}}
 </div>
 
 <div class="card">
@@ -90,7 +102,8 @@
     </div>
 
     <div class="card-body">
-        <form method="GET"
+        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<form method="GET"
               action="{{ route('announcement-management.index') }}"
               class="announcement-filter-bar">
 
@@ -106,11 +119,13 @@
                     aria-label="Search announcements">
 
                 @if(request('search'))
-                    <a
+                    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a
                         href="{{ route('announcement-management.index', request()->except('search', 'page')) }}"
                         class="announcement-search-clear"
                         title="Clear search"
                         aria-label="Clear search">×</a>
+@endif{{-- /A7103 --}}
                 @endif
             </div>
 
@@ -138,12 +153,15 @@
             </button>
 
             @if(request()->hasAny(['search', 'status', 'pin']))
-                <a href="{{ route('announcement-management.index') }}"
+                {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index') }}"
                    class="btn announcement-reset-button">
                     Reset
                 </a>
+@endif{{-- /A7103 --}}
             @endif
         </form>
+@endif{{-- /A7103 --}}
 
         @if(request('search') || request('status') || request('pin'))
             <div class="announcement-filter-summary">
@@ -201,10 +219,12 @@
                                     </div>
 
                                     <div class="announcement-title-info">
-                                        <a href="{{ route('announcement-management.show', $announcement) }}"
+                                        {{-- A7103:announcement-management.show --}}@if(\App\Support\CrmViewAction::allows('announcement-management.show'))
+<a href="{{ route('announcement-management.show', $announcement) }}"
                                            class="announcement-title-link">
                                             <strong>{{ $announcement->title }}</strong>
                                         </a>
+@endif{{-- /A7103 --}}
 
                                         @if($announcement->summary)
                                             <div class="muted announcement-summary">
@@ -282,19 +302,24 @@
 
                             <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:announcement-management.show --}}@if(\App\Support\CrmViewAction::allows('announcement-management.show'))
+<a
                                         href="{{ route('announcement-management.show', $announcement) }}"
                                         class="action-btn view"
                                         title="View Announcement"
                                         aria-label="View Announcement">👁</a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:announcement-management.edit --}}@if(\App\Support\CrmViewAction::allows('announcement-management.edit'))
+<a
                                         href="{{ route('announcement-management.edit', $announcement) }}"
                                         class="action-btn edit"
                                         title="Edit Announcement"
                                         aria-label="Edit Announcement">✎</a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:announcement-management.toggle-pin --}}@if(\App\Support\CrmViewAction::allows('announcement-management.toggle-pin'))
+<form
                                         action="{{ route('announcement-management.toggle-pin', $announcement) }}"
                                         method="POST"
                                         class="announcement-pin-form"
@@ -308,8 +333,10 @@
                                             title="{{ $announcement->is_pinned ? 'Unpin Announcement' : 'Pin Announcement' }}"
                                             aria-label="{{ $announcement->is_pinned ? 'Unpin Announcement' : 'Pin Announcement' }}">★</button>
                                     </form>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:announcement-management.destroy --}}@if(\App\Support\CrmViewAction::allows('announcement-management.destroy'))
+<form
                                         action="{{ route('announcement-management.destroy', $announcement) }}"
                                         method="POST"
                                         class="announcement-delete-form"
@@ -323,6 +350,7 @@
                                             title="Delete Announcement"
                                             aria-label="Delete Announcement">🗑</button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
                         </tr>
@@ -341,13 +369,17 @@
                                     </p>
 
                                     @if(request()->hasAny(['search', 'status', 'pin']))
-                                        <a href="{{ route('announcement-management.index') }}" class="btn">
+                                        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index') }}" class="btn">
                                             Clear Filters
                                         </a>
+@endif{{-- /A7103 --}}
                                     @else
-                                        <a href="{{ route('announcement-management.create') }}" class="btn primary">
+                                        {{-- A7103:announcement-management.create --}}@if(\App\Support\CrmViewAction::allows('announcement-management.create'))
+<a href="{{ route('announcement-management.create') }}" class="btn primary">
                                             + New Announcement
                                         </a>
+@endif{{-- /A7103 --}}
                                     @endif
                                 </div>
                             </td>

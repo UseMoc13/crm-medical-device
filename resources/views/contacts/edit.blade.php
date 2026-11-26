@@ -16,11 +16,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:contacts.show --}}@if(\App\Support\CrmViewAction::allows('contacts.show'))
+<a
             href="{{ route('contacts.show', $contact) }}"
             class="btn">
             Back to Contact
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -67,7 +69,8 @@
 
     <div class="card-body">
 
-        <form
+        {{-- A7103:contacts.update --}}@if(\App\Support\CrmViewAction::allows('contacts.update'))
+<form
             method="POST"
             action="{{ route('contacts.update', $contact) }}">
 
@@ -349,7 +352,8 @@
 
             <div class="form-actions">
 
-                <a
+                {{-- A7103:contacts.show --}}@if(\App\Support\CrmViewAction::allows('contacts.show'))
+<a
                     href="{{ route(
                         'contacts.show',
                         $contact
@@ -357,6 +361,7 @@
                     class="btn">
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
 
                 <button
@@ -368,6 +373,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

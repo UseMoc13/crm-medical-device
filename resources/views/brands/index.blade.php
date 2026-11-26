@@ -19,11 +19,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:brands.create --}}@if(\App\Support\CrmViewAction::allows('brands.create'))
+<a
             href="{{ route('brands.create') }}"
             class="btn primary">
             + New Brand
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -116,7 +118,8 @@ BRAND LIST
          FILTER BAR
     ====================================================== --}}
 
-        <form
+        {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+<form
             method="GET"
             action="{{ route('brands.index') }}"
             class="brand-filter-bar">
@@ -141,7 +144,8 @@ BRAND LIST
 
                 @if(request('search'))
 
-                <a
+                {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+<a
                     href="{{ route(
                         'brands.index',
                         request()->except(
@@ -155,6 +159,7 @@ BRAND LIST
                     ×
 
                 </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -176,17 +181,20 @@ BRAND LIST
 
             @if(request('search'))
 
-            <a
+            {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+<a
                 href="{{ route('brands.index') }}"
                 class="btn brand-reset-button">
 
                 Reset
 
             </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -249,7 +257,8 @@ BRAND LIST
 
                         <td>
 
-                            <a
+                            {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+<a
                                 href="{{ route(
                                     'brands.show',
                                     $brand
@@ -261,6 +270,7 @@ BRAND LIST
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="brand-id">
@@ -433,7 +443,8 @@ BRAND LIST
 
                         <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+<a
                                         href="{{ route('brands.show', $brand->brand_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -444,8 +455,10 @@ BRAND LIST
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:brands.edit --}}@if(\App\Support\CrmViewAction::allows('brands.edit'))
+<a
                                         href="{{ route('brands.edit', $brand->brand_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -456,8 +469,10 @@ BRAND LIST
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:brands.destroy --}}@if(\App\Support\CrmViewAction::allows('brands.destroy'))
+<form
                                         action="{{ route('brands.destroy', $brand->brand_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this Brand?')"
@@ -479,6 +494,7 @@ BRAND LIST
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
 

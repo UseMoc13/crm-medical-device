@@ -18,17 +18,21 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+<a
             href="{{ route('leads.index') }}"
             class="btn">
             Back to Leads
         </a>
+@endif{{-- /A7103 --}}
 
-        <a
+        {{-- A7103:leads.edit --}}@if(\App\Support\CrmViewAction::allows('leads.edit'))
+<a
             href="{{ route('leads.edit', $lead) }}"
             class="btn primary">
             Edit Lead
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 

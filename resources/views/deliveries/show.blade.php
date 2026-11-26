@@ -31,19 +31,23 @@
     </div>
 
     <div class="actions">
-        <a
+        {{-- A7103:deliveries.edit --}}@if(\App\Support\CrmViewAction::allows('deliveries.edit'))
+<a
             href="{{ route('deliveries.edit', $delivery->delivery_id) }}"
             class="btn primary"
         >
             ✎ Edit Delivery
         </a>
+@endif{{-- /A7103 --}}
 
-        <a
+        {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+<a
             href="{{ route('deliveries.index') }}"
             class="btn"
         >
             ← Back
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -52,10 +56,16 @@
     <div class="card-body">
         <div class="delivery-workflow-body">
             @if($delivery->status === 'pending')
-                <button type="button" class="btn primary" data-delivery-action="in_transit" data-delivery-title="Mark as In Transit?" data-delivery-text="Dispatch the selected units and deduct inventory from their selected warehouses? This action records Stock Movements and assigns serial numbers.">Mark as In Transit</button>
-                <button type="button" class="btn" data-delivery-action="cancelled" data-delivery-title="Cancel Delivery?" data-delivery-text="Cancel this pending delivery?">Cancel Delivery</button>
+                {{-- A7103:deliveries.change-status --}}@if(\App\Support\CrmViewAction::allows('deliveries.change-status'))
+<button type="button" class="btn primary" data-delivery-action="in_transit" data-delivery-title="Mark as In Transit?" data-delivery-text="Dispatch the selected units and deduct inventory from their selected warehouses? This action records Stock Movements and assigns serial numbers.">Mark as In Transit</button>
+@endif{{-- /A7103 --}}
+                {{-- A7103:deliveries.change-status --}}@if(\App\Support\CrmViewAction::allows('deliveries.change-status'))
+<button type="button" class="btn" data-delivery-action="cancelled" data-delivery-title="Cancel Delivery?" data-delivery-text="Cancel this pending delivery?">Cancel Delivery</button>
+@endif{{-- /A7103 --}}
             @elseif($delivery->status === 'in_transit')
-                <button type="button" class="btn primary" data-delivery-action="delivered" data-delivery-title="Confirm Delivery?" data-delivery-text="Confirm that the customer has received this shipment. Stock and serial number updates were recorded at dispatch.">Confirm Delivered</button>
+                {{-- A7103:deliveries.change-status --}}@if(\App\Support\CrmViewAction::allows('deliveries.change-status'))
+<button type="button" class="btn primary" data-delivery-action="delivered" data-delivery-title="Confirm Delivery?" data-delivery-text="Confirm that the customer has received this shipment. Stock and serial number updates were recorded at dispatch.">Confirm Delivered</button>
+@endif{{-- /A7103 --}}
             @else
                 <span class="delivery-warning">This delivery has reached a final status.</span>
             @endif
@@ -69,7 +79,8 @@
         <div class="delivery-modal-symbol">?</div>
         <h3 id="deliveryConfirmTitle">Confirm status</h3>
         <p id="deliveryConfirmText"></p>
-        <form method="POST" action="{{ route('deliveries.change-status', $delivery->delivery_id) }}" id="deliveryStatusForm">
+        {{-- A7103:deliveries.change-status --}}@if(\App\Support\CrmViewAction::allows('deliveries.change-status'))
+<form method="POST" action="{{ route('deliveries.change-status', $delivery->delivery_id) }}" id="deliveryStatusForm">
             @csrf
             @method('PATCH')
             <input type="hidden" name="status" id="deliveryNextStatus">
@@ -78,6 +89,7 @@
                 <button type="submit" class="btn primary">Confirm</button>
             </div>1
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -109,7 +121,8 @@
             <p class="delivery-warning">Delivery Item warehouse tracking is unavailable. Run both Delivery Items migrations first.</p>
         @else
             @if($delivery->status === 'pending')
-                <form action="{{ route('deliveries.items.store', $delivery) }}" method="POST" class="delivery-serial-form">
+                {{-- A7103:deliveries.items.store --}}@if(\App\Support\CrmViewAction::allows('deliveries.items.store'))
+<form action="{{ route('deliveries.items.store', $delivery) }}" method="POST" class="delivery-serial-form">
                     @csrf
                     <label for="serial_number_id">Available serial number</label>
                     <select name="serial_number_id" id="serial_number_id" required>
@@ -130,6 +143,7 @@
                     <button type="submit" class="btn primary" @disabled($availableSerials->isEmpty() || $warehouseStocks->isEmpty())>Add Unit</button>
                     <p class="delivery-warning">Select a warehouse that physically holds the chosen serial number. Current database does not track each serial's warehouse location.</p>
                 </form>
+@endif{{-- /A7103 --}}
                 @error('serial_number_id') <p class="delivery-warning">{{ $message }}</p> @enderror
                 @error('warehouse_id') <p class="delivery-warning">{{ $message }}</p> @enderror
                 @error('status') <p class="delivery-warning">{{ $message }}</p> @enderror
@@ -149,10 +163,12 @@
                         <div class="delivery-serial-assigned">
                             <span>{{ $item->serialNumber->serial_number ?? 'Unknown Serial' }} — {{ $item->serialNumber->product->product_name ?? '-' }}<small class="delivery-source-warehouse">{{ $item->warehouse->warehouse_name ?? 'Warehouse not assigned' }}</small></span>
                             @if($delivery->status === 'pending')
-                                <form action="{{ route('deliveries.items.destroy', [$delivery, $item]) }}" method="POST" onsubmit="return confirm('Remove this serial number from Delivery?')">
+                                {{-- A7103:deliveries.items.destroy --}}@if(\App\Support\CrmViewAction::allows('deliveries.items.destroy'))
+<form action="{{ route('deliveries.items.destroy', [$delivery, $item]) }}" method="POST" onsubmit="return confirm('Remove this serial number from Delivery?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn">Remove</button>
                                 </form>
+@endif{{-- /A7103 --}}
                             @endif
                         </div>
                     @empty
@@ -314,9 +330,11 @@
                             Sales Order Number
                         </span>
 
-                        <a class="delivery-origin-link sales-order-number" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">
+                        {{-- A7103:sales-orders.show --}}@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
+<a class="delivery-origin-link sales-order-number" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">
                             {{ $delivery->salesOrder->sales_order_number ?? '-' }}
                         </a>
+@endif{{-- /A7103 --}}
                     </div>
 
                     <div class="sales-order-grid">
@@ -369,9 +387,13 @@
         @if($delivery->status === 'delivered')
             @php($existingInstallation = \App\Models\Installation::where('delivery_id', $delivery->delivery_id)->first())
             @if($existingInstallation)
-                <a class="btn primary" href="{{ route('installations.show', $existingInstallation) }}">View Installation</a>
+                {{-- A7103:installations.show --}}@if(\App\Support\CrmViewAction::allows('installations.show'))
+<a class="btn primary" href="{{ route('installations.show', $existingInstallation) }}">View Installation</a>
+@endif{{-- /A7103 --}}
             @else
-                <a class="btn primary" href="{{ route('installations.create', ['delivery_id' => $delivery->delivery_id]) }}">+ Schedule Installation</a>
+                {{-- A7103:installations.create --}}@if(\App\Support\CrmViewAction::allows('installations.create'))
+<a class="btn primary" href="{{ route('installations.create', ['delivery_id' => $delivery->delivery_id]) }}">+ Schedule Installation</a>
+@endif{{-- /A7103 --}}
             @endif
         @else
             <p>Confirm the Delivery as Delivered before scheduling Installation.</p>

@@ -11,10 +11,12 @@
     </div>
 
     <div class="brand-page-actions">
-        <a href="{{ route('brands.show', $brand) }}" class="btn">
+        {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+<a href="{{ route('brands.show', $brand) }}" class="btn">
             <span aria-hidden="true">&larr;</span>
             Back to Brand
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -51,7 +53,8 @@
     </div>
 
     <div class="card-body brand-edit-body">
-        <form
+        {{-- A7103:brands.update --}}@if(\App\Support\CrmViewAction::allows('brands.update'))
+<form
             method="POST"
             action="{{ route('brands.update', $brand) }}"
             id="brandEditForm"
@@ -130,12 +133,14 @@
 
                     {{-- FORM ACTIONS --}}
                     <div class="form-actions">
-                        <a
+                        {{-- A7103:brands.show --}}@if(\App\Support\CrmViewAction::allows('brands.show'))
+<a
                             href="{{ route('brands.show', $brand) }}"
                             class="btn"
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -239,6 +244,7 @@
                 </aside>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

@@ -21,7 +21,8 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:product-categories.show --}}@if(\App\Support\CrmViewAction::allows('product-categories.show'))
+<a
             href="{{ route(
                 'product-categories.show',
                 $productCategory
@@ -30,6 +31,7 @@
         >
             ← Back to Category
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -83,7 +85,8 @@
     <div class="card-body">
 
 
-        <form
+        {{-- A7103:product-categories.update --}}@if(\App\Support\CrmViewAction::allows('product-categories.update'))
+<form
             method="POST"
             action="{{ route(
                 'product-categories.update',
@@ -198,7 +201,8 @@
 
                     <div class="form-actions">
 
-                        <a
+                        {{-- A7103:product-categories.show --}}@if(\App\Support\CrmViewAction::allows('product-categories.show'))
+<a
                             href="{{ route(
                                 'product-categories.show',
                                 $productCategory
@@ -207,6 +211,7 @@
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -332,6 +337,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

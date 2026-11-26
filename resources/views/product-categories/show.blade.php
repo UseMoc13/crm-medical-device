@@ -20,13 +20,17 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('product-categories.index') }}" class="btn">
+        {{-- A7103:product-categories.index --}}@if(\App\Support\CrmViewAction::allows('product-categories.index'))
+<a href="{{ route('product-categories.index') }}" class="btn">
             &larr; Back to Categories
         </a>
+@endif{{-- /A7103 --}}
 
-        <a href="{{ route('product-categories.edit', $productCategory) }}" class="btn primary">
+        {{-- A7103:product-categories.edit --}}@if(\App\Support\CrmViewAction::allows('product-categories.edit'))
+<a href="{{ route('product-categories.edit', $productCategory) }}" class="btn primary">
             Edit Category
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -139,10 +143,12 @@
                 </div>
             </div>
 
-            <a href="{{ route('products.create') }}" class="btn primary category-create-button">
+            {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+<a href="{{ route('products.create') }}" class="btn primary category-create-button">
                 <span aria-hidden="true">+</span>
                 Create New Product
             </a>
+@endif{{-- /A7103 --}}
         </div>
     </section>
 </div>
@@ -193,9 +199,11 @@
                                         <span class="product-icon" aria-hidden="true">P</span>
 
                                         <div class="category-product-info">
-                                            <a href="{{ route('products.show', $product) }}" class="product-name-link">
+                                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a href="{{ route('products.show', $product) }}" class="product-name-link">
                                                 {{ $product->product_name ?: 'Unnamed Product' }}
                                             </a>
+@endif{{-- /A7103 --}}
                                             <span class="product-code">{{ $product->product_code ?: 'No product code' }}</span>
                                         </div>
                                     </div>
@@ -231,10 +239,12 @@
                                 </td>
 
                                 <td>
-                                    <a href="{{ route('products.show', $product) }}" class="action-view-button">
+                                    {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a href="{{ route('products.show', $product) }}" class="action-view-button">
                                         <span>View</span>
                                         <span aria-hidden="true">&rarr;</span>
                                     </a>
+@endif{{-- /A7103 --}}
                                 </td>
                             </tr>
                         @endforeach
@@ -257,9 +267,11 @@
                 <h4>No Products in This Category</h4>
                 <p>There are currently no products assigned to this category.</p>
 
-                <a href="{{ route('products.create') }}" class="btn primary empty-state-button">
+                {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+<a href="{{ route('products.create') }}" class="btn primary empty-state-button">
                     + Create Product
                 </a>
+@endif{{-- /A7103 --}}
             </div>
         @endif
     </div>
@@ -407,10 +419,12 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('products.show', $product) }}" class="action-view-button">
+                                {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a href="{{ route('products.show', $product) }}" class="action-view-button">
                                     <span>View</span>
                                     <span aria-hidden="true">&rarr;</span>
                                 </a>
+@endif{{-- /A7103 --}}
                             </td>
                         </tr>
                     @endforeach

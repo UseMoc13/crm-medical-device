@@ -13,11 +13,17 @@
         <p>Review order information, items, totals, and source quotation.</p>
     </div>
     <div class="actions so-header-actions">
-        <a href="{{ route('sales_orders.index') }}" class="btn">Back</a>
+        {{-- A7103:sales_orders.index --}}@if(\App\Support\CrmViewAction::allows('sales_orders.index'))
+<a href="{{ route('sales_orders.index') }}" class="btn">Back</a>
+@endif{{-- /A7103 --}}
         @if($order->quotation)
-            <a href="{{ route('quotations.show', $order->quotation) }}" class="btn">View Quotation</a>
+            {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a href="{{ route('quotations.show', $order->quotation) }}" class="btn">View Quotation</a>
+@endif{{-- /A7103 --}}
         @endif
-        <a href="{{ route('sales-orders.download', $order) }}" class="btn primary">Download PDF</a>
+        {{-- A7103:sales-orders.download --}}@if(\App\Support\CrmViewAction::allows('sales-orders.download'))
+<a href="{{ route('sales-orders.download', $order) }}" class="btn primary">Download PDF</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif
@@ -33,7 +39,9 @@
             <div class="so-info-grid">
                 <div class="so-field"><span>Sales Order Number</span><strong>{{ $order->sales_order_number }}</strong></div>
                 <div class="so-field"><span>Order Date</span><strong>{{ $order->order_date?->format('d M Y') ?? '-' }}</strong></div>
-                <div class="so-field"><span>Original Quotation</span><strong>@if($order->quotation)<a href="{{ route('quotations.show', $order->quotation) }}" class="so-text-link">{{ $order->quotation->quotation_number }} ↗</a>@else - @endif</strong></div>
+                <div class="so-field"><span>Original Quotation</span><strong>@if($order->quotation){{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a href="{{ route('quotations.show', $order->quotation) }}" class="so-text-link">{{ $order->quotation->quotation_number }} ↗</a>
+@endif{{-- /A7103 --}}@else - @endif</strong></div>
                 <div class="so-field"><span>Expected Delivery</span><strong>{{ $order->delivery_date?->format('d M Y') ?? 'Not scheduled' }}</strong></div>
                 <div class="so-field"><span>Customer</span><strong>{{ $customer?->customer_name ?? '-' }}</strong></div>
                 <div class="so-field"><span>Contract</span><strong>{{ $order->contract?->contract_number ?? 'Not linked' }}</strong></div>
@@ -99,9 +107,13 @@
             @if($effectiveDiscount > 0.009)
                 <p class="so-summary-note">*Discount inferred from stored subtotal, tax, and total because Sales Orders have no header discount field.</p>
             @endif
-            <a href="{{ route('sales-orders.download', $order) }}" class="btn primary so-download-wide">Download PDF</a>
+            {{-- A7103:sales-orders.download --}}@if(\App\Support\CrmViewAction::allows('sales-orders.download'))
+<a href="{{ route('sales-orders.download', $order) }}" class="btn primary so-download-wide">Download PDF</a>
+@endif{{-- /A7103 --}}
             @if($order->quotation)
-                <a href="{{ route('quotations.show', $order->quotation) }}" class="btn so-download-wide so-secondary-link">View Original Quotation</a>
+                {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a href="{{ route('quotations.show', $order->quotation) }}" class="btn so-download-wide so-secondary-link">View Original Quotation</a>
+@endif{{-- /A7103 --}}
             @endif
         </div>
     </aside>

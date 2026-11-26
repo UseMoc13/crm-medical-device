@@ -8,9 +8,11 @@
         <p>Create a new medical device installation record.</p>
     </div>
 
-    <a href="{{ route('installations.index') }}" class="btn">
+    {{-- A7103:installations.index --}}@if(\App\Support\CrmViewAction::allows('installations.index'))
+<a href="{{ route('installations.index') }}" class="btn">
         &larr; Back to Installations
     </a>
+@endif{{-- /A7103 --}}
 </div>
 
 @if ($errors->any())
@@ -45,7 +47,8 @@
             </div>
         @endif
 
-        <form
+        {{-- A7103:installations.store --}}@if(\App\Support\CrmViewAction::allows('installations.store'))
+<form
             action="{{ route('installations.store') }}"
             method="POST"
         >
@@ -173,9 +176,11 @@
             </div>
 
             <div class="installation-form-actions">
-                <a href="{{ route('installations.index') }}" class="btn">
+                {{-- A7103:installations.index --}}@if(\App\Support\CrmViewAction::allows('installations.index'))
+<a href="{{ route('installations.index') }}" class="btn">
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
                 <button
                     type="submit"
@@ -186,6 +191,7 @@
                 </button>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

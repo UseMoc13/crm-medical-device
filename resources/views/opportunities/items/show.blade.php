@@ -23,15 +23,18 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+<a
             href="{{ route('opportunities.index') }}"
             class="btn"
         >
             ← Back
         </a>
+@endif{{-- /A7103 --}}
 
 
-        <a
+        {{-- A7103:opportunities.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
+<a
             href="{{ route(
                 'opportunities.edit',
                 $opportunity
@@ -40,6 +43,7 @@
         >
             Edit Opportunity
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -579,7 +583,8 @@
             </span>
 
 
-            <a
+            {{-- A7103:opportunities.items.create --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.create'))
+<a
                 href="{{ route(
                     'opportunities.items.create',
                     $opportunity
@@ -588,6 +593,7 @@
             >
                 + Add Item
             </a>
+@endif{{-- /A7103 --}}
 
         </div>
 
@@ -754,7 +760,8 @@
 
                                 <div class="item-actions">
 
-                                    <a
+                                    {{-- A7103:opportunities.items.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.edit'))
+<a
                                         href="{{ route(
                                             'opportunities.items.edit',
                                             [
@@ -766,9 +773,11 @@
                                     >
                                         Edit
                                     </a>
+@endif{{-- /A7103 --}}
 
 
-                                    <form
+                                    {{-- A7103:opportunities.items.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.items.destroy'))
+<form
                                         method="POST"
                                         action="{{ route(
                                             'opportunities.items.destroy',
@@ -795,6 +804,7 @@
                                         </button>
 
                                     </form>
+@endif{{-- /A7103 --}}
 
                                 </div>
 

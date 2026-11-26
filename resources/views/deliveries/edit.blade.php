@@ -12,9 +12,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('deliveries.index') }}" class="btn">
+        {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+<a href="{{ route('deliveries.index') }}" class="btn">
             Back to Deliveries
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -48,7 +50,8 @@
     </div>
 
     <div class="card-body">
-        <form
+        {{-- A7103:deliveries.update --}}@if(\App\Support\CrmViewAction::allows('deliveries.update'))
+<form
             action="{{ route('deliveries.update', $delivery->delivery_id) }}"
             method="POST"
         >
@@ -81,7 +84,9 @@
                     </label>
 
                     <input type="text" value="{{ $delivery->salesOrder->sales_order_number ?? $delivery->sales_order_id }}" readonly>
-                    <a class="delivery-origin-link" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">View Original Sales Order</a>
+                    {{-- A7103:sales-orders.show --}}@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
+<a class="delivery-origin-link" href="{{ route('sales-orders.show', $delivery->sales_order_id) }}">View Original Sales Order</a>
+@endif{{-- /A7103 --}}
 
                     @error('sales_order_id')
                         <small class="field-error">{{ $message }}</small>
@@ -164,15 +169,18 @@
 
             {{-- FORM ACTIONS --}}
             <div class="form-actions">
-                <a href="{{ route('deliveries.index') }}" class="btn">
+                {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+<a href="{{ route('deliveries.index') }}" class="btn">
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
                 <button type="submit" class="btn primary">
                     Save Changes
                 </button>
             </div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

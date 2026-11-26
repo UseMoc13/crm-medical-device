@@ -11,6 +11,7 @@
     $scheduleNotes = old('notes', $isEdit ? $maintenance->notes : ($followupSource ? 'Follow-up required after ' . $followupSource->maintenance_type . ' maintenance (latest result: ' . ($followupSource->records()->orderByDesc('performed_at')->first()?->result ?? 'Unknown') . ').' : ($recurringSource ? 'Next periodic preventive visit after previous completed preventive maintenance.' : '')));
 @endphp
 
+{{-- A7103:maintenance.update --}}@if(\App\Support\CrmViewAction::allows('maintenance.update'))
 <form method="POST" action="{{ $isEdit ? route('maintenance.update', $maintenance->maintenance_schedule_id) : route('maintenance.store') }}" id="maintenanceScheduleForm">
     @csrf
     @if(!$isEdit && $followupSource)
@@ -102,7 +103,9 @@
             </div>
 
             <div class="mt-form-actions">
-                <a href="{{ $isEdit ? route('maintenance.show', $maintenance->maintenance_schedule_id) : route('maintenance.index') }}" class="btn">Cancel</a>
+                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+<a href="{{ $isEdit ? route('maintenance.show', $maintenance->maintenance_schedule_id) : route('maintenance.index') }}" class="btn">Cancel</a>
+@endif{{-- /A7103 --}}
                 <button type="submit" class="btn primary">{{ $isEdit ? 'Save Changes' : 'Create Maintenance Schedule' }}</button>
             </div>
         </div>
@@ -130,6 +133,7 @@
         </aside>
     </div>
 </form>
+@endif{{-- /A7103 --}}
 
 <script>
 (() => {

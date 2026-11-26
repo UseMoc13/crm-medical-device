@@ -3,7 +3,11 @@
 @section('content')
 <div class="page-head">
     <div><h1>Team Details</h1><p>Review the team, its leader, participating users and membership status.</p></div>
-    <div class="actions"><a href="{{ route('teams.index') }}" class="btn">← Back to Teams</a><a href="{{ route('teams.edit', $team) }}" class="btn primary">Edit Team</a></div>
+    <div class="actions">{{-- A7103:teams.index --}}@if(\App\Support\CrmViewAction::allows('teams.index'))
+<a href="{{ route('teams.index') }}" class="btn">← Back to Teams</a>{{-- A7103:teams.edit --}}@if(\App\Support\CrmViewAction::allows('teams.edit'))
+
+@endif{{-- /A7103 --}}<a href="{{ route('teams.edit', $team) }}" class="btn primary">Edit Team</a>
+@endif{{-- /A7103 --}}</div>
 </div>
 <div class="crm-team-detail-grid">
     <div class="card crm-team-panel">
@@ -29,13 +33,17 @@
             <div class="crm-team-security in-card"><span>ⓘ</span><div><strong>Membership ≠ authorization</strong>Adding a user here does not grant access to customers, other people's TO-DO, Activities, or private files.</div></div>
             <p class="crm-team-side-note">Permanent teams require members from one branch. Project teams can include members from different branches. Team Leaders must be selected members.</p>
             @if($team->status === 'archived')
-                <form method="POST" action="{{ route('teams.destroy', $team) }}" data-delete-name="{{ $team->team_name }}">
+                {{-- A7103:teams.destroy --}}@if(\App\Support\CrmViewAction::allows('teams.destroy'))
+<form method="POST" action="{{ route('teams.destroy', $team) }}" data-delete-name="{{ $team->team_name }}">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn crm-team-danger">Delete Archived Team</button>
                 </form>
+@endif{{-- /A7103 --}}
                 <small class="crm-team-muted">This soft-deletes the team from the directory and preserves its history. It cannot be used for new assignments.</small>
             @else
-                <a href="{{ route('teams.edit',$team) }}" class="btn">Archive or Update Team</a>
+                {{-- A7103:teams.edit --}}@if(\App\Support\CrmViewAction::allows('teams.edit'))
+<a href="{{ route('teams.edit',$team) }}" class="btn">Archive or Update Team</a>
+@endif{{-- /A7103 --}}
                 <small class="crm-team-muted">Archive a team before using Delete.</small>
             @endif
         </div>

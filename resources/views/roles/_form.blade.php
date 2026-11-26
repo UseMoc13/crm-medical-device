@@ -184,7 +184,9 @@
                 </aside>
             </div>
         </div>
-        <div class="role-form-footer"><a class="btn" href="{{ $isEdit ? route('roles.show', $role) : route('roles.index') }}">Cancel</a><button class="btn primary" type="submit">{{ $isEdit ? 'Save Changes' : 'Create Role' }}</button></div>
+        <div class="role-form-footer">{{-- A7103:roles.show --}}@if(\App\Support\CrmViewAction::allows('roles.show'))
+<a class="btn" href="{{ $isEdit ? route('roles.show', $role) : route('roles.index') }}">Cancel</a>
+@endif{{-- /A7103 --}}<button class="btn primary" type="submit">{{ $isEdit ? 'Save Changes' : 'Create Role' }}</button></div>
     </div>
 </div>
 @include('roles._style')

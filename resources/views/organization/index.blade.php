@@ -7,8 +7,12 @@
         <p>Configure job reporting levels and direct managers without changing CRM permissions.</p>
     </div>
     <div class="actions">
-        <a href="{{ route('roles.index') }}" class="btn">Manage Roles</a>
-        <a href="{{ route('users.index') }}" class="btn">Manage Users</a>
+        {{-- A7103:roles.index --}}@if(\App\Support\CrmViewAction::allows('roles.index'))
+<a href="{{ route('roles.index') }}" class="btn">Manage Roles</a>
+@endif{{-- /A7103 --}}
+        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+<a href="{{ route('users.index') }}" class="btn">Manage Users</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -60,7 +64,8 @@
                                 @if($protectedRole)
                                     <span class="org-muted">System-managed</span>
                                 @else
-                                    <form id="{{ $formId }}" method="POST" action="{{ route('organization.roles.parent', $role->role_id) }}">
+                                    {{-- A7103:organization.roles.parent --}}@if(\App\Support\CrmViewAction::allows('organization.roles.parent'))
+<form id="{{ $formId }}" method="POST" action="{{ route('organization.roles.parent', $role->role_id) }}">
                                         @csrf @method('PATCH')
                                         <label class="sr-only" for="parent-{{ $role->role_id }}">Parent role for {{ $role->role_name }}</label>
                                         <select id="parent-{{ $role->role_id }}" name="parent_role_id" class="org-select">
@@ -71,6 +76,7 @@
                                             @endforeach
                                         </select>
                                     </form>
+@endif{{-- /A7103 --}}
                                 @endif
                             </td>
                             <td>
@@ -121,7 +127,8 @@
                                 @if($isProtected)
                                     <span class="org-muted">Protected administrator</span>
                                 @else
-                                    <form id="{{ $formId }}" method="POST" action="{{ route('organization.users.manager', $employeeId) }}">
+                                    {{-- A7103:organization.users.manager --}}@if(\App\Support\CrmViewAction::allows('organization.users.manager'))
+<form id="{{ $formId }}" method="POST" action="{{ route('organization.users.manager', $employeeId) }}">
                                         @csrf @method('PATCH')
                                         <label class="sr-only" for="manager-{{ $employeeId }}">Direct manager for {{ $employee->name }}</label>
                                         <select id="manager-{{ $employeeId }}" name="manager_user_id" class="org-select">
@@ -135,6 +142,7 @@
                                         </select>
                                         @if($candidates->isEmpty() && $currentManagerId === '')<small class="org-muted">No eligible manager in the current hierarchy.</small>@endif
                                     </form>
+@endif{{-- /A7103 --}}
                                 @endif
                             </td>
                             <td>@unless($isProtected)<button type="submit" class="btn org-save" form="{{ $formId }}">Save</button>@endunless</td>

@@ -64,9 +64,11 @@
 </div>
 
 <div class="form-actions">
-    <a href="{{ route('warehouses.index') }}" class="btn btn-secondary">
+    {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+<a href="{{ route('warehouses.index') }}" class="btn btn-secondary">
         Batal
     </a>
+@endif{{-- /A7103 --}}
 
     <button type="submit" class="btn btn-primary">
         {{ $warehouse->exists ? 'Simpan Perubahan' : 'Simpan Gudang' }}

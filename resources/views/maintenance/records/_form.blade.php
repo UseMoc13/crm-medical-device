@@ -14,6 +14,7 @@
     );
 @endphp
 
+{{-- A7103:maintenance.records.update --}}@if(\App\Support\CrmViewAction::allows('maintenance.records.update'))
 <form
     method="POST"
     action="{{ $isEdit
@@ -170,12 +171,14 @@
             @endif
 
             <div class="mt-form-actions">
-                <a
+                {{-- A7103:maintenance.show --}}@if(\App\Support\CrmViewAction::allows('maintenance.show'))
+<a
                     href="{{ route('maintenance.show', $maintenance->maintenance_schedule_id) }}"
                     class="btn"
                 >
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
                 <button type="submit" class="btn primary">
                     {{ $isEdit ? 'Save Changes' : 'Save Record' }}
@@ -233,3 +236,4 @@
 
     </div>
 </form>
+@endif{{-- /A7103 --}}

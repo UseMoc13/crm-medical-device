@@ -12,9 +12,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('deliveries.index') }}" class="btn">
+        {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+<a href="{{ route('deliveries.index') }}" class="btn">
             ← Back to Deliveries
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -54,7 +56,8 @@
 
     <div class="card-body">
 
-        <form action="{{ route('deliveries.store') }}" method="POST">
+        {{-- A7103:deliveries.store --}}@if(\App\Support\CrmViewAction::allows('deliveries.store'))
+<form action="{{ route('deliveries.store') }}" method="POST">
             @csrf
 
             {{-- SECTION 1: GENERAL INFORMATION --}}
@@ -234,12 +237,14 @@
 
             {{-- FORM ACTIONS --}}
             <div class="form-actions">
-                <a
+                {{-- A7103:deliveries.index --}}@if(\App\Support\CrmViewAction::allows('deliveries.index'))
+<a
                     href="{{ route('deliveries.index') }}"
                     class="btn"
                 >
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
                 <button
                     type="submit"
@@ -251,6 +256,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

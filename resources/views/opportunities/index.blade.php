@@ -39,11 +39,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:opportunities.create --}}@if(\App\Support\CrmViewAction::allows('opportunities.create'))
+<a
             href="{{ route('opportunities.create') }}"
             class="btn primary">
             + New Opportunity
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -85,7 +87,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+<form
             method="GET"
             action="{{ route('opportunities.index') }}"
             class="opportunity-filter-bar">
@@ -110,7 +113,8 @@
 
                 @if(request('search'))
 
-                <a
+                {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+<a
                     href="{{ route(
                             'opportunities.index',
                             request()->except(
@@ -122,6 +126,7 @@
                     title="Clear search">
                     ×
                 </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -346,15 +351,18 @@
             'direction'
             ]))
 
-            <a
+            {{-- A7103:opportunities.index --}}@if(\App\Support\CrmViewAction::allows('opportunities.index'))
+<a
                 href="{{ route('opportunities.index') }}"
                 class="btn opportunity-reset-button">
                 Reset
             </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -516,7 +524,8 @@
                         </td>
                         <td>
 
-                            <a
+                            {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+<a
                                 href="{{ route(
                                     'opportunities.show',
                                     $opportunity
@@ -528,6 +537,7 @@
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="muted">
@@ -714,7 +724,8 @@
 
                         <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+<a
                                         href="{{ route('opportunities.show', $opportunity->opportunity_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -725,8 +736,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:opportunities.edit --}}@if(\App\Support\CrmViewAction::allows('opportunities.edit'))
+<a
                                         href="{{ route('opportunities.edit', $opportunity->opportunity_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -737,8 +750,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:opportunities.destroy --}}@if(\App\Support\CrmViewAction::allows('opportunities.destroy'))
+<form
                                         action="{{ route('opportunities.destroy', $opportunity->opportunity_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this Opportunity?')"
@@ -760,6 +775,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
 

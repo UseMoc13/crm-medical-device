@@ -15,9 +15,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('warehouses.index') }}" class="btn">
+        {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+<a href="{{ route('warehouses.index') }}" class="btn">
             ← Back to Warehouses
         </a>
+@endif{{-- /A7103 --}}
     </div>
 
 </div>
@@ -53,7 +55,8 @@
 
     <div class="card-body warehouse-create-body">
 
-        <form
+        {{-- A7103:warehouses.store --}}@if(\App\Support\CrmViewAction::allows('warehouses.store'))
+<form
             method="POST"
             action="{{ route('warehouses.store') }}"
             id="warehouseCreateForm">
@@ -224,11 +227,13 @@
 
                     <div class="warehouse-form-actions">
 
-                        <a
+                        {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+<a
                             href="{{ route('warehouses.index') }}"
                             class="btn">
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -401,6 +406,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

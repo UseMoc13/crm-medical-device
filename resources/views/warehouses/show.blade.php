@@ -35,15 +35,19 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('warehouses.index') }}" class="btn">
+        {{-- A7103:warehouses.index --}}@if(\App\Support\CrmViewAction::allows('warehouses.index'))
+<a href="{{ route('warehouses.index') }}" class="btn">
             &larr; Back to Warehouses
         </a>
+@endif{{-- /A7103 --}}
 
-        <a
+        {{-- A7103:warehouses.edit --}}@if(\App\Support\CrmViewAction::allows('warehouses.edit'))
+<a
             href="{{ route('warehouses.edit', $warehouse->warehouse_id) }}"
             class="btn primary">
             Edit Warehouse
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

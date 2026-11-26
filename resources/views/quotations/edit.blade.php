@@ -18,12 +18,14 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a
             href="{{ route('quotations.show', $quotation) }}"
             class="btn"
         >
             ← Back to Quotation
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -95,7 +97,8 @@
 
     <div class="card-body">
 
-        <form
+        {{-- A7103:quotations.update --}}@if(\App\Support\CrmViewAction::allows('quotations.update'))
+<form
             method="POST"
             action="{{ route('quotations.update', $quotation) }}"
             id="quotationEditForm"
@@ -576,12 +579,14 @@
 
                     <div class="form-actions">
 
-                        <a
+                        {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a
                             href="{{ route('quotations.show', $quotation) }}"
                             class="btn"
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
                         <button
                             type="submit"
@@ -815,6 +820,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

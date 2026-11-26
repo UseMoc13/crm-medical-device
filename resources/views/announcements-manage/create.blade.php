@@ -10,7 +10,9 @@
         <p>Create, format, preview, and configure a company announcement before publishing.</p>
     </div>
     <div class="actions">
-        <a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
+        {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index') }}" class="btn">← Back</a>
+@endif{{-- /A7103 --}}
         <button type="button" class="btn primary" id="openPreviewTop">Preview Announcement</button>
     </div>
 </div>
@@ -27,7 +29,8 @@
 @endif
 
 <div class="announcement-create-layout">
-    <form method="POST" action="{{ route('announcement-management.store') }}" enctype="multipart/form-data" id="announcementCreateForm">
+    {{-- A7103:announcement-management.store --}}@if(\App\Support\CrmViewAction::allows('announcement-management.store'))
+<form method="POST" action="{{ route('announcement-management.store') }}" enctype="multipart/form-data" id="announcementCreateForm">
         @csrf
 
         <div class="card announcement-form-card">
@@ -447,13 +450,16 @@
                 </section>
 
                 <div class="form-actions">
-                    <a href="{{ route('announcement-management.index') }}" class="btn">Cancel</a>
+                    {{-- A7103:announcement-management.index --}}@if(\App\Support\CrmViewAction::allows('announcement-management.index'))
+<a href="{{ route('announcement-management.index') }}" class="btn">Cancel</a>
+@endif{{-- /A7103 --}}
                     <button type="button" class="btn" id="openPreviewBottom">Preview as Reader</button>
                     <button type="submit" class="btn primary" id="submitAnnouncementButton">Save as Draft</button>
                 </div>
             </div>
         </div>
     </form>
+@endif{{-- /A7103 --}}
 
     <aside class="announcement-side-panel">
         <div class="side-panel-card">

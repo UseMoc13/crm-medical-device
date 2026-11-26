@@ -17,14 +17,18 @@ $previewProducts = $products->take(5);
     </div>
 
     <div class="actions">
-        <a href="{{ route('brands.index') }}" class="btn">
+        {{-- A7103:brands.index --}}@if(\App\Support\CrmViewAction::allows('brands.index'))
+<a href="{{ route('brands.index') }}" class="btn">
             <span aria-hidden="true">&larr;</span>
             Back to Brands
         </a>
+@endif{{-- /A7103 --}}
 
-        <a href="{{ route('brands.edit', $brand) }}" class="btn primary">
+        {{-- A7103:brands.edit --}}@if(\App\Support\CrmViewAction::allows('brands.edit'))
+<a href="{{ route('brands.edit', $brand) }}" class="btn primary">
             Edit Brand
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -144,12 +148,14 @@ $previewProducts = $products->take(5);
                 </div>
             </div>
 
-            <a
+            {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+<a
                 href="{{ route('products.create') }}"
                 class="btn primary brand-create-button">
                 <span aria-hidden="true">+</span>
                 Create New Product
             </a>
+@endif{{-- /A7103 --}}
         </div>
     </section>
 </div>
@@ -238,12 +244,14 @@ $previewProducts = $products->take(5);
                     <tr>
                         <td>
                             <div class="product-name-cell">
-                                <a
+                                {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a
                                     href="{{ route('products.show', $product) }}"
                                     class="product-name"
                                     title="{{ $product->product_name }}">
                                     {{ $product->product_name ?: 'Unnamed Product' }}
                                 </a>
+@endif{{-- /A7103 --}}
 
                                 <span class="product-id">
                                     {{ $product->product_id }}
@@ -293,12 +301,14 @@ $previewProducts = $products->take(5);
                         </td>
 
                         <td>
-                            <a
+                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a
                                 href="{{ route('products.show', $product) }}"
                                 class="action-btn view"
                                 title="View product details">
                                 View <span aria-hidden="true">&rarr;</span>
                             </a>
+@endif{{-- /A7103 --}}
                         </td>
                     </tr>
                     @endforeach
@@ -342,9 +352,11 @@ $previewProducts = $products->take(5);
             <h4>No Products Found</h4>
             <p>There are currently no products associated with this brand.</p>
 
-            <a href="{{ route('products.index') }}" class="btn">
+            {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+<a href="{{ route('products.index') }}" class="btn">
                 Browse Products
             </a>
+@endif{{-- /A7103 --}}
         </div>
         @endif
     </div>
@@ -496,12 +508,14 @@ $previewProducts = $products->take(5);
                         </td>
 
                         <td>
-                            <a
+                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a
                                 href="{{ route('products.show', $product) }}"
                                 class="action-btn view"
                                 title="View product details">
                                 View <span aria-hidden="true">&rarr;</span>
                             </a>
+@endif{{-- /A7103 --}}
                         </td>
                     </tr>
                     @endforeach

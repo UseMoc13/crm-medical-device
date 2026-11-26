@@ -19,12 +19,14 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+<a
             href="{{ route('quotations.index') }}"
             class="btn"
         >
             ← Back to Quotations
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -74,7 +76,8 @@
     <div class="card-body quotation-create-body">
 
 
-        <form
+        {{-- A7103:quotations.store --}}@if(\App\Support\CrmViewAction::allows('quotations.store'))
+<form
             method="POST"
             action="{{ route('quotations.store') }}"
             id="quotationCreateForm"
@@ -655,12 +658,14 @@
 
                     <div class="form-actions">
 
-                        <a
+                        {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+<a
                             href="{{ route('quotations.index') }}"
                             class="btn"
                         >
                             Cancel
                         </a>
+@endif{{-- /A7103 --}}
 
 
                         <button
@@ -968,6 +973,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

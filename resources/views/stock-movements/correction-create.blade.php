@@ -25,9 +25,11 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('stock-movements.index') }}" class="btn">
+        {{-- A7103:stock-movements.index --}}@if(\App\Support\CrmViewAction::allows('stock-movements.index'))
+<a href="{{ route('stock-movements.index') }}" class="btn">
             &larr; Back to Stock Movements
         </a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -57,7 +59,8 @@
         </div>
 
         <div class="card-body">
-            <form method="GET" action="{{ route('stock-movements.correction.create') }}" class="sm-correction-filter-form">
+            {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<form method="GET" action="{{ route('stock-movements.correction.create') }}" class="sm-correction-filter-form">
                 <div class="sm-filter-search">
                     <label for="search">Search</label>
                     <input
@@ -102,10 +105,13 @@
                 </div>
 
                 <div class="sm-filter-actions">
-                    <a href="{{ route('stock-movements.correction.create') }}" class="btn">Reset Filters</a>
+                    {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a href="{{ route('stock-movements.correction.create') }}" class="btn">Reset Filters</a>
+@endif{{-- /A7103 --}}
                     <button type="submit" class="btn primary">Search Transactions</button>
                 </div>
             </form>
+@endif{{-- /A7103 --}}
         </div>
     </section>
 
@@ -177,11 +183,13 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <a
+                                        {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a
                                             href="{{ route('stock-movements.correction.create', ['stock_movement_id' => $movement->stock_movement_id]) }}"
                                             class="btn primary sm-select-button">
                                             Select Movement
                                         </a>
+@endif{{-- /A7103 --}}
                                     </td>
                                 </tr>
                             @endforeach
@@ -200,9 +208,11 @@
                         No transactions match your current search and filters.
                         Try changing your search terms or resetting the filters.
                     </p>
-                    <a href="{{ route('stock-movements.correction.create') }}" class="btn">
+                    {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a href="{{ route('stock-movements.correction.create') }}" class="btn">
                         Reset Filters
                     </a>
+@endif{{-- /A7103 --}}
                 </div>
             @endif
         </div>
@@ -260,7 +270,8 @@
                         </div>
                     </div>
 
-                    <form
+                    {{-- A7103:stock-movements.correction.store --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.store'))
+<form
                         method="POST"
                         action="{{ route('stock-movements.correction.store', $selectedMovement->stock_movement_id) }}"
                         id="stockMovementCorrectionForm">
@@ -377,12 +388,15 @@
                         </div>
 
                         <div class="sm-form-actions">
-                            <a href="{{ route('stock-movements.correction.create') }}" class="btn">Choose Another Transaction</a>
+                            {{-- A7103:stock-movements.correction.create --}}@if(\App\Support\CrmViewAction::allows('stock-movements.correction.create'))
+<a href="{{ route('stock-movements.correction.create') }}" class="btn">Choose Another Transaction</a>
+@endif{{-- /A7103 --}}
                             <button type="submit" class="btn primary" id="submitCorrectionButton">
                                 Submit Correction
                             </button>
                         </div>
                     </form>
+@endif{{-- /A7103 --}}
                 </div>
 
                 <aside class="sm-correction-preview">

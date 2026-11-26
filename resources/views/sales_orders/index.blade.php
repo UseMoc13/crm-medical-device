@@ -24,7 +24,8 @@
         </div>
     </div>
     <div class="so-filter-wrap">
-        <form action="{{ route('sales_orders.index') }}" method="GET" class="so-filter">
+        {{-- A7103:sales_orders.index --}}@if(\App\Support\CrmViewAction::allows('sales_orders.index'))
+<form action="{{ route('sales_orders.index') }}" method="GET" class="so-filter">
             <input type="search" name="search" value="{{ request('search') }}" placeholder="Search sales order or quotation..." aria-label="Search sales orders">
             <select name="status" aria-label="Filter order status">
                 <option value="">All Statuses</option>
@@ -33,8 +34,11 @@
                 @endforeach
             </select>
             <button type="submit" class="btn primary">Search</button>
-            <a class="btn" href="{{ route('sales_orders.index') }}">Reset</a>
+            {{-- A7103:sales_orders.index --}}@if(\App\Support\CrmViewAction::allows('sales_orders.index'))
+<a class="btn" href="{{ route('sales_orders.index') }}">Reset</a>
+@endif{{-- /A7103 --}}
         </form>
+@endif{{-- /A7103 --}}
     </div>
     <div class="so-table-scroll">
         <table class="so-table">
@@ -54,10 +58,14 @@
                 @forelse($orders as $order)
                     <tr>
                         <td>{{ $orders->firstItem() + $loop->index }}</td>
-                        <td><a class="so-strong-link" href="{{ route('sales-orders.show', $order) }}">{{ $order->sales_order_number }}</a></td>
+                        <td>{{-- A7103:sales-orders.show --}}@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
+<a class="so-strong-link" href="{{ route('sales-orders.show', $order) }}">{{ $order->sales_order_number }}</a>
+@endif{{-- /A7103 --}}</td>
                         <td>
                             @if($order->quotation)
-                                <a class="so-text-link" href="{{ route('quotations.show', $order->quotation) }}" title="Open original quotation">{{ $order->quotation->quotation_number }} <span aria-hidden="true">↗</span></a>
+                                {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a class="so-text-link" href="{{ route('quotations.show', $order->quotation) }}" title="Open original quotation">{{ $order->quotation->quotation_number }} <span aria-hidden="true">↗</span></a>
+@endif{{-- /A7103 --}}
                             @else
                                 <span class="so-muted">-</span>
                             @endif
@@ -68,8 +76,12 @@
                         <td><span class="so-status so-status-{{ strtolower((string)($order->status ?? 'draft')) }}">{{ ucfirst(str_replace('_', ' ', $order->status ?? 'draft')) }}</span></td>
                         <td>
                             <div class="so-actions">
-                                <a class="so-action" href="{{ route('sales-orders.show', $order) }}" title="View sales order">View</a>
-                                <a class="so-action" href="{{ route('sales-orders.download', $order) }}" title="Download PDF sales order">Download</a>
+                                {{-- A7103:sales-orders.show --}}@if(\App\Support\CrmViewAction::allows('sales-orders.show'))
+<a class="so-action" href="{{ route('sales-orders.show', $order) }}" title="View sales order">View</a>
+@endif{{-- /A7103 --}}
+                                {{-- A7103:sales-orders.download --}}@if(\App\Support\CrmViewAction::allows('sales-orders.download'))
+<a class="so-action" href="{{ route('sales-orders.download', $order) }}" title="Download PDF sales order">Download</a>
+@endif{{-- /A7103 --}}
                             </div>
                         </td>
                     </tr>
@@ -91,13 +103,15 @@
             <div><h3 id="soExportTitle">Export Sales Orders</h3><p>Download the current search and status-filtered results.</p></div>
             <button type="button" class="so-export-close" id="closeSoExport" aria-label="Close">&times;</button>
         </div>
-        <form action="{{ route('sales-orders.export') }}" method="GET" id="soExportForm">
+        {{-- A7103:sales-orders.export --}}@if(\App\Support\CrmViewAction::allows('sales-orders.export'))
+<form action="{{ route('sales-orders.export') }}" method="GET" id="soExportForm">
             <input type="hidden" name="search" value="{{ request('search') }}">
             <input type="hidden" name="status" value="{{ request('status') }}">
             <label class="so-export-option"><input type="radio" name="format" value="pdf" checked><span><strong>PDF Report</strong><small>Formatted document with summary, tables, totals, and pagination. Maximum 2,000 records.</small></span></label>
             <label class="so-export-option"><input type="radio" name="format" value="csv"><span><strong>CSV Data (Excel compatible)</strong><small>Complete matching records with raw numbers for spreadsheet analysis.</small></span></label>
             <div class="so-export-actions"><button type="button" class="btn" id="cancelSoExport">Cancel</button><button type="submit" class="btn primary">Download File</button></div>
         </form>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 <script>

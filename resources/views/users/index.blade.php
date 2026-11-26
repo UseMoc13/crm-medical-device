@@ -19,15 +19,19 @@
 
     <div class="actions">
         @if(auth()->check() && app(\App\Services\CrmPermissionResolver::class)->isSuperAdmin(auth()->user()))
-            <a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
+            {{-- A7103:organization.index --}}@if(\App\Support\CrmViewAction::allows('organization.index'))
+<a href="{{ route('organization.index') }}" class="btn">Organization Structure</a>
+@endif{{-- /A7103 --}}
         @endif
 
-        <a
+        {{-- A7103:users.create --}}@if(\App\Support\CrmViewAction::allows('users.create'))
+<a
             href="{{ route('users.create') }}"
             class="btn primary"
         >
             + New User
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -80,7 +84,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+<form
             method="GET"
             action="{{ route('users.index') }}"
             class="user-filter-bar"
@@ -107,7 +112,8 @@
 
                 @if(request('search'))
 
-                    <a
+                    {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+<a
                         href="{{ route(
                             'users.index',
                             request()->except(
@@ -120,6 +126,7 @@
                     >
                         ×
                     </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -280,16 +287,19 @@
                 'direction'
             ]))
 
-                <a
+                {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+<a
                     href="{{ route('users.index') }}"
                     class="btn user-reset-button"
                 >
                     Reset
                 </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -436,7 +446,8 @@
 
                                 <div class="user-table-info">
 
-                                    <a
+                                    {{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+<a
                                         href="{{ route(
                                             'users.show',
                                             $user
@@ -449,6 +460,7 @@
                                         </strong>
 
                                     </a>
+@endif{{-- /A7103 --}}
 
 
                                     <span>
@@ -583,7 +595,8 @@
 
                                 {{-- View --}}
 
-                                <a
+                                {{-- A7103:users.show --}}@if(\App\Support\CrmViewAction::allows('users.show'))
+<a
                                     href="{{ route(
                                         'users.show',
                                         $user
@@ -594,11 +607,13 @@
                                 >
                                     👁
                                 </a>
+@endif{{-- /A7103 --}}
 
 
                                 {{-- Edit --}}
 
-                                <a
+                                {{-- A7103:users.edit --}}@if(\App\Support\CrmViewAction::allows('users.edit'))
+<a
                                     href="{{ route(
                                         'users.edit',
                                         $user
@@ -609,11 +624,13 @@
                                 >
                                     ✎
                                 </a>
+@endif{{-- /A7103 --}}
 
 
                                 {{-- Delete --}}
 
-                                <form
+                                {{-- A7103:users.destroy --}}@if(\App\Support\CrmViewAction::allows('users.destroy'))
+<form
                                     action="{{ route(
                                         'users.destroy',
                                         $user
@@ -638,6 +655,7 @@
                                     </button>
 
                                 </form>
+@endif{{-- /A7103 --}}
 
                             </div>
 

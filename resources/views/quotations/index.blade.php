@@ -19,12 +19,14 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:quotations.create --}}@if(\App\Support\CrmViewAction::allows('quotations.create'))
+<a
             href="{{ route('quotations.create') }}"
             class="btn primary"
         >
             + New Quotation
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -77,7 +79,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+<form
             method="GET"
             action="{{ route('quotations.index') }}"
             class="quotation-filter-bar"
@@ -104,7 +107,8 @@
 
                 @if(request('search'))
 
-                    <a
+                    {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+<a
                         href="{{ route(
                             'quotations.index',
                             request()->except(
@@ -117,6 +121,7 @@
                     >
                         ×
                     </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -296,16 +301,19 @@
                 'direction'
             ]))
 
-                <a
+                {{-- A7103:quotations.index --}}@if(\App\Support\CrmViewAction::allows('quotations.index'))
+<a
                     href="{{ route('quotations.index') }}"
                     class="btn quotation-reset-button"
                 >
                     Reset
                 </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -423,7 +431,8 @@
 
                         <td>
 
-                            <a
+                            {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a
                                 href="{{ route(
                                     'quotations.show',
                                     $quotation
@@ -436,6 +445,7 @@
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="muted">
@@ -457,7 +467,8 @@
 
                             @if($quotation->opportunity)
 
-                                <a
+                                {{-- A7103:opportunities.show --}}@if(\App\Support\CrmViewAction::allows('opportunities.show'))
+<a
                                     href="{{ route(
                                         'opportunities.show',
                                         $quotation->opportunity
@@ -470,6 +481,7 @@
                                     </strong>
 
                                 </a>
+@endif{{-- /A7103 --}}
 
 
                                 <div class="muted">
@@ -597,7 +609,8 @@
                             <div class="table-actions">
 
                                 {{-- VIEW --}}
-                                <a
+                                {{-- A7103:quotations.show --}}@if(\App\Support\CrmViewAction::allows('quotations.show'))
+<a
                                     href="{{ route('quotations.show', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn view"
                                     title="View"
@@ -608,9 +621,11 @@
                                         <circle cx="12" cy="12" r="3"/>
                                     </svg>
                                 </a>
+@endif{{-- /A7103 --}}
 
                                 {{-- EDIT --}}
-                                <a
+                                {{-- A7103:quotations.edit --}}@if(\App\Support\CrmViewAction::allows('quotations.edit'))
+<a
                                     href="{{ route('quotations.edit', ['quotation' => $quotation->getRouteKey()]) }}"
                                     class="action-btn edit"
                                     title="Edit"
@@ -621,9 +636,11 @@
                                         <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                     </svg>
                                 </a>
+@endif{{-- /A7103 --}}
 
                                 {{-- DELETE --}}
-                                <form
+                                {{-- A7103:quotations.destroy --}}@if(\App\Support\CrmViewAction::allows('quotations.destroy'))
+<form
                                     action="{{ route('quotations.destroy', ['quotation' => $quotation->getRouteKey()]) }}"
                                     method="POST"
                                     onsubmit="return confirm('Are you sure you want to delete this quotation?')"
@@ -645,6 +662,7 @@
                                         </svg>
                                     </button>
                                 </form>
+@endif{{-- /A7103 --}}
 
                             </div>
                         </td>
@@ -664,7 +682,8 @@
                                     {{ $existingSalesOrder->sales_order_number }}
                                 </span>
                             @elseif (strtolower(trim($quotation->status ?? '')) === 'approved')
-                                <form
+                                {{-- A7103:sales_orders.from_quotation --}}@if(\App\Support\CrmViewAction::allows('sales_orders.from_quotation'))
+<form
                                     method="POST"
                                     action="{{ route('sales_orders.from_quotation', $quotation->quotation_id) }}"
                                     data-sales-order-create-form
@@ -675,6 +694,7 @@
                                         Buat Sales Order
                                     </button>
                                 </form>
+@endif{{-- /A7103 --}}
                             @elseif (strtolower(trim($quotation->status ?? '')) === 'rejected')
                                 <span class="quotation-status-badge quotation-status-rejected">Rejected - No Sales Order</span>
                             @elseif (in_array(strtolower(trim($quotation->status ?? '')), ['cancelled', 'expired'], true))

@@ -11,7 +11,9 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="btn">← Back to Invoice</a>
+        {{-- A7103:invoices.show --}}@if(\App\Support\CrmViewAction::allows('invoices.show'))
+<a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="btn">← Back to Invoice</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 

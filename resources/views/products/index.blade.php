@@ -19,11 +19,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:products.create --}}@if(\App\Support\CrmViewAction::allows('products.create'))
+<a
             href="{{ route('products.create') }}"
             class="btn primary">
             + New Product
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -107,7 +109,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+<form
             method="GET"
             action="{{ route('products.index') }}"
             class="product-filter-bar">
@@ -132,7 +135,8 @@
 
                 @if(request('search'))
 
-                <a
+                {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+<a
                     href="{{ route(
                             'products.index',
                             request()->except(
@@ -144,6 +148,7 @@
                     title="Clear search">
                     ×
                 </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -283,15 +288,18 @@
             'status'
             ]))
 
-            <a
+            {{-- A7103:products.index --}}@if(\App\Support\CrmViewAction::allows('products.index'))
+<a
                 href="{{ route('products.index') }}"
                 class="btn product-reset-button">
                 Reset
             </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -454,7 +462,8 @@
 
                         <td>
 
-                            <a
+                            {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a
                                 href="{{ route(
                                     'products.show',
                                     $product
@@ -466,6 +475,7 @@
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="muted">
@@ -635,7 +645,8 @@
 
                         <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:products.show --}}@if(\App\Support\CrmViewAction::allows('products.show'))
+<a
                                         href="{{ route('products.show', $product->product_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -646,8 +657,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:products.edit --}}@if(\App\Support\CrmViewAction::allows('products.edit'))
+<a
                                         href="{{ route('products.edit', $product->product_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -658,8 +671,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:products.destroy --}}@if(\App\Support\CrmViewAction::allows('products.destroy'))
+<form
                                         action="{{ route('products.destroy', $product->product_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this Product?')"
@@ -681,6 +696,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
 

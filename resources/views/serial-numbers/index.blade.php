@@ -92,7 +92,8 @@
                 >
 
                 @if(request('search'))
-                <a
+                {{-- A7103:serial-numbers.index --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.index'))
+<a
                     href="{{ route('serial-numbers.index', request()->except('search', 'page')) }}"
                     class="serial-search-clear"
                     title="Clear search"
@@ -100,6 +101,7 @@
                 >
                 
                 </a>
+@endif{{-- /A7103 --}}
                 @endif
 
             </div>
@@ -443,7 +445,8 @@
 
                             <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:serial-numbers.show --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.show'))
+<a
                                         href="{{ route('serial-numbers.show', $serial->serial_number_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -454,8 +457,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:serial-numbers.edit --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.edit'))
+<a
                                         href="{{ route('serial-numbers.edit', $serial->serial_number_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -466,8 +471,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:serial-numbers.destroy --}}@if(\App\Support\CrmViewAction::allows('serial-numbers.destroy'))
+<form
                                         action="{{ route('serial-numbers.destroy', $serial->serial_number_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this warranty?')"
@@ -489,6 +496,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
 

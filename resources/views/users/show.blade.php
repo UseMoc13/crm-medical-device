@@ -19,20 +19,24 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:users.index --}}@if(\App\Support\CrmViewAction::allows('users.index'))
+<a
             href="{{ route('users.index') }}"
             class="btn"
         >
             ← Back to Users
         </a>
+@endif{{-- /A7103 --}}
 
 
-        <a
+        {{-- A7103:users.edit --}}@if(\App\Support\CrmViewAction::allows('users.edit'))
+<a
             href="{{ route('users.edit', $user) }}"
             class="btn primary"
         >
             ✎ Edit User
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 

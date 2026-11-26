@@ -26,14 +26,18 @@
     </div>
 
     <div class="actions">
-        <a href="{{ route('invoices.index') }}" class="btn">&larr; Back to Invoices</a>
+        {{-- A7103:invoices.index --}}@if(\App\Support\CrmViewAction::allows('invoices.index'))
+<a href="{{ route('invoices.index') }}" class="btn">&larr; Back to Invoices</a>
+@endif{{-- /A7103 --}}
 
         <button type="button" class="btn" onclick="window.print()">Print</button>
 
         @if($canEdit)
-            <a href="{{ route('invoices.edit', $invoice->invoice_id) }}" class="btn primary">
+            {{-- A7103:invoices.edit --}}@if(\App\Support\CrmViewAction::allows('invoices.edit'))
+<a href="{{ route('invoices.edit', $invoice->invoice_id) }}" class="btn primary">
                 Edit Invoice
             </a>
+@endif{{-- /A7103 --}}
         @endif
     </div>
 </div>
@@ -67,7 +71,8 @@
         <div class="inv-status-actions">
 
             @foreach($transitions as $target)
-                <form
+                {{-- A7103:invoices.status --}}@if(\App\Support\CrmViewAction::allows('invoices.status'))
+<form
                     method="POST"
                     action="{{ route('invoices.status', $invoice->invoice_id) }}"
                     @if($target === 'Cancelled')
@@ -93,10 +98,12 @@
                         @endswitch
                     </button>
                 </form>
+@endif{{-- /A7103 --}}
             @endforeach
 
             @if($canDelete)
-                <form
+                {{-- A7103:invoices.destroy --}}@if(\App\Support\CrmViewAction::allows('invoices.destroy'))
+<form
                     method="POST"
                     action="{{ route('invoices.destroy', $invoice->invoice_id) }}"
                     onsubmit="return confirm('Delete this invoice and all of its items?')"
@@ -105,6 +112,7 @@
                     @method('DELETE')
                     <button type="submit" class="inv-btn-sm danger">Delete</button>
                 </form>
+@endif{{-- /A7103 --}}
             @endif
 
             @if(!count($transitions) && !$canDelete)

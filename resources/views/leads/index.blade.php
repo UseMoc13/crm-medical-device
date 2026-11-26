@@ -19,12 +19,14 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:leads.create --}}@if(\App\Support\CrmViewAction::allows('leads.create'))
+<a
             href="{{ route('leads.create') }}"
             class="btn primary"
         >
             + New Lead
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -66,7 +68,8 @@
              FILTER BAR
         ====================================================== --}}
 
-        <form
+        {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+<form
             method="GET"
             action="{{ route('leads.index') }}"
             class="lead-filter-bar"
@@ -93,7 +96,8 @@
 
                 @if(request('search'))
 
-                    <a
+                    {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+<a
                         href="{{ route(
                             'leads.index',
                             request()->except(
@@ -106,6 +110,7 @@
                     >
                         ×
                     </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -336,16 +341,19 @@
                 'direction'
             ]))
 
-                <a
+                {{-- A7103:leads.index --}}@if(\App\Support\CrmViewAction::allows('leads.index'))
+<a
                     href="{{ route('leads.index') }}"
                     class="btn lead-reset-button"
                 >
                     Reset
                 </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -495,7 +503,8 @@
 
                         <td>
 
-                            <a
+                            {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+<a
                                 href="{{ route(
                                     'leads.show',
                                     $lead
@@ -508,6 +517,7 @@
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="muted">
@@ -670,7 +680,8 @@
 
                         <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+<a
                                         href="{{ route('leads.show', $lead->lead_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -681,8 +692,10 @@
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:leads.edit --}}@if(\App\Support\CrmViewAction::allows('leads.edit'))
+<a
                                         href="{{ route('leads.edit', $lead->lead_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -693,8 +706,10 @@
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:leads.destroy --}}@if(\App\Support\CrmViewAction::allows('leads.destroy'))
+<form
                                         action="{{ route('leads.destroy', $lead->lead_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this Leads?')"
@@ -716,6 +731,7 @@
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
                     </tr>

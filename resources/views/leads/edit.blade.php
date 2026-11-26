@@ -18,11 +18,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+<a
             href="{{ route('leads.show', $lead) }}"
             class="btn">
             Back to Lead
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -76,7 +78,8 @@
 
     <div class="card-body">
 
-        <form
+        {{-- A7103:leads.update --}}@if(\App\Support\CrmViewAction::allows('leads.update'))
+<form
             method="POST"
             action="{{ route('leads.update', $lead) }}">
 
@@ -416,11 +419,13 @@
 
             <div class="form-actions">
 
-                <a
+                {{-- A7103:leads.show --}}@if(\App\Support\CrmViewAction::allows('leads.show'))
+<a
                     href="{{ route('leads.show', $lead) }}"
                     class="btn">
                     Cancel
                 </a>
+@endif{{-- /A7103 --}}
 
 
                 <button
@@ -432,6 +437,7 @@
             </div>
 
         </form>
+@endif{{-- /A7103 --}}
 
     </div>
 

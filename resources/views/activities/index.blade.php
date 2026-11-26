@@ -10,8 +10,12 @@
         <p>Manage customer interactions, follow-ups, meetings, and other CRM activities.</p>
     </div>
     <div class="actions">
-        <a href="{{ route('activities.shared') }}" class="btn">Shared with Me</a>
-        <a href="{{ route('activities.create') }}" class="btn primary">+ New Activity</a>
+        {{-- A7103:activities.shared --}}@if(\App\Support\CrmViewAction::allows('activities.shared'))
+<a href="{{ route('activities.shared') }}" class="btn">Shared with Me</a>
+@endif{{-- /A7103 --}}
+        {{-- A7103:activities.create --}}@if(\App\Support\CrmViewAction::allows('activities.create'))
+<a href="{{ route('activities.create') }}" class="btn primary">+ New Activity</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 
@@ -23,12 +27,15 @@
         </div>
     </div>
     <div class="card-body">
-        <form method="GET" action="{{ route('activities.index') }}" class="activity-list-filter" role="search">
+        {{-- A7103:activities.index --}}@if(\App\Support\CrmViewAction::allows('activities.index'))
+<form method="GET" action="{{ route('activities.index') }}" class="activity-list-filter" role="search">
             <div class="activity-list-search">
                 <span class="activity-search-icon" aria-hidden="true">⌕</span>
                 <input type="search" name="search" value="{{ request('search') }}" placeholder="Search subject or description..." aria-label="Search activities" maxlength="150" autocomplete="off">
                 @if(request('search'))
-                    <a href="{{ route('activities.index', request()->except('search', 'page')) }}" class="activity-search-clear" aria-label="Clear search" title="Clear search">×</a>
+                    {{-- A7103:activities.index --}}@if(\App\Support\CrmViewAction::allows('activities.index'))
+<a href="{{ route('activities.index', request()->except('search', 'page')) }}" class="activity-search-clear" aria-label="Clear search" title="Clear search">×</a>
+@endif{{-- /A7103 --}}
                 @endif
             </div>
             <div class="activity-filter-select">
@@ -49,9 +56,12 @@
             </div>
             <button type="submit" class="btn activity-filter-button">Filter</button>
             @if(request()->hasAny(['search', 'type', 'from', 'to']))
-                <a class="btn activity-reset-button" href="{{ route('activities.index') }}">Reset</a>
+                {{-- A7103:activities.index --}}@if(\App\Support\CrmViewAction::allows('activities.index'))
+<a class="btn activity-reset-button" href="{{ route('activities.index') }}">Reset</a>
+@endif{{-- /A7103 --}}
             @endif
         </form>
+@endif{{-- /A7103 --}}
 
         @if(request()->filled('search') || request()->filled('type') || request()->filled('from') || request()->filled('to'))
             <div class="activity-list-filter-summary">
@@ -89,7 +99,9 @@
                     <tr>
                         <td class="activity-col-no">{{ ($activities->firstItem() ?? 1) + $loop->index }}</td>
                         <td>
-                            <a class="activity-list-subject" href="{{ route('activities.show', ['activity' => $activityId]) }}">{{ $activity->subject }}</a>
+                            {{-- A7103:activities.show --}}@if(\App\Support\CrmViewAction::allows('activities.show'))
+<a class="activity-list-subject" href="{{ route('activities.show', ['activity' => $activityId]) }}">{{ $activity->subject }}</a>
+@endif{{-- /A7103 --}}
                             <div class="activity-list-subtitle">{{ \Illuminate\Support\Str::limit($activity->description ?: 'No description provided.', 78) }}</div>
                         </td>
                         <td><span class="activity-list-type activity-list-type-{{ $typeSlug }}">{{ $activityType }}</span></td>
@@ -109,26 +121,34 @@
                         <td><span class="activity-list-owner">{{ $activity->user?->name ?? '—' }}</span></td>
                         <td>
                             <div class="activity-list-actions">
-                                <a class="activity-action-btn view" href="{{ route('activities.show', ['activity' => $activityId]) }}" title="View" aria-label="View activity">
+                                {{-- A7103:activities.show --}}@if(\App\Support\CrmViewAction::allows('activities.show'))
+<a class="activity-action-btn view" href="{{ route('activities.show', ['activity' => $activityId]) }}" title="View" aria-label="View activity">
                                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
+@endif{{-- /A7103 --}}
                                 @if((string) $activity->user_id === (string) auth()->id())
-                                    <a class="activity-action-btn edit" href="{{ route('activities.edit', ['activity' => $activityId]) }}" title="Edit" aria-label="Edit activity">
+                                    {{-- A7103:activities.edit --}}@if(\App\Support\CrmViewAction::allows('activities.edit'))
+<a class="activity-action-btn edit" href="{{ route('activities.edit', ['activity' => $activityId]) }}" title="Edit" aria-label="Edit activity">
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
                                     </a>
-                                    <form method="POST" action="{{ route('activities.destroy', ['activity' => $activityId]) }}" data-delete-name="{{ $activity->subject }}" class="activity-list-delete-form">
+@endif{{-- /A7103 --}}
+                                    {{-- A7103:activities.destroy --}}@if(\App\Support\CrmViewAction::allows('activities.destroy'))
+<form method="POST" action="{{ route('activities.destroy', ['activity' => $activityId]) }}" data-delete-name="{{ $activity->subject }}" class="activity-list-delete-form">
                                         @csrf
                                         @method('DELETE')
                                         <button class="activity-action-btn delete" type="submit" title="Delete" aria-label="Delete activity">
                                             <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 @endif
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7"><div class="activity-empty-state"><div class="activity-empty-icon">◷</div><h4>No activities found</h4><p>Create a new activity or adjust your search and filters.</p><a href="{{ route('activities.create') }}" class="btn primary">+ New Activity</a></div></td></tr>
+                    <tr><td colspan="7"><div class="activity-empty-state"><div class="activity-empty-icon">◷</div><h4>No activities found</h4><p>Create a new activity or adjust your search and filters.</p>{{-- A7103:activities.create --}}@if(\App\Support\CrmViewAction::allows('activities.create'))
+<a href="{{ route('activities.create') }}" class="btn primary">+ New Activity</a>
+@endif{{-- /A7103 --}}</div></td></tr>
                 @endforelse
                 </tbody>
             </table>

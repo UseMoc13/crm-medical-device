@@ -20,11 +20,13 @@
 
     <div class="actions">
 
-        <a
+        {{-- A7103:product-categories.create --}}@if(\App\Support\CrmViewAction::allows('product-categories.create'))
+<a
             href="{{ route('product-categories.create') }}"
             class="btn primary">
             + New Category
         </a>
+@endif{{-- /A7103 --}}
 
     </div>
 
@@ -121,7 +123,8 @@ CATEGORY LIST
          FILTER BAR
     ====================================================== --}}
 
-        <form
+        {{-- A7103:product-categories.index --}}@if(\App\Support\CrmViewAction::allows('product-categories.index'))
+<form
             method="GET"
             action="{{ route('product-categories.index') }}"
             class="category-filter-bar">
@@ -145,7 +148,8 @@ CATEGORY LIST
 
                 @if(request('search'))
 
-                <a
+                {{-- A7103:product-categories.index --}}@if(\App\Support\CrmViewAction::allows('product-categories.index'))
+<a
                     href="{{ route(
                     'product-categories.index',
                     request()->except(
@@ -157,6 +161,7 @@ CATEGORY LIST
                     title="Clear search">
                     ×
                 </a>
+@endif{{-- /A7103 --}}
 
                 @endif
 
@@ -173,15 +178,18 @@ CATEGORY LIST
 
             @if(request('search'))
 
-            <a
+            {{-- A7103:product-categories.index --}}@if(\App\Support\CrmViewAction::allows('product-categories.index'))
+<a
                 href="{{ route('product-categories.index') }}"
                 class="btn category-reset-button">
                 Reset
             </a>
+@endif{{-- /A7103 --}}
 
             @endif
 
         </form>
+@endif{{-- /A7103 --}}
 
 
         {{-- =====================================================
@@ -243,7 +251,8 @@ CATEGORY LIST
 
                         <td>
 
-                            <a
+                            {{-- A7103:product-categories.show --}}@if(\App\Support\CrmViewAction::allows('product-categories.show'))
+<a
                                 href="{{ route(
                                 'product-categories.show',
                                 $category
@@ -255,6 +264,7 @@ CATEGORY LIST
                                 </strong>
 
                             </a>
+@endif{{-- /A7103 --}}
 
 
                             <div class="category-id">
@@ -425,7 +435,8 @@ CATEGORY LIST
 
                         <td>
                                 <div class="table-actions">
-                                    <a
+                                    {{-- A7103:product-categories.show --}}@if(\App\Support\CrmViewAction::allows('product-categories.show'))
+<a
                                         href="{{ route('product-categories.show', $category->category_id) }}"
                                         class="action-btn view"
                                         title="View"
@@ -436,8 +447,10 @@ CATEGORY LIST
                                             <circle cx="12" cy="12" r="3"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <a
+                                    {{-- A7103:product-categories.edit --}}@if(\App\Support\CrmViewAction::allows('product-categories.edit'))
+<a
                                         href="{{ route('product-categories.edit', $category->category_id) }}"
                                         class="action-btn edit"
                                         title="Edit"
@@ -448,8 +461,10 @@ CATEGORY LIST
                                             <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
                                         </svg>
                                     </a>
+@endif{{-- /A7103 --}}
 
-                                    <form
+                                    {{-- A7103:product-categories.destroy --}}@if(\App\Support\CrmViewAction::allows('product-categories.destroy'))
+<form
                                         action="{{ route('product-categories.destroy', $category->category_id) }}"
                                         method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this Product Category?')"
@@ -471,6 +486,7 @@ CATEGORY LIST
                                             </svg>
                                         </button>
                                     </form>
+@endif{{-- /A7103 --}}
                                 </div>
                             </td>
 

@@ -8,7 +8,9 @@
             <div><small>Start Date</small><strong>{{ $ticketWarrantyCoverage['start_date'] }}</strong></div>
             <div><small>End Date</small><strong>{{ $ticketWarrantyCoverage['end_date'] }}</strong></div>
         </div>
-        <a class="btn" href="{{ route('warranties.show', $ticketWarrantyCoverage['warranty_id']) }}">View Warranty</a>
+        {{-- A7103:warranties.show --}}@if(\App\Support\CrmViewAction::allows('warranties.show'))
+<a class="btn" href="{{ route('warranties.show', $ticketWarrantyCoverage['warranty_id']) }}">View Warranty</a>
+@endif{{-- /A7103 --}}
     </div>
 </div>
 @else
