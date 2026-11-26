@@ -104,16 +104,6 @@
             <span class="nav-text">Announcements</span>
         </a>
 
-        <a
-            href="{{ route('announcement-management.index') }}"
-            class="{{ request()->routeIs('announcement-management.*') ? 'active' : '' }}"
-            data-label="Announcement Management">
-
-            <span class="ico">⚙</span>
-            <span class="nav-text">Announcement Management</span>
-        </a>
-
-
         {{-- =================================================
              CUSTOMER & LEAD
         ================================================== --}}
@@ -378,6 +368,15 @@
         </div>
 
         <a
+            href="{{ route('announcement-management.index') }}"
+            class="{{ request()->routeIs('announcement-management.*') ? 'active' : '' }}"
+            data-label="Announcement Management">
+
+            <span class="ico">⚙</span>
+            <span class="nav-text">Announcement Management</span>
+        </a>
+
+        <a
             href="{{ route('users.index') }}"
             class="{{ request()->routeIs('users.*') ? 'active' : '' }}"
             data-label="Users">
@@ -441,11 +440,6 @@
     ====================================================== --}}
 
     <div class="sidebar-footer">
-
-        <a href="#" data-label="Settings">
-            <span class="ico">⚙</span>
-            <span class="nav-text">Settings</span>
-        </a>
 
         <a href="#" data-label="Logout">
             <span class="ico">⇥</span>
