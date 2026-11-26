@@ -48,6 +48,19 @@ final class WorkspaceNotificationPreferencesHttpTest extends TestCase
             $t->uuid('user_role_id')->primary(); $t->uuid('user_id'); $t->uuid('role_id');
             $t->boolean('is_primary')->default(false); $t->uuid('assigned_by')->nullable(); $t->timestamp('created_at')->nullable();
         });
+        // A7109_REV2: disposable SQLite RBAC catalogue, no production migrations.
+        Schema::create('permissions', function (Blueprint $t): void {
+            $t->uuid('permission_id')->primary();
+            $t->string('permission_name')->unique();
+            $t->string('module')->nullable();
+        });
+        Schema::create('role_permissions', function (Blueprint $t): void {
+            $t->uuid('role_permission_id')->primary();
+            $t->uuid('role_id');
+            $t->uuid('permission_id');
+            $t->string('data_scope')->nullable();
+            $t->unique(['role_id', 'permission_id']);
+        });
         Schema::create('workspace_notifications', function (Blueprint $t) {
             $t->uuid('notification_id')->primary(); $t->uuid('recipient_user_id'); $t->uuid('actor_user_id')->nullable();
             $t->string('kind'); $t->string('title'); $t->string('message'); $t->string('target_type');
@@ -142,7 +155,7 @@ final class WorkspaceNotificationPreferencesHttpTest extends TestCase
             foreach (['workspace_notification_preferences','workspace_notifications','workspace_task_reviews','workspace_task_assignments',
                 'workspace_collaboration_members','workspace_personal_notes',
                 'workspace_calendar_events','activities','workspace_tasks',
-                'user_roles','roles','users'] as $table) Schema::dropIfExists($table);
+                'role_permissions','permissions','user_roles','roles','users'] as $table) Schema::dropIfExists($table);
         }
         parent::tearDown();
     }

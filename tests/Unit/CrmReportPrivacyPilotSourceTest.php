@@ -13,7 +13,20 @@ final class CrmReportPrivacyPilotSourceTest extends TestCase
         $blade = file_get_contents($root . '/resources/views/reports/index.blade.php');
         self::assertStringContainsString('$topCustomers = $canViewReportDetails ? app(', $controller);
         self::assertStringContainsString('$topProducts = $canViewReportDetails ? app(', $controller);
-        self::assertSame(2, substr_count($controller, '->get() : collect();'));
+        // A7109_REV2: bound each assertion to its own protected query block.
+        foreach ([
+            ['/* ---------- Top customers ---------- */', '/* ---------- Top products ---------- */', '$topCustomers'],
+            ['/* ---------- Top products ---------- */', '/* ---------- Service & Maintenance ---------- */', '$topProducts'],
+        ] as [$startAnchor, $endAnchor, $variable]) {
+            $start = strpos($controller, $startAnchor);
+            $end = strpos($controller, $endAnchor);
+            self::assertNotFalse($start, $variable . ' section start missing');
+            self::assertNotFalse($end, $variable . ' section end missing');
+            self::assertGreaterThan($start, $end, $variable . ' section boundaries reversed');
+            $section = substr($controller, $start, $end - $start);
+            self::assertStringContainsString($variable . ' = $canViewReportDetails ? app(', $section);
+            self::assertSame(1, substr_count($section, '->get() : collect();'), $variable . ' must deny SQL with an empty collection');
+        }
         self::assertSame(2, substr_count($blade, '@if($canViewReportDetails)'));
         self::assertSame(2, substr_count($blade, 'Invoice details restricted for this account.'));
         self::assertStringContainsString('@if($canExportInvoiceCsv)', $blade);

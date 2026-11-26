@@ -1,0 +1,19 @@
+{
+    "stage": "A7.11.1",
+    "id": "a7111_20261126_074714_9fd36599",
+    "operations": [
+        {
+            "path": "resources/views/welcome.blade.php",
+            "action": "replace",
+            "before": "e20927f2c8bdcd01bdf3310383017cb042fce9390a5e8ee5863179e6f99a075a",
+            "after": "42806457b602d9d57cb7f10a2837b6fc0ca936586df12a3ab3235dfd9abed68c",
+            "payload": "payload/welcome.blade.php"
+        },
+        {
+            "path": "resources/views/stock-movements/edit.blade.php",
+            "action": "archive_and_remove",
+            "before": "1bdd9728fea8fc653a585640bcb5e679427019442e2486687680a3cc9896efe2",
+            "after": null
+        }
+    ]
+}

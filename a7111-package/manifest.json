@@ -1,0 +1,24 @@
+{
+  "stage": "A7.11.1",
+  "base_branch": "Big-Changes",
+  "operations": [
+    {
+      "path": "resources/views/welcome.blade.php",
+      "action": "replace",
+      "before": "e20927f2c8bdcd01bdf3310383017cb042fce9390a5e8ee5863179e6f99a075a",
+      "after": "42806457b602d9d57cb7f10a2837b6fc0ca936586df12a3ab3235dfd9abed68c",
+      "payload": "payload/welcome.blade.php"
+    },
+    {
+      "path": "resources/views/stock-movements/edit.blade.php",
+      "action": "archive_and_remove",
+      "before": "1bdd9728fea8fc653a585640bcb5e679427019442e2486687680a3cc9896efe2",
+      "after": null
+    }
+  ],
+  "protected": {
+    "resources/views/deliveries/show.blade.php": "892ed8674ee435e32dcc88ac0488fc96d385b6fd4fd5f6bb2a17768c79aaafd2",
+    "resources/views/installations/show.blade.php": "8c6ce60c8d73126445f9d088e4978f35b594304be1d390d8698656eb228e361e",
+    "resources/views/maintenance/_workflow.blade.php": "63f365b8e8674d3359e599bd655bfbc985aa8c88c794eb1c90c4897be343f713"
+  }
+}

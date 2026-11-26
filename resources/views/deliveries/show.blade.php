@@ -109,7 +109,7 @@
             <div class="delivery-confirm-actions">
                 <button type="button" class="btn" id="deliveryCancel">Cancel</button>
                 <button type="submit" class="btn primary">Confirm</button>
-            </div>1
+            </div>
         </form>
 @endif
 {{-- /A7105 --}}
@@ -123,6 +123,8 @@
     const title = document.getElementById('deliveryConfirmTitle');
     const message = document.getElementById('deliveryConfirmText');
     const next = document.getElementById('deliveryNextStatus');
+    // A7108: the status form is omitted for read-only roles.
+    if (!modal || !title || !message || !next) return;
     const close = () => { modal.hidden = true; };
     document.querySelectorAll('[data-delivery-action]').forEach(button => {
         button.addEventListener('click', () => {
@@ -132,7 +134,7 @@
             modal.hidden = false;
         });
     });
-    document.getElementById('deliveryCancel').addEventListener('click', close);
+    document.getElementById('deliveryCancel')?.addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
 })();

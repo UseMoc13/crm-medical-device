@@ -52,6 +52,19 @@ final class WorkspaceCollaborationHttpTest extends TestCase
         $branch = (string) Str::uuid();
         $otherBranch = (string) Str::uuid();
         DB::table('roles')->insert(['role_id' => $role, 'role_name' => 'QA Role', 'is_system' => false]);
+        // Explicit, scenario-local page grants for HTTP requests that test
+        // collaboration ownership. These do not bypass owner/recipient checks.
+        foreach (['customer_lead.access', 'crm_page.activities.view',
+            'crm_page.activities.update', 'crm_page.activities.delete'] as $permission) {
+            $permissionId = (string) Str::uuid();
+            DB::table('permissions')->insert([
+                'permission_id' => $permissionId, 'permission_name' => $permission,
+            ]);
+            DB::table('role_permissions')->insert([
+                'role_permission_id' => (string) Str::uuid(),
+                'role_id' => $role, 'permission_id' => $permissionId,
+            ]);
+        }
         DB::table('branches')->insert([
             ['branch_id' => $branch, 'branch_name' => 'QA Branch'],
             ['branch_id' => $otherBranch, 'branch_name' => 'Other QA Branch'],
@@ -84,7 +97,7 @@ final class WorkspaceCollaborationHttpTest extends TestCase
             config('database.connections.sqlite.database') === ':memory:') {
             foreach (['workspace_task_reviews', 'workspace_task_submission_files', 'workspace_task_assignments',
                 'workspace_collaboration_entries', 'workspace_collaboration_members',
-                'workspace_tasks', 'activities', 'user_roles', 'users', 'branches', 'roles'] as $table) {
+                'workspace_tasks', 'activities', 'role_permissions', 'permissions', 'user_roles', 'users', 'branches', 'roles'] as $table) {
                 Schema::dropIfExists($table);
             }
         }
@@ -119,6 +132,19 @@ final class WorkspaceCollaborationHttpTest extends TestCase
             $t->boolean('is_primary')->default(true);
             $t->uuid('assigned_by')->nullable();
             $t->timestamp('created_at')->nullable();
+        });
+        // A7109_REV2: disposable SQLite RBAC catalogue, no production migrations.
+        Schema::create('permissions', function (Blueprint $t): void {
+            $t->uuid('permission_id')->primary();
+            $t->string('permission_name')->unique();
+            $t->string('module')->nullable();
+        });
+        Schema::create('role_permissions', function (Blueprint $t): void {
+            $t->uuid('role_permission_id')->primary();
+            $t->uuid('role_id');
+            $t->uuid('permission_id');
+            $t->string('data_scope')->nullable();
+            $t->unique(['role_id', 'permission_id']);
         });
         Schema::create('activities', function (Blueprint $t): void {
             $t->uuid('activity_id')->primary();

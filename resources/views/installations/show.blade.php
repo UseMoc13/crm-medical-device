@@ -325,6 +325,8 @@
     const modal = document.getElementById('installationStatusModal');
     const value = document.getElementById('installationNextStatus');
     const message = document.getElementById('installationModalMessage');
+    // A7108: keep checklist handlers active even when status controls are hidden.
+    if (modal && value && message && document.getElementById('installationModalCancel')) {
     document.querySelectorAll('[data-installation-next]').forEach(button => button.addEventListener('click', () => {
         value.value = button.dataset.installationNext;
         message.textContent = 'Change installation status to ' + value.value + '?';
@@ -334,6 +336,7 @@
     document.getElementById('installationModalCancel').addEventListener('click', close);
     modal.addEventListener('click', event => { if(event.target === modal) close(); });
     document.addEventListener('keydown', event => { if(event.key === 'Escape') close(); });
+    }
     document.querySelectorAll('.checklist-toggle').forEach(button => button.addEventListener('click', () => {
        const form = button.closest('form'); form.querySelector('.checklist-completed-value').value = button.dataset.completed; form.requestSubmit();
     }));

@@ -21,7 +21,7 @@
     <h1>Welcome back</h1>
     <p>Sign in using your company account to continue.</p>
     @if($errors->any())<div class="error" role="alert">{{ $errors->first() }}</div>@endif
-    <form method="POST" action="{{ route('login.store') }}">
+    <form method="POST" action="{{ route('login.attempt') }}">
         @csrf
         <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="username" value="{{ old('email') }}" maxlength="150" required autofocus></div>
         <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>

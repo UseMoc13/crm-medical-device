@@ -1,0 +1,27 @@
+[
+  {
+    "path": "resources/views/auth/login.blade.php",
+    "before": "489e6e174d0bf5812de358bc99f8d44a93379611ebdb37b96581b914e2203520",
+    "after": "dbc690d015a717c14d086a6bd67b0019eeff7b9fe3b01209abc9cbc8671047f6"
+  },
+  {
+    "path": "tests/Unit/CrmReportPrivacyPilotSourceTest.php",
+    "before": "ae25e44c492ba12ea8274cc4edb21d75fdb9a8b3cea2d172eece6f9917705c39",
+    "after": "2c5c3a6797caab8443157b109c13742609ede66719b93cfb242c29377af9ec5a"
+  },
+  {
+    "path": "tests/Feature/WorkspaceCollaborationHttpTest.php",
+    "before": "e468509ee644709bfdc1c7240901ccdfeadd3968ae12d272602050050c1f5b36",
+    "after": "8098b4f87b118a315496ff9c4445fe9e4d7a2e37e16524f27dc85c4307a3f5f8"
+  },
+  {
+    "path": "tests/Feature/WorkspaceNotificationHttpTest.php",
+    "before": "434f855a41af84c82a5fb3c106ed8d77d9ef9fce77fa707eb0710b99cc3d0ad1",
+    "after": "5fc407527b1e1f7316b7fd25687056094371a55faf882b8f3229e3904c72acbf"
+  },
+  {
+    "path": "tests/Feature/WorkspaceNotificationPreferencesHttpTest.php",
+    "before": "4d2a99ce852c560f739df778fa1c2245b6082cb2b12d524beb9cfef82fa0a3bb",
+    "after": "9974286f9b0bac5bbfef56578637c678e4d8aff9ae3e672446f585153e694939"
+  }
+]

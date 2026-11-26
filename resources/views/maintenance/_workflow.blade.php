@@ -124,6 +124,8 @@
     const next = document.getElementById('mtNextStatus');
     const msg = document.getElementById('mtStatusMessage');
     const confirm = document.getElementById('mtStatusConfirm');
+    // A7108: status confirmation elements are absent for view-only roles.
+    if (!next || !msg || !confirm) return;
     const close = () => { modal.hidden = true; next.value = ''; };
     document.querySelectorAll('[data-mt-next]').forEach(button => {
         button.addEventListener('click', () => {

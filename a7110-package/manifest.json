@@ -1,0 +1,13 @@
+{
+  "stage": "A7110",
+  "files": {
+    "tests/Feature/WorkspacePersonalNoteHttpTest.php": {
+      "old_sha256": "4a2641aabf4efff5f668252fd1ec94f57d3faf16f024673e581be3e245afb146",
+      "new_sha256": "6a4f1eebefcbe3d6038634aff95e02f01f81a800651d9ca3a696369a1400a573"
+    },
+    "tests/Feature/ExampleTest.php": {
+      "old_sha256": "aaa4a192fb4aa96d4e81eda06a29968da3d9a73b71026b87a67297e66dd985b8",
+      "new_sha256": "dc8ef230fff797847bef36fd7287650e561369408228220bac86d2814b11c82d"
+    }
+  }
+}

@@ -48,7 +48,7 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
     {
         if (config('database.default') === 'sqlite' &&
             config('database.connections.sqlite.database') === ':memory:' && extension_loaded('pdo_sqlite')) {
-            foreach (['workspace_note_mentions','workspace_personal_notes','workspace_calendar_day_exclusions','workspace_collaboration_members','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','user_roles','roles','users'] as $table) {
+            foreach (['workspace_note_mentions','workspace_personal_notes','workspace_calendar_day_exclusions','workspace_collaboration_members','workspace_task_assignments','workspace_tasks','activities','workspace_calendar_events','role_permissions','permissions','user_roles','roles','users'] as $table) {
                 Schema::dropIfExists($table);
             }
         }
@@ -68,6 +68,19 @@ final class WorkspacePersonalNoteHttpTest extends TestCase
         Schema::create('user_roles', function (Blueprint $t): void {
             $t->uuid('user_role_id')->primary(); $t->uuid('user_id'); $t->uuid('role_id');
             $t->boolean('is_primary')->default(false); $t->uuid('assigned_by')->nullable(); $t->timestamp('created_at')->nullable();
+        });
+        // A7110: SQLite-only RBAC catalogue required by role-aware sidebar rendering.
+        Schema::create('permissions', function (Blueprint $t): void {
+            $t->uuid('permission_id')->primary();
+            $t->string('permission_name')->unique();
+            $t->string('module')->nullable();
+        });
+        Schema::create('role_permissions', function (Blueprint $t): void {
+            $t->uuid('role_permission_id')->primary();
+            $t->uuid('role_id');
+            $t->uuid('permission_id');
+            $t->string('data_scope')->nullable();
+            $t->unique(['role_id', 'permission_id']);
         });
         Schema::create('activities', function (Blueprint $t): void {
             $t->uuid('activity_id')->primary(); $t->uuid('user_id');
