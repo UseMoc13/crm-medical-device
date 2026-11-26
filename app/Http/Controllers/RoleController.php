@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Services\CrmRoleAccessCatalog as Catalog;
 use App\Services\CrmWorkflowAccess as Workflow;
+use App\Services\CrmRoleTemplateCatalog as Template;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -302,8 +303,8 @@ class RoleController extends Controller
             }
         }
         $workflowTemplates = [];
-        foreach (['admin','sales','warehouse','delivery_staff','technician','finance','management'] as $templateName) {
-            $workflowTemplates[$templateName] = Workflow::permittedByPages(Catalog::template($templateName));
+        foreach (Template::keys() as $templateName) {
+            $workflowTemplates[$templateName] = Template::workflows($templateName);
         }
         // A6.10: Load explicit scopes for supported user_id-based subjects only.
         // Unconfigured NULL grants remain NULL; never interpret them as all.
@@ -323,23 +324,23 @@ class RoleController extends Controller
             'workflowActions'=>Workflow::ACTIONS, 'workflowSelected'=>$workflowSelected,
             'workflowTemplates'=>$workflowTemplates,
             'accessPages'=>Catalog::PAGES, 'accessActions'=>Catalog::ACTIONS,
-            'accessSelected'=>$selected, 'accessTemplates'=>['admin'=>'Admin','sales'=>'Sales','warehouse'=>'Warehouse','delivery_staff'=>'Delivery Staff','technician'=>'Technician','finance'=>'Finance','management'=>'Management'],
-            'defaultTemplate'=>Catalog::templateForRole($role?->role_name ?? ''),
-            'templateOptions'=>collect(['admin','sales','warehouse','delivery_staff','technician','finance','management'])->mapWithKeys(fn ($key) => [$key => Catalog::template($key)])->all()];
+            'accessSelected'=>$selected, 'accessTemplates'=>Template::labels(),
+            'defaultTemplate'=>Template::forRoleName($role?->role_name ?? ''),
+            'templateOptions'=>Template::allPages(), 'templateDescriptions'=>Template::descriptions()];
     }
 
     private function requestedAccess(Request $request, string $name): array
     {
         $input = $request->validate([
             'access_mode' => ['required', 'in:custom,template'],
-            'access_template' => ['nullable', 'in:admin,sales,warehouse,delivery_staff,technician,finance,management'],
+            'access_template' => ['nullable', \Illuminate\Validation\Rule::in(Template::keys())],
             'page_access' => ['nullable', 'array'],
             'page_access.*' => ['nullable', 'array'],
             'page_access.*.*' => ['string', 'in:view,create,update,delete'],
         ]);
         if ($input['access_mode'] === 'template') {
             if (empty($input['access_template'])) throw \Illuminate\Validation\ValidationException::withMessages(['access_template'=>'Select a CRM role template.']);
-            return $this->includeViewForActions(Catalog::template($input['access_template']));
+            return $this->includeViewForActions(Template::pages($input['access_template']));
         }
         $chosen = $input['page_access'] ?? [];
         foreach ($chosen as $slug => $actions) {
@@ -371,7 +372,9 @@ class RoleController extends Controller
     private function requestedWorkflowAccess(Request $request, array $pageAccess): array
     {
         if ($request->input('access_mode') === 'template') {
-            return Workflow::permittedByPages($pageAccess);
+            // A7.10.6: never grant every sensitive workflow merely because Edit is enabled.
+            $chosenTemplate = (string) $request->input('access_template');
+            return array_values(array_intersect(Template::workflows($chosenTemplate), Workflow::permittedByPages($pageAccess)));
         }
         $input = $request->validate([
             'workflow_access' => ['nullable', 'array'],

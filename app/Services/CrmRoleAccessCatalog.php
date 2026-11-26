@@ -86,28 +86,15 @@ final class CrmRoleAccessCatalog
         return null;
     }
 
+    /** A7.10.6: presets live in a single safe catalogue. */
     public static function template(string $name): array
     {
-        $full = self::ACTIONS;
-        $view = ['view'];
-        $sets = [
-            'admin' => ['announcement_management' => $full],
-            'sales' => ['customers'=>$full,'contacts'=>$full,'leads'=>$full,'activities'=>$full,'opportunities'=>$full,'quotations'=>$full,'sales_orders'=>$full,'contracts'=>$full,'products'=>$view,'product_categories'=>$view,'brands'=>$view],
-            'warehouse' => ['products'=>$full,'product_categories'=>$full,'brands'=>$full,'warehouses'=>$full,'inventories'=>$full,'stock_movements'=>$full,'serial_numbers'=>$full],
-            'delivery_staff' => ['products'=>$view,'product_categories'=>$view,'brands'=>$view,'deliveries'=>$full,'installations'=>$full],
-            'technician' => ['products'=>$view,'product_categories'=>$view,'brands'=>$view,'installations'=>$full,'warranties'=>$full,'service_tickets'=>$full,'maintenance'=>$full,'service_history'=>$view],
-            'finance' => ['invoices'=>$full,'reports'=>$view],
-            'management' => ['reports'=>$view],
-        ];
-        return $sets[$name] ?? [];
+        return CrmRoleTemplateCatalog::pages($name);
     }
 
     public static function templateForRole(string $roleName): string
     {
-        return match (mb_strtolower(trim($roleName))) {
-            'admin' => 'admin', 'sales' => 'sales', 'warehouse' => 'warehouse',
-            'delivery staff' => 'delivery_staff', 'technician' => 'technician',
-            'finance' => 'finance', 'management' => 'management', default => ''
-        };
+        return CrmRoleTemplateCatalog::forRoleName($roleName);
     }
+
 }

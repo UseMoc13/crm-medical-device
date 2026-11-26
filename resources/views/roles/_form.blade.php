@@ -44,7 +44,8 @@
                         </div>
                         <div id="crm-template-area" class="role-template-box">
                             <div class="role-field"><label for="access_template">Select CRM Template</label><select class="role-control" name="access_template" id="access_template"><option value="">Select a template…</option>@foreach($accessTemplates as $key => $label)<option value="{{ $key }}" @selected($initialTemplate === $key)>{{ $label }}</option>@endforeach</select></div>
-                            <p class="role-help">Template permissions are applied when you save. Existing Custom selections remain unchanged until you explicitly copy the template.</p>
+                            <p class="role-help" id="crmTemplateDescription" aria-live="polite">Select a current CRM position to see its access profile.</p>
+                            <p class="role-help">Presets replace this role's CRM page/workflow grants only when you save in Template mode. Existing data scopes are retained; new scopes are NOT automatically set to All. Copy to Custom to fine-tune CRUD, workflows and scopes.</p>
                             <button class="btn role-copy-template" type="button" id="copyTemplate">Copy Template to Custom</button>
                         </div>
                         <div id="crm-custom-area" class="role-custom-area">
@@ -206,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const roleDescription = document.getElementById('description');
   const radios = [...editor.querySelectorAll('input[name="access_mode"]')];
   const templateInput = document.getElementById('access_template');
+  const templateDescriptions = @json($templateDescriptions ?? []);
   const boxes = [...editor.querySelectorAll('input[data-role-page]')];
   const selectPages = [...editor.querySelectorAll('input[data-select-page]')];
   const workflowBoxes = [...editor.querySelectorAll('input[data-workflow-slug]')];
@@ -300,6 +302,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updatePreview() {
+    const help = document.getElementById('crmTemplateDescription');
+    if (help) help.textContent = templateDescriptions[templateInput.value] || 'Select a current CRM position to see its access profile.';
     syncAllPageRules();
     reconcileWorkflows();
     updateScopeAvailability();
