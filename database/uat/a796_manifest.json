@@ -1,0 +1,43 @@
+{
+  "name": "CRM A796 Human-Readable Synthetic Data Expansion (FIX 1: eligible serial rotation)",
+  "target": "crm_medical_device",
+  "schema_tables": 65,
+  "baseline_permissions": 117,
+  "baseline_migrations": 32,
+  "adds_total": 1684,
+  "additions_per_table": {
+    "branches": 3,
+    "roles": 2,
+    "users": 12,
+    "user_roles": 12,
+    "workspace_notification_preferences": 12,
+    "brands": 2,
+    "products": 12,
+    "warehouses": 2,
+    "inventories": 24,
+    "stock_movements": 24,
+    "customers": 60,
+    "contacts": 90,
+    "leads": 45,
+    "activities": 40,
+    "opportunities": 240,
+    "opportunity_items": 240,
+    "quotations": 200,
+    "quotation_items": 200,
+    "sales_orders": 180,
+    "sales_order_items": 180,
+    "invoices": 36,
+    "invoice_items": 36,
+    "deliveries": 20,
+    "service_tickets": 12
+  },
+  "updates": "Only original A794 placeholders in existing seed rows; conditional text predicates; never existing credential/IDs/grants",
+  "new_accounts": "12, random discarded passwords, no known login credentials; 2 new roles with zero permission grants",
+  "source": "A794 original import SQL and crm_schema_only.sql",
+  "sha256": {
+    "database/uat/a796_rehearsal.sql": "e48577f011f44ea771466715b34751cc1a7c1ef39e066525df5a0f788009a8f8",
+    "database/uat/a796_commit.sql": "c53df51062675aa518e93b652b5be3a1d7b50facf3db9805c6c0969bf243b527",
+    "tools/a796_verify.sql": "26156622db146e593730dd0ff0be0afbf4f42f06a02c67901ad746fc0fd5eee8"
+  },
+  "fix_note": "Ticket allocator now rotates across customer-linked UAT serials instead of fixed 5; A794 UAT-SN005 has NULL customer_id."
+}
