@@ -240,7 +240,8 @@
                                     data-name="{{ $user->name }}"
                                     @selected(old('user_id', $serviceTicket->user_id) == $user->user_id)
                                 >
-                                    {{ $user->name }}
+                                    {{-- A797:legacy_option_label --}}
+{{ $user->name }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif
                                 </option>
                             @endforeach
                         </select>

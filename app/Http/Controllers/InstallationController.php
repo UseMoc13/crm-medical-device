@@ -48,7 +48,8 @@ class InstallationController extends Controller
         $deliveries = Delivery::query()->whereRaw('lower(status) = ?', ['delivered'])
             ->whereNotIn('delivery_id', Installation::query()->select('delivery_id'))
             ->orderByDesc('created_at')->get();
-        $users = User::query()->where('status', 'active')->orderBy('name')->get();
+        /* A797:installation_create_users */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)->options('technician');
         $prefillDeliveryId = (string) $request->query('delivery_id', '');
         return view('installations.create', compact('deliveries', 'users', 'prefillDeliveryId'));
     }
@@ -62,7 +63,11 @@ class InstallationController extends Controller
             'location' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
         ]);
-        $data['user_id'] = app(CrmInstallationActivityDataScope::class)->authorizeAssignee($data['user_id']);
+        /* A797:installation_validate_assignment */
+$data['user_id'] = app(CrmInstallationActivityDataScope::class)->authorizeAssignee($data['user_id']);
+        // A797 technician role eligibility; retain an existing historical assignee only
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($data['user_id'], 'technician', isset($installation) ? (string) ($installation->user_id ?? '') : null, true);
         $installation = DB::transaction(function () use ($data) {
             $delivery = Delivery::query()->whereKey($data['delivery_id'])->lockForUpdate()->firstOrFail();
             if (strtolower((string) $delivery->status) !== 'delivered') {
@@ -107,7 +112,8 @@ class InstallationController extends Controller
             return redirect()->route('installations.show', $installation)->with('error', 'Finalized installations cannot be edited.');
         }
         $deliveries = Delivery::query()->whereKey($installation->delivery_id)->get();
-        $users = User::query()->orderBy('name')->get();
+        /* A797:installation_edit_users */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)->options('technician', (string) ($installation->user_id ?? ''));
         return view('installations.edit', compact('installation', 'deliveries', 'users'));
     }
 
@@ -122,7 +128,11 @@ class InstallationController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
         app(CrmInstallationActivityDataScope::class)->assertVisible(Installation::query(), 'installations', (string) $installation->getKey());
-        $data['user_id'] = app(CrmInstallationActivityDataScope::class)->authorizeAssignee($data['user_id']);
+        /* A797:installation_validate_assignment */
+$data['user_id'] = app(CrmInstallationActivityDataScope::class)->authorizeAssignee($data['user_id']);
+        // A797 technician role eligibility; retain an existing historical assignee only
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($data['user_id'], 'technician', isset($installation) ? (string) ($installation->user_id ?? '') : null, true);
         DB::transaction(function () use ($installation, $data) {
             $record = Installation::query()->whereKey($installation->getKey())->lockForUpdate()->firstOrFail();
             $transitions = [

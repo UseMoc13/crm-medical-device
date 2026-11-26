@@ -172,14 +172,9 @@ class OpportunityController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:opportunity_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($opportunity) ? (string) ($opportunity->user_id ?? '') : null);
 
         $customers = Customer::query()
             ->orderBy('customer_name')
@@ -223,14 +218,9 @@ class OpportunityController extends Controller
      */
     public function create()
     {
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:opportunity_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($opportunity) ? (string) ($opportunity->user_id ?? '') : null);
 
         $customers = Customer::query()
             ->orderBy('customer_name')
@@ -333,6 +323,10 @@ class OpportunityController extends Controller
         if (app(CrmSalesDataScope::class)->enabled('opportunities')) {
             $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('opportunities', $validated['user_id'] ?? null);
         }
+
+/* A797:opportunity_store_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'sales', null, true);
 
         $validated['opportunity_code'] =
             $this->generateOpportunityCode();
@@ -594,14 +588,9 @@ class OpportunityController extends Controller
     {
         app(CrmSalesDataScope::class)->assertVisible(Opportunity::query(), 'opportunities', (string) $opportunity->getKey());
 
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:opportunity_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($opportunity) ? (string) ($opportunity->user_id ?? '') : null);
 
         /*
         |--------------------------------------------------------------------------
@@ -736,6 +725,10 @@ class OpportunityController extends Controller
         if (app(CrmSalesDataScope::class)->enabled('opportunities')) {
             $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('opportunities', $validated['user_id'] ?? null);
         }
+
+/* A797:opportunity_update_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'sales', (string) ($opportunity->user_id ?? ''), true);
 
         $opportunity->update(
             $validated

@@ -166,14 +166,9 @@ class LeadController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:lead_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($lead) ? (string) ($lead->user_id ?? '') : null);
 
 
         $customers = Customer::query()
@@ -221,14 +216,9 @@ class LeadController extends Controller
      */
     public function create()
     {
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:lead_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($lead) ? (string) ($lead->user_id ?? '') : null);
 
 
         $customers = Customer::query()
@@ -325,6 +315,10 @@ class LeadController extends Controller
             ? app(CrmSalesDataScope::class)->authorizeOwner('leads', $validated['user_id'] ?? null)
             : ($validated['user_id'] ?? null);
 
+/* A797:lead_store_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'] ?? null, 'sales');
+
         $validated['lead_code'] =
             $this->generateLeadCode();
 
@@ -368,14 +362,9 @@ class LeadController extends Controller
     {
         app(CrmSalesDataScope::class)->assertVisible(Lead::query(), 'leads', (string) $lead->getKey());
 
-        $users = User::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get([
-                'user_id',
-                'name',
-                'email',
-            ]);
+        /* A797:lead_user_options */
+$users = app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->options('sales', isset($lead) ? (string) ($lead->user_id ?? '') : null);
 
 
         /*
@@ -506,6 +495,10 @@ class LeadController extends Controller
         if (app(CrmSalesDataScope::class)->enabled('leads')) {
             $validated['user_id'] = app(CrmSalesDataScope::class)->authorizeOwner('leads', $validated['user_id'] ?? null);
         }
+
+/* A797:lead_update_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'] ?? null, 'sales', (string) ($lead->user_id ?? ''));
 
         $lead->update(
             $validated

@@ -1,0 +1,237 @@
+{
+  "version": "A797_MULTI_MODULE_ASSIGNMENT",
+  "patches": [
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_formdata_signature",
+      "kind": "regex",
+      "old": "private function formData\\(\\): array",
+      "new": "/* A797:ticket_formdata_signature */\nprivate function formData(?ServiceTicket $current = null): array",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_formdata_users",
+      "kind": "regex",
+      "old": "(?P<indent>\\s*)\\$users = User::query\\(\\)\\s*->orderBy\\('name'\\)\\s*->get\\(\\);",
+      "new": "/* A797:ticket_formdata_users */\n{{indent}}// A797 technician picker, including the previously assigned account\n{{indent}}$users = app(\\App\\Services\\CrmUserAssignmentEligibility::class)->options('technician', $current?->user_id);",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_edit_current",
+      "kind": "regex",
+      "old": "('allowedStatuses'\\s*=>[^\\n]+\\n\\s*\\],\\s*)\\$this->formData\\(\\)",
+      "new": "/* A797:ticket_edit_current */\n{{1}}$this->formData($serviceTicket)",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_store_validation",
+      "kind": "literal",
+      "old": "        $validated['ticket_number'] = $this->generateTicketNumber();",
+      "new": "/* A797:ticket_store_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'technician');\n\n        $validated['ticket_number'] = $this->generateTicketNumber();",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/ServiceTicketController.php",
+      "name": "ticket_update_validation",
+      "kind": "literal",
+      "old": "        // Validate and update against the locked database state, not a stale form snapshot.",
+      "new": "/* A797:ticket_update_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'technician', (string) ($serviceTicket->user_id ?? ''));\n\n        // Validate and update against the locked database state, not a stale form snapshot.",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_formdata_signature",
+      "kind": "regex",
+      "old": "private function formData\\(\\): array",
+      "new": "/* A797:maintenance_formdata_signature */\nprivate function formData(?MaintenanceSchedule $current = null): array",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_formdata_users",
+      "kind": "regex",
+      "old": "'users'\\s*=>\\s*User::query\\(\\)->orderBy\\('name'\\)->get\\(\\),(?=\\s*'statuses')",
+      "new": "/* A797:maintenance_formdata_users */\n'users' => app(\\App\\Services\\CrmUserAssignmentEligibility::class)->options('technician', $current?->user_id),",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_edit_current",
+      "kind": "literal",
+      "old": "array_merge(['maintenance' => $maintenance], $this->formData())",
+      "new": "/* A797:maintenance_edit_current */\narray_merge(['maintenance' => $maintenance], $this->formData($maintenance))",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_recordform_signature",
+      "kind": "regex",
+      "old": "private function recordFormData\\(MaintenanceSchedule \\$maintenance\\): array",
+      "new": "/* A797:maintenance_recordform_signature */\nprivate function recordFormData(MaintenanceSchedule $maintenance, ?MaintenanceRecord $currentRecord = null): array",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_recordform_users",
+      "kind": "regex",
+      "old": "'users'\\s*=>\\s*User::query\\(\\)->orderBy\\('name'\\)->get\\(\\),(?=\\s*'results')",
+      "new": "/* A797:maintenance_recordform_users */\n'users' => app(\\App\\Services\\CrmUserAssignmentEligibility::class)->options('technician', $currentRecord?->user_id ?? $maintenance->user_id),",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_record_edit_current",
+      "kind": "regex",
+      "old": "(\\['record'\\s*=>\\s*\\$record\\],\\s*)\\$this->recordFormData\\(\\$maintenance\\)",
+      "new": "/* A797:maintenance_record_edit_current */\n{{1}}$this->recordFormData($maintenance, $record)",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_store_validation",
+      "kind": "literal",
+      "old": "        $validated['status'] = 'Scheduled';",
+      "new": "/* A797:maintenance_store_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'technician');\n        $validated['status'] = 'Scheduled';",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_update_validation",
+      "kind": "regex",
+      "old": "(\\$validated\\['user_id'\\] = app\\(CrmServiceDataScope::class\\)->authorizeAssignee\\('maintenance_schedules', \\$validated\\['user_id'\\] \\?\\? null\\);)\\s*\\n\\s*DB::transaction\\(",
+      "new": "/* A797:maintenance_update_validation */\n{{1}}\n        // A797 maintenance reassignment guard\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'technician', (string) ($maintenance->user_id ?? ''));\n\n        DB::transaction(",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/MaintenanceController.php",
+      "name": "maintenance_record_validate",
+      "kind": "regex",
+      "old": "(\\$validated = \\$request->validate\\(\\$this->recordRules\\(\\)\\);)",
+      "new": "/* A797:maintenance_record_validate */\n{{1}}\n        // A797 performed-by eligibility; existing performer may be retained on edit\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'technician', isset($record) ? (string) $record->user_id : null, true);",
+      "count": 2
+    },
+    {
+      "path": "app/Http/Controllers/InstallationController.php",
+      "name": "installation_create_users",
+      "kind": "regex",
+      "old": "\\$users = User::query\\(\\)->where\\('status', 'active'\\)->orderBy\\('name'\\)->get\\(\\);",
+      "new": "/* A797:installation_create_users */\n$users = app(\\App\\Services\\CrmUserAssignmentEligibility::class)->options('technician');",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/InstallationController.php",
+      "name": "installation_edit_users",
+      "kind": "regex",
+      "old": "\\$users = User::query\\(\\)->orderBy\\('name'\\)->get\\(\\);",
+      "new": "/* A797:installation_edit_users */\n$users = app(\\App\\Services\\CrmUserAssignmentEligibility::class)->options('technician', (string) ($installation->user_id ?? ''));",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/InstallationController.php",
+      "name": "installation_validate_assignment",
+      "kind": "regex",
+      "old": "(\\$data\\['user_id'\\] = app\\(CrmInstallationActivityDataScope::class\\)->authorizeAssignee\\(\\$data\\['user_id'\\]\\);)",
+      "new": "/* A797:installation_validate_assignment */\n{{1}}\n        // A797 technician role eligibility; retain an existing historical assignee only\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($data['user_id'], 'technician', isset($installation) ? (string) ($installation->user_id ?? '') : null, true);",
+      "count": 2
+    },
+    {
+      "path": "app/Http/Controllers/LeadController.php",
+      "name": "lead_user_options",
+      "kind": "regex",
+      "old": "\\$users = User::query\\(\\)\\s*->where\\('status', 'active'\\)\\s*->orderBy\\('name'\\)\\s*->get\\(\\[\\s*'user_id',\\s*'name',\\s*'email',\\s*\\]\\);",
+      "new": "/* A797:lead_user_options */\n$users = app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->options('sales', isset($lead) ? (string) ($lead->user_id ?? '') : null);",
+      "count": 3
+    },
+    {
+      "path": "app/Http/Controllers/LeadController.php",
+      "name": "lead_store_validation",
+      "kind": "literal",
+      "old": "        $validated['lead_code'] =",
+      "new": "/* A797:lead_store_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'] ?? null, 'sales');\n\n        $validated['lead_code'] =",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/LeadController.php",
+      "name": "lead_update_validation",
+      "kind": "literal",
+      "old": "        $lead->update(\n            $validated\n        );",
+      "new": "/* A797:lead_update_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'] ?? null, 'sales', (string) ($lead->user_id ?? ''));\n\n        $lead->update(\n            $validated\n        );",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/OpportunityController.php",
+      "name": "opportunity_user_options",
+      "kind": "regex",
+      "old": "\\$users = User::query\\(\\)\\s*->where\\('status', 'active'\\)\\s*->orderBy\\('name'\\)\\s*->get\\(\\[\\s*'user_id',\\s*'name',\\s*'email',\\s*\\]\\);",
+      "new": "/* A797:opportunity_user_options */\n$users = app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->options('sales', isset($opportunity) ? (string) ($opportunity->user_id ?? '') : null);",
+      "count": 3
+    },
+    {
+      "path": "app/Http/Controllers/OpportunityController.php",
+      "name": "opportunity_store_validation",
+      "kind": "literal",
+      "old": "        $validated['opportunity_code'] =",
+      "new": "/* A797:opportunity_store_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'sales', null, true);\n\n        $validated['opportunity_code'] =",
+      "count": 1
+    },
+    {
+      "path": "app/Http/Controllers/OpportunityController.php",
+      "name": "opportunity_update_validation",
+      "kind": "literal",
+      "old": "        $opportunity->update(\n            $validated\n        );",
+      "new": "/* A797:opportunity_update_validation */\n        app(\\App\\Services\\CrmUserAssignmentEligibility::class)\n            ->assertAssignable($validated['user_id'], 'sales', (string) ($opportunity->user_id ?? ''), true);\n\n        $opportunity->update(\n            $validated\n        );",
+      "count": 1
+    },
+    {
+      "path": "resources/views/service-tickets/create.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "\\{\\{ \\$user->name \\}\\}(?=\\s*\\n\\s*</option>)",
+      "new": "{{-- A797:legacy_option_label --}}\n{{ $user->name }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    },
+    {
+      "path": "resources/views/service-tickets/edit.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "\\{\\{ \\$user->name \\}\\}(?=\\s*\\n\\s*</option>)",
+      "new": "{{-- A797:legacy_option_label --}}\n{{ $user->name }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    },
+    {
+      "path": "resources/views/maintenance/_form.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "\\{\\{ \\$user->name \\}\\}(?=\\s*\\n\\s*</option>)",
+      "new": "{{-- A797:legacy_option_label --}}\n{{ $user->name }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    },
+    {
+      "path": "resources/views/maintenance/records/_form.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "\\{\\{ \\$user->name \\}\\}(?=\\s*\\n\\s*</option>)",
+      "new": "{{-- A797:legacy_option_label --}}\n{{ $user->name }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    },
+    {
+      "path": "resources/views/installations/create.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "(\\?\\? \\$user->user_id \\}\\})",
+      "new": "{{-- A797:legacy_option_label --}}\n{{1}}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    },
+    {
+      "path": "resources/views/installations/edit.blade.php",
+      "name": "legacy_option_label",
+      "kind": "regex",
+      "old": "(\\?\\? \\$user->user_id \\}\\})",
+      "new": "{{-- A797:legacy_option_label --}}\n{{1}}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif",
+      "count": 1
+    }
+  ]
+}

@@ -100,7 +100,8 @@
                                         ?? $user->full_name
                                         ?? $user->username
                                         ?? $user->email
-                                        ?? $user->user_id }}
+                                        {{-- A797:legacy_option_label --}}
+?? $user->user_id }}@if($user->assignment_warning ?? false) — Previous assignment (review role/status)@endif
                                 </option>
                             @endforeach
                         </select>

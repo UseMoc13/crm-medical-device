@@ -219,6 +219,9 @@ class MaintenanceController extends Controller
         $validated = $request->validate($this->scheduleRules());
 
         $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('maintenance_schedules', $validated['user_id'] ?? null);
+/* A797:maintenance_store_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician');
         $validated['status'] = 'Scheduled';
         $request->validate([
             'followup_from' => ['nullable', 'uuid', 'prohibited_with:recurring_from'],
@@ -352,7 +355,8 @@ class MaintenanceController extends Controller
 
         return view(
             'maintenance.edit',
-            array_merge(['maintenance' => $maintenance], $this->formData())
+            /* A797:maintenance_edit_current */
+array_merge(['maintenance' => $maintenance], $this->formData($maintenance))
         );
     }
 
@@ -365,7 +369,11 @@ class MaintenanceController extends Controller
     ): RedirectResponse {
         $this->assertMaintenanceScope($maintenance);
         $validated = $request->validate($this->scheduleRules());
-        $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('maintenance_schedules', $validated['user_id'] ?? null);
+        /* A797:maintenance_update_validation */
+$validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('maintenance_schedules', $validated['user_id'] ?? null);
+        // A797 maintenance reassignment guard
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician', (string) ($maintenance->user_id ?? ''));
 
         DB::transaction(function () use ($maintenance, $validated): void {
             $schedule = MaintenanceSchedule::query()->whereKey($maintenance->getKey())
@@ -443,7 +451,11 @@ class MaintenanceController extends Controller
     public function storeRecord(Request $request, MaintenanceSchedule $maintenance): RedirectResponse
     {
         $this->assertMaintenanceScope($maintenance);
-        $validated = $request->validate($this->recordRules());
+        /* A797:maintenance_record_validate */
+$validated = $request->validate($this->recordRules());
+        // A797 performed-by eligibility; existing performer may be retained on edit
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician', isset($record) ? (string) $record->user_id : null, true);
         $completeSchedule = $request->boolean('complete_schedule');
         unset($validated['complete_schedule']);
 
@@ -472,7 +484,8 @@ class MaintenanceController extends Controller
         }
         $maintenance->load(['serialNumber.product', 'serialNumber.customer', 'user']);
         return view('maintenance.records.edit', array_merge(
-            ['record' => $record], $this->recordFormData($maintenance)
+            /* A797:maintenance_record_edit_current */
+['record' => $record], $this->recordFormData($maintenance, $record)
         ));
     }
 
@@ -480,7 +493,11 @@ class MaintenanceController extends Controller
     {
         $this->assertMaintenanceScope($maintenance);
         $this->ensureRecordBelongsToSchedule($maintenance, $record);
-        $validated = $request->validate($this->recordRules());
+        /* A797:maintenance_record_validate */
+$validated = $request->validate($this->recordRules());
+        // A797 performed-by eligibility; existing performer may be retained on edit
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician', isset($record) ? (string) $record->user_id : null, true);
         $completeSchedule = $request->boolean('complete_schedule');
         unset($validated['complete_schedule']);
 
@@ -543,11 +560,13 @@ class MaintenanceController extends Controller
         ];
     }
 
-    private function recordFormData(MaintenanceSchedule $maintenance): array
+    /* A797:maintenance_recordform_signature */
+private function recordFormData(MaintenanceSchedule $maintenance, ?MaintenanceRecord $currentRecord = null): array
     {
         return [
             'maintenance' => $maintenance,
-            'users' => User::query()->orderBy('name')->get(),
+            /* A797:maintenance_recordform_users */
+'users' => app(\App\Services\CrmUserAssignmentEligibility::class)->options('technician', $currentRecord?->user_id ?? $maintenance->user_id),
             'results' => self::RESULTS,
         ];
     }
@@ -617,14 +636,16 @@ class MaintenanceController extends Controller
         return $latest !== null && in_array($latest->result, ['Passed', 'Passed with Notes'], true);
     }
 
-    private function formData(): array
+    /* A797:maintenance_formdata_signature */
+private function formData(?MaintenanceSchedule $current = null): array
     {
         return [
             'serialNumbers' => SerialNumber::query()
                 ->with(['product', 'customer'])
                 ->orderBy('serial_number')
                 ->get(),
-            'users' => User::query()->orderBy('name')->get(),
+            /* A797:maintenance_formdata_users */
+'users' => app(\App\Services\CrmUserAssignmentEligibility::class)->options('technician', $current?->user_id),
             'statuses' => self::STATUSES,
             'types' => self::TYPES,
         ];

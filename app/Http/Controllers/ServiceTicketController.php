@@ -164,6 +164,10 @@ class ServiceTicketController extends Controller
 
         $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('service_tickets', $validated['user_id'] ?? null);
 
+/* A797:ticket_store_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician');
+
         $validated['ticket_number'] = $this->generateTicketNumber();
         $validated['opened_at'] = now();
         $validated['closed_at'] = $validated['status'] === 'closed'
@@ -214,9 +218,10 @@ class ServiceTicketController extends Controller
             array_merge(
                 [
                     'serviceTicket' => $serviceTicket,
-                    'allowedStatuses' => app(ServiceTicketTransition::class)->availableStatuses((string) $serviceTicket->status),
+                    /* A797:ticket_edit_current */
+'allowedStatuses' => app(ServiceTicketTransition::class)->availableStatuses((string) $serviceTicket->status),
                 ],
-                $this->formData()
+                $this->formData($serviceTicket)
             )
         );
     }
@@ -269,6 +274,10 @@ class ServiceTicketController extends Controller
         app(CrmReferenceDataScope::class)->assertVisible('customers', $validated['customer_id']);
 
         $validated['user_id'] = app(CrmServiceDataScope::class)->authorizeAssignee('service_tickets', $validated['user_id'] ?? null);
+
+/* A797:ticket_update_validation */
+        app(\App\Services\CrmUserAssignmentEligibility::class)
+            ->assertAssignable($validated['user_id'], 'technician', (string) ($serviceTicket->user_id ?? ''));
 
         // Validate and update against the locked database state, not a stale form snapshot.
         DB::transaction(function () use ($serviceTicket, $validated) {
@@ -343,7 +352,8 @@ class ServiceTicketController extends Controller
         app(CrmReferenceDataScope::class)->assertUrlVisible('customers', (string) $ticket->customer_id);
     }
 
-    private function formData(): array
+    /* A797:ticket_formdata_signature */
+private function formData(?ServiceTicket $current = null): array
     {
         $customers = app(CrmReferenceDataScope::class)->visible('customers')
             ->orderBy('customer_name')
@@ -352,11 +362,13 @@ class ServiceTicketController extends Controller
         $serialNumbers = SerialNumber::query()
             ->with('product')
             ->orderBy('serial_number')
-            ->get();
+            ->get();/* A797:ticket_formdata_users */
 
-        $users = User::query()
-            ->orderBy('name')
-            ->get();
+
+        // A797 technician picker, including the previously assigned account
+
+
+        $users = app(\App\Services\CrmUserAssignmentEligibility::class)->options('technician', $current?->user_id);
 
         return [
             'customers' => $customers,
