@@ -32,6 +32,10 @@ if (!app()->environment('local')) {
 $failures = 0;
 $warnings = 0;
 $checks = 0;
+// Laravel 11/12 registers withMiddleware() when the HTTP Kernel is resolved.
+// Console bootstrap loads routes but does not materialize the router's web group.
+// Resolve the HTTP Kernel WITHOUT dispatching an HTTP request or touching CRM data.
+$app->make(\Illuminate\Contracts\Http\Kernel::class);
 $web = $app['router']->getMiddlewareGroups()['web'] ?? [];
 foreach ([EnsureCrmAuthenticated::class, EnforceCrmRouteAuthorization::class, PreventCrmResponseCaching::class] as $guard) {
     $checks++;
